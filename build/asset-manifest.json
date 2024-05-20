@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "./static/css/main.1f6102d8.css",
+    "main.js": "./static/js/main.1d6ea88b.js",
+    "static/media/isbn_mod_bg.wasm": "./static/media/isbn_mod_bg.c9c44fb02c839a858597.wasm",
+    "static/media/welcome-bg.jpg": "./static/media/welcome-bg.b44b41f244b5885c2660.jpg",
+    "index.html": "./index.html",
+    "main.1f6102d8.css.map": "./static/css/main.1f6102d8.css.map",
+    "main.1d6ea88b.js.map": "./static/js/main.1d6ea88b.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.1f6102d8.css",
+    "static/js/main.1d6ea88b.js"
+  ]
+}
