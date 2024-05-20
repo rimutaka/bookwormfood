@@ -8,7 +8,7 @@ import Scan from "./components/scan";
 import ScanResult from "./components/scanResult";
 import Welcome from "./components/welcome";
 
-import ".//css/scan.css";
+import ".//css/index.css";
 
 console.log("app started")
 
