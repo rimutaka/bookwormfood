@@ -1,0 +1,103 @@
+{
+  "kind": "books#volumes",
+  "totalItems": 1,
+  "items": [
+    {
+      "kind": "books#volume",
+      "id": "iEGqEAAAQBAJ",
+      "etag": "HLoe1ktSkmU",
+      "selfLink": "https://www.googleapis.com/books/v1/volumes/iEGqEAAAQBAJ",
+      "volumeInfo": {
+        "title": "Everything is Beautiful and Everything Hurts",
+        "authors": [
+          "Josie Shapiro"
+        ],
+        "publisher": "Allen & Unwin",
+        "publishedDate": "2023-05-16",
+        "description": "The stunning debut novel by the winner of the Allen & Unwin Commercial Fiction Prize. If you loved Lessons in Chemistry and Eleanor Oliphant is Completely Fine, you will adore Everything is Beautiful and Everything Hurts. 'Everything is Beautiful and Everything Hurts plunges the reader into the gruelling world of the long distance runner \u0097 every pleasure, every pain. Shapiro deftly weaves the coming-of-age story of Mickey Bloom into a gripping account of adult Bloom running the Auckland Marathon. This is compelling storytelling that exposes the sacrifices \u0097 physical and emotional \u0097 demanded of our sporting elite. Chilling, yet ultimately heartwarming, it celebrates success without flinching from staring down its brutal costs. A sophisticated debut that will capture the racing hearts of its readers.' - Sue Orr, Loop Tracks 'Josie Shapiro's accomplished debut novel has the compulsive forward motion of a world-class race. You don't have to be a runner to get the high, just read this book!\" - Kirsten McDougall, She's a Killer Mickey Bloom: five foot tall, dyslexic, and bullied at school. Mickey knows she's nothing special. Until one day, she discovers running. Mickey's new-found talent makes her realise she's everything she thought she wasn't \u0096 powerful, strong and special. But her success comes at a cost, and the relentless training and pressure to win leaves Mickey broken, her dream in tatters. Years later, when Mickey is working in a dead-end job with a drop-kick boyfriend, her mother becomes seriously ill. After nursing her, Mickey realises the only way she can overcome her grief \u0096 and find herself \u0096 is to run again. A chance encounter with a stranger sees Mickey re-ignite her dreams. The two women form an unbreakable bond, as Mickey is shown what it means to run in the right direction. An unforgettable debut novel about change, family and grit, and what it takes to achieve your dreams.",
+        "industryIdentifiers": [
+          {
+            "type": "ISBN_13",
+            "identifier": "9781761186769"
+          },
+          {
+            "type": "ISBN_10",
+            "identifier": "1761186760"
+          }
+        ],
+        "readingModes": {
+          "text": true,
+          "image": true
+        },
+        "pageCount": 292,
+        "printType": "BOOK",
+        "categories": [
+          "Fiction"
+        ],
+        "maturityRating": "NOT_MATURE",
+        "allowAnonLogging": true,
+        "contentVersion": "1.2.2.0.preview.3",
+        "panelizationSummary": {
+          "containsEpubBubbles": false,
+          "containsImageBubbles": false
+        },
+        "imageLinks": {
+          "smallThumbnail": "http://books.google.com/books/content?id=iEGqEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+          "thumbnail": "http://books.google.com/books/content?id=iEGqEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+        },
+        "language": "en",
+        "previewLink": "http://books.google.co.nz/books?id=iEGqEAAAQBAJ&printsec=frontcover&dq=isbn:9781761186769&hl=&cd=1&source=gbs_api",
+        "infoLink": "https://play.google.com/store/books/details?id=iEGqEAAAQBAJ&source=gbs_api",
+        "canonicalVolumeLink": "https://play.google.com/store/books/details?id=iEGqEAAAQBAJ"
+      },
+      "saleInfo": {
+        "country": "NZ",
+        "saleability": "FOR_SALE",
+        "isEbook": true,
+        "listPrice": {
+          "amount": 26.6,
+          "currencyCode": "NZD"
+        },
+        "retailPrice": {
+          "amount": 26.6,
+          "currencyCode": "NZD"
+        },
+        "buyLink": "https://play.google.com/store/books/details?id=iEGqEAAAQBAJ&rdid=book-iEGqEAAAQBAJ&rdot=1&source=gbs_api",
+        "offers": [
+          {
+            "finskyOfferType": 1,
+            "listPrice": {
+              "amountInMicros": 26600000,
+              "currencyCode": "NZD"
+            },
+            "retailPrice": {
+              "amountInMicros": 26600000,
+              "currencyCode": "NZD"
+            }
+          }
+        ]
+      },
+      "accessInfo": {
+        "country": "NZ",
+        "viewability": "PARTIAL",
+        "embeddable": true,
+        "publicDomain": false,
+        "textToSpeechPermission": "ALLOWED",
+        "epub": {
+          "isAvailable": true,
+          "acsTokenLink": "http://books.google.co.nz/books/download/Everything_is_Beautiful_and_Everything_H-sample-epub.acsm?id=iEGqEAAAQBAJ&format=epub&output=acs4_fulfillment_token&dl_type=sample&source=gbs_api"
+        },
+        "pdf": {
+          "isAvailable": true,
+          "acsTokenLink": "http://books.google.co.nz/books/download/Everything_is_Beautiful_and_Everything_H-sample-pdf.acsm?id=iEGqEAAAQBAJ&format=pdf&output=acs4_fulfillment_token&dl_type=sample&source=gbs_api"
+        },
+        "webReaderLink": "http://play.google.com/books/reader?id=iEGqEAAAQBAJ&hl=&source=gbs_api",
+        "accessViewStatus": "SAMPLE",
+        "quoteSharingAllowed": false
+      },
+      "searchInfo": {
+        "textSnippet": "&#39; - Sue Orr, Loop Tracks &#39;Josie Shapiro&#39;s accomplished debut novel has the compulsive forward motion of a world-class race. You don&#39;t have to be a runner to get the high, just read this book!"
+      }
+    }
+  ]
+}

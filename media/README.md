@@ -1,0 +1,1 @@
+This folder contains source media files for assets used in this project.

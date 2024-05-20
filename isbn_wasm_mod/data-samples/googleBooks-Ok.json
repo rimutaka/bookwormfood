@@ -1,0 +1,45 @@
+{
+  "googleBooks": {
+    "Ok": {
+      "kind": "books#volumes",
+      "totalItems": 1,
+      "items": [
+        {
+          "id": "iEGqEAAAQBAJ",
+          "selfLink": "https://www.googleapis.com/books/v1/volumes/iEGqEAAAQBAJ",
+          "volumeInfo": {
+            "title": "Everything is Beautiful and Everything Hurts",
+            "authors": [
+              "Josie Shapiro"
+            ],
+            "description": "The stunning debut novel by the winner of the Allen & Unwin Commercial Fiction Prize. If you loved Lessons in Chemistry and Eleanor Oliphant is Completely Fine, you will adore Everything is Beautiful and Everything Hurts. 'Everything is Beautiful and Everything Hurts plunges the reader into the gruelling world of the long distance runner � every pleasure, every pain. Shapiro deftly weaves the coming-of-age story of Mickey Bloom into a gripping account of adult Bloom running the Auckland Marathon. This is compelling storytelling that exposes the sacrifices � physical and emotional � demanded of our sporting elite. Chilling, yet ultimately heartwarming, it celebrates success without flinching from staring down its brutal costs. A sophisticated debut that will capture the racing hearts of its readers.' - Sue Orr, Loop Tracks 'Josie Shapiro's accomplished debut novel has the compulsive forward motion of a world-class race. You don't have to be a runner to get the high, just read this book!\" - Kirsten McDougall, She's a Killer Mickey Bloom: five foot tall, dyslexic, and bullied at school. Mickey knows she's nothing special. Until one day, she discovers running. Mickey's new-found talent makes her realise she's everything she thought she wasn't � powerful, strong and special. But her success comes at a cost, and the relentless training and pressure to win leaves Mickey broken, her dream in tatters. Years later, when Mickey is working in a dead-end job with a drop-kick boyfriend, her mother becomes seriously ill. After nursing her, Mickey realises the only way she can overcome her grief � and find herself � is to run again. A chance encounter with a stranger sees Mickey re-ignite her dreams. The two women form an unbreakable bond, as Mickey is shown what it means to run in the right direction. An unforgettable debut novel about change, family and grit, and what it takes to achieve your dreams.",
+            "industryIdentifiers": [
+              {
+                "type": "ISBN_13",
+                "identifier": "9781761186769"
+              },
+              {
+                "type": "ISBN_10",
+                "identifier": "1761186760"
+              }
+            ],
+            "pageCount": 292,
+            "categories": [
+              "Fiction"
+            ],
+            "imageLinks": {
+              "smallThumbnail": "http://books.google.com/books/content?id=iEGqEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api",
+              "thumbnail": "http://books.google.com/books/content?id=iEGqEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api"
+            }
+          },
+          "saleInfo": {
+            "listPrice": {
+              "amount": 26.6,
+              "currencyCode": "NZD"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

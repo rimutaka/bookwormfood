@@ -1,0 +1,54 @@
+[package]
+name = "wasm_mod"
+version = "0.1.0"
+edition = "2021"
+authors = ["rimutaka <max@onebro.me>"]
+description = "ISBN scanner"
+license = "GPL 3.0"
+repository = ""
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+wasm-bindgen-futures = "0.4"
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+urlencoding = "2.1"
+
+# rand only works for WASM if JS support is enabled in a dependency
+# See https://docs.rs/getrandom/latest/getrandom/#webassembly-support
+rand = "0.8"
+getrandom = { version = "0.2", features = ["js"] }
+# The `console_error_panic_hook` crate provides better debugging of panics by
+# logging them with `console.error`. This is great for development, but requires
+# all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
+# code size when deploying.
+console_error_panic_hook = { version = "0.1.7", optional = true }
+# `wee_alloc` is a tiny allocator for wasm that is only ~1K in code size
+# compared to the default allocator's ~10K. It is slower than the default
+# allocator, however.
+wee_alloc = { version = "0.4.5", optional = true }
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    "console",
+    "WorkerGlobalScope",
+    "Window",
+    'Headers',
+    'Request',
+    'RequestInit',
+    'RequestMode',
+    'Response',
+]
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.36"
+
+[profile.release]
+# Tell `rustc` to optimize for small code size.
+opt-level = 3
