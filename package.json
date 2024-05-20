@@ -54,9 +54,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rimutaka/koder.git"
+    "url": "git+https://github.com/rimutaka/bookwormfood.git"
   },
   "bugs": {
-    "url": "https://github.com/rimutaka/koder/issues"
+    "url": "https://github.com/rimutaka/bookwormfood/issues"
   }
 }
