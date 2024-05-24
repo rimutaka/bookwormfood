@@ -16,7 +16,7 @@ function HtmlP({ text }) {
 function HtmlH3({ text }) {
 
   if (text) {
-    return <h3 className="fade-in">{text}</h3>
+    return <h3 className="fade-in font-bold">{text}</h3>
   }
   else {
     return null;
@@ -116,9 +116,11 @@ export default function ScanResult() {
 
     return (
       <div>
-        <p>ISBN: {isbn}</p>
-        <HtmlH3 text={title} />
-        <HtmlP text={`by ${authors}`} />
+        <div className="pb-4">
+          <HtmlH3 text={title} />
+          <HtmlP text={`by ${authors}`} />
+          <p className="py-2">ISBN: {isbn}</p>
+        </div>
         <table>
           <tr>
             <th>About</th>
@@ -153,16 +155,15 @@ export default function ScanResult() {
     await navigator.clipboard.writeText(window.location.href);
     const btnId = document.getElementById("copyToClip");
     btnId.innerText = "COPIED TO CLIPBOARD";
-    btnId.style.backgroundColor = "green";
+    btnId.classList.add("done");
     setTimeout(() => {
       btnId.innerText = "SHARE";
-      btnId.style.backgroundColor = "";
+      btnId.classList.remove("done");;
     }, 3000);
   }
 
   const renderCopyToClipboardBtn = () => {
-    return <a href="!#" style={{ padding: 12 }} id="copyToClip" className="myHref"
-      onClick={onClickCopyToClipboard}>SHARE</a>
+    return <button id="copyToClip" onClick={onClickCopyToClipboard}>SHARE</button>
   }
 
   const renderResult = () => {
@@ -171,8 +172,8 @@ export default function ScanResult() {
         <div className="result">
           {renderQrCodeResult()}
         </div>
-        <div style={{ marginTop: 40 }}>
-          <a href="!#" style={{ padding: 12 }} className="myHref" onClick={onClickBackHandler}>SCAN AGAIN</a>
+        <div className="scanBtn">
+          <button onClick={onClickBackHandler}>SCAN AGAIN</button>
           {renderCopyToClipboardBtn()}
         </div>
       </div>);

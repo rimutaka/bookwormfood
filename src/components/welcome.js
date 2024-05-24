@@ -6,11 +6,6 @@ export default function Welcome() {
 
   const navigate = useNavigate();
 
-  const startStyle = () => {
-    const style = { width: 100, textAlign: "center" };
-    return { backgroundColor: "", ...style };
-  };
-
   useEffect(() => {
 
     // these values are used to set the meta tags in index.html
@@ -18,7 +13,7 @@ export default function Welcome() {
     // a scan that sets them to the book details
     // make sure the values are synchronized with index.html
     // TODO: change ids to constants
-    document.title="📖📚🐛📚"
+    document.title = "📖📚🐛📚"
     document.getElementById("ogImage").setAttribute('content', "Scan book barcodes to record or share the books");
     document.getElementById("ogTitle").setAttribute('content', "/logo.png");
   }, []);
@@ -30,12 +25,12 @@ export default function Welcome() {
 
   const renderButtons = () => {
     return <div className="scanBtn">
-      <a href="!#" onClick={onBtnClickHandler} className="myHref" style={startStyle()}>SCAN ISBN</a>
-    </div>;
+      <button onClick={onBtnClickHandler}>SCAN ISBN</button>
+    </div>
   };
 
   const renderWelcomeMsg = () => {
-    return <div id="welcomeMsg" className="welcome scanCanvas">
+    return <div id="welcomeMsg" className="welcome">
       <div>
         <h1>Scan the ISBN barcode to save the book in your library and more:</h1>
         <ul>
@@ -47,18 +42,11 @@ export default function Welcome() {
     </div>;
   };
 
-  const renderScan = () => {
-    return (
-      <div className="scan">
-        {renderWelcomeMsg()}
-        {renderButtons()}
-      </div>
-    );
-  };
 
   return (
     <div>
-      {renderScan()}
+      {renderWelcomeMsg()}
+      {renderButtons()}
     </div>
   )
 };

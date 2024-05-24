@@ -36,6 +36,7 @@ export default function Scan({
 
   // Component state
   const [btnText, setBtnText] = useState(BTN_TXT.START);
+  const [btnClass, setBtnClass] = useState();
   const [scanning, setScanning] = useState(false);
 
   const [video] = useState(document.createElement("video"));
@@ -74,6 +75,7 @@ export default function Scan({
     canvas = canvasElement.getContext("2d", { willReadFrequently: true });
 
     setBtnText(BTN_TXT.STOP);
+    setBtnClass("active");
 
     try {
       video.srcObject = await navigator.mediaDevices.getUserMedia(CAPTURE_OPTIONS);
@@ -92,6 +94,7 @@ export default function Scan({
   const stopScan = () => {
     setScanning(false);
     setBtnText(BTN_TXT.START);
+    setBtnClass("");
     video.pause();
     if (video.srcObject) {
       video.srcObject.getVideoTracks().forEach(track => {
@@ -134,11 +137,6 @@ export default function Scan({
     if (scanning) await stopScan(); else await startScan();
   };
 
-  const startStyle = () => {
-    const style = { textAlign: "center" };
-    if (scanning) return { backgroundColor: "red", ...style };
-    else return { backgroundColor: "", ...style };
-  };
 
   useEffect(() => {
 
@@ -147,7 +145,7 @@ export default function Scan({
     // a scan that sets them to the book details
     // make sure the values are synchronized with index.html
     // TODO: change ids to constants
-    document.title="Book barcode scanner"
+    document.title = "Book barcode scanner"
     document.getElementById("ogImage").setAttribute('content', "Scan book barcodes to record or share the books");
     document.getElementById("ogTitle").setAttribute('content', "/logo.png");
 
@@ -157,28 +155,14 @@ export default function Scan({
     startScanOnce().catch(console.error);
   }, []);
 
-  const renderCanvas = () => {
-    return <canvas id="canvas" className="scanCanvas" width={CANVAS_SIZE.WIDTH} height={CANVAS_SIZE.HEIGHT} />
-  };
-
-  const renderButtons = () => {
-    return <div className="scanBtn">
-      <a href="!#" className="myHref" onClick={onBtnClickHandler} style={startStyle()}>{btnText}</a>
-    </div>;
-  };
-
-  const renderScan = () => {
-    return (
-      <div className="scan">
-        {renderCanvas()}
-        {renderButtons()}
-      </div>
-    );
-  };
-
   return (
     <div>
-      {renderScan()}
+      <div>
+        <canvas id="canvas" className="scanCanvas" width={CANVAS_SIZE.WIDTH} height={CANVAS_SIZE.HEIGHT} />
+      </div>
+      <div className="scanBtn">
+        <button onClick={onBtnClickHandler} className={btnClass}>{btnText}</button>
+      </div>
     </div>
   )
 };
