@@ -121,28 +121,24 @@ export default function ScanResult() {
           <HtmlP text={`by ${authors}`} />
           <p className="py-2">ISBN: {isbn}</p>
         </div>
-        <table>
-          <tr>
-            <th>About</th>
-            <th>Buy</th>
-            <th>Borrow</th>
-          </tr>
-          <tr>
-            <td>
-              <p><a href={`https://www.goodreads.com/search?q=${isbn}`}>GoodReads</a></p>
-              <p><a href={`https://app.thestorygraph.com/browse?search_term=${isbn}`}>StoryGraph</a></p>
-              <p><a href={`https://www.google.com/search?tbo=p&tbm=bks&q=isbn:${isbn}`}>Google books</a></p>
-            </td>
-            <td>
-              <p><a href={`https://www.thenile.co.nz/search?s.q=${isbn}`}>The Nile</a></p>
-              <p><a href={`https://www.amazon.com/s?k=${isbn}`}>Amazon</a></p>
-              <p><a href={`https://www.mightyape.co.nz/books?q=${isbn}`}>MightyApe</a></p>
-            </td>
-            <td>
-              <p><a href={`https://discover.aucklandlibraries.govt.nz/search?query=${isbn}`}>Auckland libraries</a></p>
-            </td>
-          </tr>
-        </table>
+        <div className="result-table">
+          <div>
+            <h3>ℹ️ About</h3>
+            <p><a href={`https://www.goodreads.com/search?q=${isbn}`}>GoodReads</a></p>
+            <p><a href={`https://app.thestorygraph.com/browse?search_term=${isbn}`}>StoryGraph</a></p>
+            <p><a href={`https://www.google.com/search?tbo=p&tbm=bks&q=isbn:${isbn}`}>Google books</a></p>
+          </div>
+          <div>
+            <h3>🎁 Buy</h3>
+            <p><a href={`https://www.thenile.co.nz/search?s.q=${isbn}`}>The Nile</a></p>
+            <p><a href={`https://www.amazon.com/s?k=${isbn}`}>Amazon</a></p>
+            <p><a href={`https://www.mightyape.co.nz/books?q=${isbn}`}>MightyApe</a></p>
+          </div>
+          <div>
+            <h3>🫴 Borrow</h3>
+            <p><a href={`https://discover.aucklandlibraries.govt.nz/search?query=${isbn}`}>Auckland libraries</a></p>
+          </div>
+        </div>
       </div>)
   }
   const onClickBackHandler = (e) => {

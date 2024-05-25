@@ -69,6 +69,7 @@ button.done {
   @apply ml-5;
 }
 
+/* TODO: custom arrows as in https://web.dev/articles/css-marker-pseudo-element */
 .welcome li {
   @apply mb-3;
 }
@@ -76,6 +77,20 @@ button.done {
 /* The div that contains book details after the scan */
 .result {
   @apply p-5 bg-zinc-200 rounded-lg break-words;
+}
+
+/* The book result table with 3 columns for Info, Buy, Borrow */
+.result-table {
+  @apply grid grid-cols-3;
+}
+
+/* The header row in the table */
+.result-table h3 {
+  @apply font-bold mb-3 flex justify-center;
+}
+
+.result-table p {
+  @apply mb-1
 }
 
 /* Animation effect for loading book details */
