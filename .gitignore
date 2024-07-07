@@ -27,7 +27,7 @@ yarn-error.log*
 .idea/workspace.xml
 
 # rust
-*/target
+**/target/
 **/*.rs.bk
 Cargo.lock
 bin/
