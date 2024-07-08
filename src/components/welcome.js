@@ -15,7 +15,7 @@ export default function Welcome() {
     // TODO: change ids to constants
     document.title = "📖📚🐛📚"
     document.getElementById("ogImage").setAttribute('content', "Scan book barcodes to record or share the books");
-    document.getElementById("ogTitle").setAttribute('content', "/logo.png");
+    document.getElementById("ogTitle").setAttribute('content', "/img/og-thumb.png");
   }, []);
 
   const onBtnClickHandler = async (e) => {

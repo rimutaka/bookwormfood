@@ -147,7 +147,7 @@ export default function Scan({
     // TODO: change ids to constants
     document.title = "Book barcode scanner"
     document.getElementById("ogImage").setAttribute('content', "Scan book barcodes to record or share the books");
-    document.getElementById("ogTitle").setAttribute('content', "/logo.png");
+    document.getElementById("ogTitle").setAttribute('content', "/img/og-thumb.png");
 
     const startScanOnce = async () => {
       await startScan();
