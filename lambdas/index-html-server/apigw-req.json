@@ -1,0 +1,114 @@
+{
+  "body": null,
+  "headers": {
+    "Host": "mqd1wllexd.execute-api.us-east-1.amazonaws.com",
+    "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:127.0) Gecko/20100101 Firefox/127.0",
+    "X-Amzn-Trace-Id": "Root=1-66872833-6f9600b6174d52360b458d06",
+    "X-Forwarded-For": "206.83.103.59",
+    "X-Forwarded-Port": "443",
+    "X-Forwarded-Proto": "https",
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "accept-encoding": "gzip, deflate, br, zstd",
+    "accept-language": "en-US,en;q=0.5",
+    "dnt": "1",
+    "priority": "u=1",
+    "referer": "https://us-east-1.console.aws.amazon.com/",
+    "sec-fetch-dest": "document",
+    "sec-fetch-mode": "navigate",
+    "sec-fetch-site": "cross-site",
+    "sec-fetch-user": "?1",
+    "upgrade-insecure-requests": "1"
+  },
+  "httpMethod": "GET",
+  "isBase64Encoded": false,
+  "multiValueHeaders": {
+    "Host": [
+      "mqd1wllexd.execute-api.us-east-1.amazonaws.com"
+    ],
+    "User-Agent": [
+      "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:127.0) Gecko/20100101 Firefox/127.0"
+    ],
+    "X-Amzn-Trace-Id": [
+      "Root=1-66872833-6f9600b6174d52360b458d06"
+    ],
+    "X-Forwarded-For": [
+      "206.83.103.59"
+    ],
+    "X-Forwarded-Port": [
+      "443"
+    ],
+    "X-Forwarded-Proto": [
+      "https"
+    ],
+    "accept": [
+      "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+    ],
+    "accept-encoding": [
+      "gzip, deflate, br, zstd"
+    ],
+    "accept-language": [
+      "en-US,en;q=0.5"
+    ],
+    "dnt": [
+      "1"
+    ],
+    "priority": [
+      "u=1"
+    ],
+    "referer": [
+      "https://us-east-1.console.aws.amazon.com/"
+    ],
+    "sec-fetch-dest": [
+      "document"
+    ],
+    "sec-fetch-mode": [
+      "navigate"
+    ],
+    "sec-fetch-site": [
+      "cross-site"
+    ],
+    "sec-fetch-user": [
+      "?1"
+    ],
+    "upgrade-insecure-requests": [
+      "1"
+    ]
+  },
+  "multiValueQueryStringParameters": null,
+  "path": "/understanding-caricature-by-greg-houston/9781580935647/",
+  "pathParameters": null,
+  "queryStringParameters": null,
+  "requestContext": {
+    "accountId": "512295225992",
+    "apiId": "mqd1wllexd",
+    "deploymentId": "tafunn",
+    "domainName": "mqd1wllexd.execute-api.us-east-1.amazonaws.com",
+    "domainPrefix": "mqd1wllexd",
+    "extendedRequestId": "aaM4FE9IoAMEWzA=",
+    "httpMethod": "GET",
+    "identity": {
+      "accessKey": null,
+      "accountId": null,
+      "caller": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityId": null,
+      "cognitoIdentityPoolId": null,
+      "principalOrgId": null,
+      "sourceIp": "206.83.103.59",
+      "user": null,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:127.0) Gecko/20100101 Firefox/127.0",
+      "userArn": null
+    },
+    "path": "/dev/understanding-caricature-by-greg-houston/9781580935647/",
+    "protocol": "HTTP/1.1",
+    "requestId": "f69e3e2a-c5d7-48aa-89eb-e56a05411534",
+    "requestTime": "04/Jul/2024:22:54:43 +0000",
+    "requestTimeEpoch": 1720133683448,
+    "resourceId": "p0yn8b2fu0",
+    "resourcePath": "/",
+    "stage": "dev"
+  },
+  "resource": "/",
+  "stageVariables": null
+}

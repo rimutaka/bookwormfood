@@ -2,7 +2,7 @@ use utils::{WasmResponse, WasmResult};
 use wasm_bindgen::prelude::*;
 use web_sys::{Window, WorkerGlobalScope};
 
-mod google;
+pub mod google;
 #[macro_use]
 pub(crate) mod utils;
 
@@ -33,6 +33,10 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 #[wasm_bindgen]
 pub fn hello_wasm() {
     log!("Hello from WASM!");
+}
+
+pub fn hello_lambda() {
+    log!("Hello from Lambda!");
 }
 
 /// A demo function to test if WASM is callable from background.js
