@@ -109,11 +109,6 @@ export default function ScanResult() {
     let fullTitle = (title) ? title + " by " + authors : "Book not found";
     document.title = fullTitle;
 
-    // update meta tags for social media sharing
-    // TODO: change ids to constants
-    document.getElementById("ogImage").setAttribute('content', thumbnail);
-    document.getElementById("ogTitle").setAttribute('content', fullTitle);
-
     return (
       <div>
         <div className="pb-4">

@@ -13,9 +13,7 @@ export default function Welcome() {
     // a scan that sets them to the book details
     // make sure the values are synchronized with index.html
     // TODO: change ids to constants
-    document.title = "📖📚🐛📚"
-    document.getElementById("ogImage").setAttribute('content', "Scan book barcodes to record or share the books");
-    document.getElementById("ogTitle").setAttribute('content', "/img/og-thumb.png");
+    document.title = "📖📚📚"
   }, []);
 
   const onBtnClickHandler = async (e) => {

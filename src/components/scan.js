@@ -140,15 +140,7 @@ export default function Scan({
 
   useEffect(() => {
 
-    // these values are used to set the meta tags in index.html
-    // and have to be reset when the component is mounted from
-    // a scan that sets them to the book details
-    // make sure the values are synchronized with index.html
-    // TODO: change ids to constants
-    document.title = "Book barcode scanner"
-    document.getElementById("ogImage").setAttribute('content', "Scan book barcodes to record or share the books");
-    document.getElementById("ogTitle").setAttribute('content', "/img/og-thumb.png");
-
+    document.title = "Book barcode scanner";
     const startScanOnce = async () => {
       await startScan();
     }
