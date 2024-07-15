@@ -23,18 +23,19 @@ export default function Welcome() {
 
   const renderButtons = () => {
     return <div className="scanBtn">
-      <button onClick={onBtnClickHandler}>SCAN ISBN</button>
+      <button onClick={onBtnClickHandler}>SCAN barcode</button>
     </div>
   };
 
   const renderWelcomeMsg = () => {
     return <div id="welcomeMsg" className="welcome">
       <div>
-        <h1>Scan the ISBN barcode to save the book in your library and more:</h1>
+        <h1>Scan the book's barcode to learn, record or share</h1>
         <ul>
-          <li>Find it on Goodreads</li>
+          <li>View reviews, book and author details</li>
           <li>Borrow from Auckland Libraries</li>
           <li>Buy new or secondhand</li>
+          <li>Save it in your reading list</li>
         </ul>
       </div>
     </div>;

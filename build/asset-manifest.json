@@ -1,15 +1,14 @@
 {
   "files": {
-    "main.css": "./static/css/main.00b9f5c0.css",
-    "main.js": "./static/js/main.5eac7a96.js",
+    "main.css": "./static/css/main.02ddbbc4.css",
+    "main.js": "./static/js/main.cd5413b8.js",
     "static/media/isbn_mod_bg.wasm": "./static/media/isbn_mod_bg.7eb38663a2358fff1703.wasm",
-    "static/media/welcome-bg.jpg": "./static/media/welcome-bg.b44b41f244b5885c2660.jpg",
     "index.html": "./index.html",
-    "main.00b9f5c0.css.map": "./static/css/main.00b9f5c0.css.map",
-    "main.5eac7a96.js.map": "./static/js/main.5eac7a96.js.map"
+    "main.02ddbbc4.css.map": "./static/css/main.02ddbbc4.css.map",
+    "main.cd5413b8.js.map": "./static/js/main.cd5413b8.js.map"
   },
   "entrypoints": [
-    "static/css/main.00b9f5c0.css",
-    "static/js/main.5eac7a96.js"
+    "static/css/main.02ddbbc4.css",
+    "static/js/main.cd5413b8.js"
   ]
 }
