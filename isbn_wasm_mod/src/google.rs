@@ -5,7 +5,7 @@
 ///
 /// Response: isbn_wasm_mod/data-samples/google-books-volume.json
 ///
-///
+/// API Reference: https://developers.google.com/books/docs/v1/reference/volumes#resource
 ///
 //
 use super::BrowserRuntime;
@@ -25,8 +25,12 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ImageLinks {
-    pub small_thumbnail: String,
-    pub thumbnail: String,
+    pub small_thumbnail: Option<String>,
+    pub thumbnail: Option<String>,
+    pub small: Option<String>,
+    pub medium: Option<String>,
+    pub large: Option<String>,
+    pub extra_large: Option<String>,
 }
 
 // /// Part of GoogleBooks API response
@@ -54,8 +58,8 @@ pub struct VolumeInfo {
     pub title: String,
     #[serde(default = "Vec::new")]
     pub authors: Vec<String>,
-    // #[serde(skip_serializing_if = "Option::is_none")]
-    // pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
     // #[serde(default = "Vec::new")]
     // pub industry_identifiers: Vec<IndustryIdentifier>,
     // #[serde(skip_serializing_if = "Option::is_none")]
