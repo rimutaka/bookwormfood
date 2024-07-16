@@ -1,8 +1,10 @@
+use storage::BookRecord;
 use utils::{WasmResponse, WasmResult};
 use wasm_bindgen::prelude::*;
 use web_sys::Window;
 
 pub mod google;
+pub mod storage;
 #[macro_use]
 pub(crate) mod utils;
 
@@ -97,6 +99,14 @@ pub async fn get_book_data(isbn: String) {
     // log!("{:?}", resp);
 
     report_progress(resp.to_string());
+
+    // store the book record in the local storage, if possible
+    if let Some(Ok(v)) = resp.google_books {
+        log!("Storing book in local storage");
+        if let Some(v) = BookRecord::from_google_books(v, &isbn) {
+            v.add_note(&runtime, "Book scanned".to_string());
+        }
+    }
 }
 
 /// All error handling in this crate is based on either retrying a request after some time
