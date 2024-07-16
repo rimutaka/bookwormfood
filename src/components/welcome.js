@@ -1,11 +1,14 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { build_book_url } from "./scanResult";
+import useState from 'react-usestateref';
+import initWasmModule, { get_scanned_books } from '../wasm-rust/isbn_mod.js';
 
 
 export default function Welcome() {
 
   const navigate = useNavigate();
+  const [books, setBooks] = useState([]); // the list of books saved in localStorage
 
   useEffect(() => {
 
@@ -14,8 +17,46 @@ export default function Welcome() {
     // a scan that sets them to the book details
     // make sure the values are synchronized with index.html
     // TODO: change ids to constants
-    document.title = "📖📚📚"
+    document.title = "📖📚📚";
+
+    // get the list of books from the localStorage
+    (async () => {
+      await initWasmModule(); // run the wasm initializer before calling wasm methods
+      // console.log("Requesting scanned books");
+      // request book data from WASM module
+      // the responses are sent back as messages to the window object   
+      get_scanned_books();
+      // console.log("Requested scanned books (inside async)");
+    })();
+
+    // console.log("Requested scanned books (outside async)");
   }, []);
+
+  window.addEventListener("message", (msg) => {
+    // console.log(`WASM msg: ${msg.data} / ${msg.origin} / ${msg.source}`);
+    // WASM messages should be JSON objects
+    let data;
+    try {
+      data = JSON.parse(msg.data);
+    }
+    catch (e) {
+      // use this log for debugging, but this mostly logs messages sent from React tooling
+      // in development mode, not sure it's worth logging this in production
+      // console.log(`Error parsing JSON data: ${e}`);
+      return;
+    }
+
+    // see `WasmResult` and `WasmResponse` in the WASM code for the structure of the data
+    if (data?.localBooks?.Ok) {
+      let list_of_books = data.localBooks.Ok?.books;
+      // console.log(`Books: ${JSON.stringify(list_of_books)}`);
+      setBooks(list_of_books);
+    }
+    else {
+      // console.log("Welcome screen received a message that is not a list of books");
+      // console.log(data);
+    }
+  });
 
   const onBtnClickHandler = async (e) => {
     e.preventDefault();
@@ -31,16 +72,15 @@ export default function Welcome() {
   // renders the list of books saved in localStorage
   const renderList = () => {
 
-    const records = [];
+    const book_list = [];
 
-    // for (let i = 0; i < localStorage.length; i++) {
-    //   let record =JSON.parse(localStorage.getItem(localStorage.key(i)));
-    //   let url = build_book_url(record.title, record.author, record.isbn);
-    //   records.push(<li><a href={url}>{record.title}</a> {" by " + record.author}</li>);
-    // }
+    books.forEach((book) => {
+      let url = build_book_url(book.title, book.author, book.isbn);
+      book_list.push(<li key={book.isbn}><a href={url}>{book.title}</a> {" by " + book.author}</li>);
+    });
 
     return <ul className="scanList">
-      {records}
+      {book_list}
     </ul>
   };
 

@@ -84,6 +84,7 @@ pub async fn get_book_data(isbn: String) {
             log!("Book data received");
             WasmResponse {
                 google_books: Some(WasmResult::Ok(v)),
+                ..Default::default()
             }
         }
         Err(e) => {
@@ -91,6 +92,7 @@ pub async fn get_book_data(isbn: String) {
             log!("{:?}", e);
             WasmResponse {
                 google_books: Some(WasmResult::Err(format!("{:?}", e))),
+                ..Default::default()
             }
         }
     };
@@ -104,9 +106,52 @@ pub async fn get_book_data(isbn: String) {
     if let Some(Ok(v)) = resp.google_books {
         log!("Storing book in local storage");
         if let Some(v) = BookRecord::from_google_books(v, &isbn) {
-            v.add_note(&runtime, "Book scanned".to_string());
+            v.store_locally(&runtime);
         }
     }
+}
+
+/// Returns the list of previously scanned books from the local storage.
+/// See `fn report_progress()` for more details.
+#[wasm_bindgen]
+pub async fn get_scanned_books() {
+    log!("Getting the list of books from local storage");
+
+    // need the runtime for the global context and fetch
+    let runtime = match get_runtime().await {
+        Ok(v) => v,
+
+        // if this happened it would be a bug
+        Err(e) => {
+            log!("Failed to get runtime: {:?}", e);
+            return;
+        }
+    };
+
+    // get Books from local storage and wrap them into a response struct
+    let resp = match storage::Books::get(&runtime) {
+        Ok(v) => {
+            log!("Book list retrieved");
+            WasmResponse {
+                local_books: Some(WasmResult::Ok(v)),
+                ..Default::default()
+            }
+        }
+        Err(e) => {
+            log!("Failed to get list of books");
+            log!("{:?}", e);
+            WasmResponse {
+                local_books: Some(WasmResult::Err(format!("{:?}", e))),
+                ..Default::default()
+            }
+        }
+    };
+
+    // log!("Book data below:");
+    // log!("{:?}", resp);
+
+    // send the response back to the UI thread
+    report_progress(resp.to_string());
 }
 
 /// All error handling in this crate is based on either retrying a request after some time
