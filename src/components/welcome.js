@@ -79,7 +79,7 @@ export default function Welcome() {
       book_list.push(<li key={book.isbn}><a href={url}>{book.title}</a> {" by " + book.author}</li>);
     });
 
-    return <ul className="scanList">
+    return <ul className="scan-list">
       {book_list}
     </ul>
   };
