@@ -33,11 +33,11 @@ export default function Welcome() {
 
     const records = [];
 
-    for (let i = 0; i < localStorage.length; i++) {
-      let record =JSON.parse(localStorage.getItem(localStorage.key(i)));
-      let url = build_book_url(record.title, record.author, record.isbn);
-      records.push(<li><a href={url}>{record.title}</a> {" by " + record.author}</li>);
-    }
+    // for (let i = 0; i < localStorage.length; i++) {
+    //   let record =JSON.parse(localStorage.getItem(localStorage.key(i)));
+    //   let url = build_book_url(record.title, record.author, record.isbn);
+    //   records.push(<li><a href={url}>{record.title}</a> {" by " + record.author}</li>);
+    // }
 
     return <ul className="scanList">
       {records}
