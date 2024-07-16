@@ -27,6 +27,12 @@ function HtmlH3({ text }) {
 // to avoid unnecessary calls to the WASM module
 let previousIsbn = "";
 
+export function build_book_url(title, authors, isbn) {
+  let url = (title.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-by-" + authors.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/,/g, "") + "/" + isbn + "/").replace(/-{2,}/g, "-");
+  return url;
+
+}
+
 export default function ScanResult() {
 
   const navigate = useNavigate();
@@ -94,7 +100,7 @@ export default function ScanResult() {
       // if (amount) setPrice(`${currency} ${amount}`);
 
       // navigate to the new URL with the book title, e.g. https://localhost:8080/the-subtle-art-of-not-giving-a-f-k-by-mark-manson/9780062457714/
-      let url = (title.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-by-" + authors.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/,/g, "") + "/" + isbn + "/").replace(/-{2,}/g, "-");
+      let url = build_book_url(title, authors, isbn);
       navigate(`/${url}`);
     }
     else {

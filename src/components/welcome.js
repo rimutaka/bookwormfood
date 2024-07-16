@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { build_book_url } from "./scanResult";
 
 
 export default function Welcome() {
@@ -27,6 +28,22 @@ export default function Welcome() {
     </div>
   };
 
+  // renders the list of books saved in localStorage
+  const renderList = () => {
+
+    const records = [];
+
+    for (let i = 0; i < localStorage.length; i++) {
+      let record =JSON.parse(localStorage.getItem(localStorage.key(i)));
+      let url = build_book_url(record.title, record.author, record.isbn);
+      records.push(<li><a href={url}>{record.title}</a> {" by " + record.author}</li>);
+    }
+
+    return <ul className="scanList">
+      {records}
+    </ul>
+  };
+
   const renderWelcomeMsg = () => {
     return <div id="welcomeMsg" className="welcome">
       <div>
@@ -46,6 +63,7 @@ export default function Welcome() {
     <div>
       {renderWelcomeMsg()}
       {renderButtons()}
+      {renderList()}
     </div>
   )
 };
