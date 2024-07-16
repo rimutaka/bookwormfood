@@ -10,11 +10,11 @@ pub(crate) type WasmResult<T> = std::result::Result<T, String>;
 /// A shared container for all types of responses placed in their own fields.
 /// There can only be one type of response at a time.
 /// This is needed for easy identification of the response type in JS.
-#[derive(Serialize, Debug, Default)]
+#[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct WasmResponse {
-    pub google_books: Option<WasmResult<crate::google::Volumes>>,
-    pub local_books: Option<WasmResult<crate::storage::Books>>,
+pub(crate) enum WasmResponse {
+    GoogleBooks(Option<WasmResult<crate::google::Volumes>>),
+    LocalBooks(Option<WasmResult<crate::storage::Books>>),
 }
 
 impl fmt::Display for WasmResponse {

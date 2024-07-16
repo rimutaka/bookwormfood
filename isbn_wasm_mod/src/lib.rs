@@ -6,9 +6,9 @@ use wasm_response::{report_progress, WasmResponse, WasmResult};
 #[macro_use]
 pub(crate) mod utils;
 pub mod google;
+mod http_req;
 pub mod storage;
 pub mod wasm_response;
-mod http_req; 
 
 /// All error handling in this crate is based on either retrying a request after some time
 /// or exiting gracefully.
@@ -46,18 +46,13 @@ pub async fn get_book_data(isbn: String) {
     let resp = match google::get_book_data(&isbn, &runtime).await {
         Ok(v) => {
             log!("Book data received");
-            WasmResponse {
-                google_books: Some(WasmResult::Ok(v)),
-                ..Default::default()
-            }
+            WasmResponse::GoogleBooks(Some(WasmResult::Ok(v)))
         }
+
         Err(e) => {
             log!("Failed to get book data");
             log!("{:?}", e);
-            WasmResponse {
-                google_books: Some(WasmResult::Err(format!("{:?}", e))),
-                ..Default::default()
-            }
+            WasmResponse::GoogleBooks(Some(WasmResult::Err(format!("{:?}", e))))
         }
     };
 
@@ -67,7 +62,7 @@ pub async fn get_book_data(isbn: String) {
     report_progress(resp.to_string());
 
     // store the book record in the local storage, if possible
-    if let Some(Ok(v)) = resp.google_books {
+    if let WasmResponse::GoogleBooks(Some(Ok(v))) = resp {
         log!("Storing book in local storage");
         if let Some(v) = BookRecord::from_google_books(v, &isbn) {
             v.store_locally(&runtime);
@@ -96,18 +91,12 @@ pub async fn get_scanned_books() {
     let resp = match storage::Books::get(&runtime) {
         Ok(v) => {
             log!("Book list retrieved");
-            WasmResponse {
-                local_books: Some(WasmResult::Ok(v)),
-                ..Default::default()
-            }
+            WasmResponse::LocalBooks(Some(WasmResult::Ok(v)))
         }
         Err(e) => {
             log!("Failed to get list of books");
             log!("{:?}", e);
-            WasmResponse {
-                local_books: Some(WasmResult::Err(format!("{:?}", e))),
-                ..Default::default()
-            }
+            WasmResponse::LocalBooks(Some(WasmResult::Err(format!("{:?}", e))))
         }
     };
 
