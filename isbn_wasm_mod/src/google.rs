@@ -1,4 +1,3 @@
-use crate::utils::{execute_http_request, log};
 /// Logic for fetching book data from Google Books API
 ///
 /// Volume search by ISBN:
@@ -9,6 +8,8 @@ use crate::utils::{execute_http_request, log};
 /// API Reference: https://developers.google.com/books/docs/v1/reference/volumes#resource
 ///
 //
+use crate::http_req::execute_http_request;
+use crate::utils::log;
 use web_sys::Window;
 
 use serde::{Deserialize, Serialize};
