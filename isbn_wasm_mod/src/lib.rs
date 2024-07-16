@@ -1,6 +1,6 @@
 use utils::{WasmResponse, WasmResult};
 use wasm_bindgen::prelude::*;
-use web_sys::{Window, WorkerGlobalScope};
+use web_sys::Window;
 
 pub mod google;
 #[macro_use]
@@ -123,43 +123,16 @@ pub fn set_panic_hook() {
     console_error_panic_hook::set_once();
 }
 
-/// Contains the right type of the browser runtime for the current browser
-pub(crate) enum BrowserRuntime {
-    ChromeWorker(WorkerGlobalScope),
-    FireFoxWindow(Window),
-}
-
-/// Returns the right type of runtime for the current browser because
-/// Firefox and Chrome do not agree on the parent object for Runtime in WebWorkers.
-/// Firefox uses Window and Chrome uses WorkerGlobalScope.
-async fn get_runtime() -> std::result::Result<BrowserRuntime, &'static str> {
-    // try for chrome first and return if found
-    // it should also work if FF switches to using WorkerGlobalScope as they should
-    match js_sys::global().dyn_into::<WorkerGlobalScope>() {
-        Ok(v) => {
-            log!("Runtime: ChromeWorker");
-            return Ok(BrowserRuntime::ChromeWorker(v));
-        }
-        Err(e) => {
-            log!("ServiceWorkerGlobalScope unavailable");
-            log!("{:?}", e);
-        }
-    };
-
+/// Returns the right type of runtime (Window) for the current browser
+/// or an error if the runtime is not available.
+async fn get_runtime() -> std::result::Result<Window, &'static str> {
     // this is a fallback for Firefox, but it does not make sense why they would use Window in
     // web workers
     match web_sys::window() {
         Some(v) => {
-            log!("Runtime: FireFoxWindow");
-            return Ok(BrowserRuntime::FireFoxWindow(v));
+            log!("Runtime Window found");
+            Ok(v)
         }
-        None => {
-            log!("Window unavailable");
-        }
-    };
-
-    // no runtime was found, which is a serious problem
-    // because all fetch calls require it
-    // TODO: may be worth a retry
-    Err("Missing browser runtime. It's a bug.")
+        None => Err("Missing browser runtime. It's a bug."),
+    }
 }

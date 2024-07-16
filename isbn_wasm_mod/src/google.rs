@@ -1,3 +1,4 @@
+use crate::utils::{execute_http_request, log};
 /// Logic for fetching book data from Google Books API
 ///
 /// Volume search by ISBN:
@@ -8,8 +9,7 @@
 /// API Reference: https://developers.google.com/books/docs/v1/reference/volumes#resource
 ///
 //
-use super::BrowserRuntime;
-use crate::utils::{execute_http_request, log};
+use web_sys::Window;
 
 use serde::{Deserialize, Serialize};
 
@@ -92,7 +92,7 @@ pub struct Volumes {
 }
 
 /// Fetches book data from Google Books API
-pub(crate) async fn get_book_data(isbn: &str, runtime: &BrowserRuntime) -> super::Result<Volumes> {
+pub(crate) async fn get_book_data(isbn: &str, runtime: &Window) -> super::Result<Volumes> {
     log!("get_book_data for: {isbn}");
 
     let url = format!("https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}");

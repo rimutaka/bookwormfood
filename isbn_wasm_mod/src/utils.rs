@@ -1,9 +1,9 @@
-use crate::{BrowserRuntime, Result, RetryAfter};
+use crate::{Result, RetryAfter};
 use serde::Serialize;
 use std::fmt;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
-use web_sys::{Request, RequestInit, RequestMode, Response};
+use web_sys::{Request, RequestInit, RequestMode, Response, Window};
 
 /// Logs output into browser console.
 macro_rules!  log {
@@ -21,11 +21,7 @@ pub(crate) use log;
 /// ## Request types
 /// * GET - if no payload is provided
 /// * POST - if payload is provided
-pub(super) async fn execute_http_request<R, P>(
-    url: &str,
-    payload: Option<&P>,
-    runtime: &BrowserRuntime,
-) -> Result<R>
+pub(super) async fn execute_http_request<R, P>(url: &str, payload: Option<&P>, runtime: &Window) -> Result<R>
 where
     R: for<'de> serde::Deserialize<'de>,
     P: serde::Serialize,
@@ -82,10 +78,7 @@ where
     // both window and globalscope have the same interface, but they are separate types so Rust has
     // to have separate paths for them
     // the output is the same type for both
-    let resp = match runtime {
-        BrowserRuntime::ChromeWorker(v) => JsFuture::from(v.fetch_with_request(&request)).await,
-        BrowserRuntime::FireFoxWindow(v) => JsFuture::from(v.fetch_with_request(&request)).await,
-    };
+    let resp = JsFuture::from(runtime.fetch_with_request(&request)).await;
 
     // unwrap the response
     let resp = match resp {
