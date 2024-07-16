@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "./static/css/main.02ddbbc4.css",
-    "main.js": "./static/js/main.492daa1f.js",
+    "main.js": "./static/js/main.f922ffaa.js",
     "static/media/isbn_mod_bg.wasm": "./static/media/isbn_mod_bg.5d4d316444e5847f6d91.wasm",
     "index.html": "./index.html",
     "main.02ddbbc4.css.map": "./static/css/main.02ddbbc4.css.map",
-    "main.492daa1f.js.map": "./static/js/main.492daa1f.js.map"
+    "main.f922ffaa.js.map": "./static/js/main.f922ffaa.js.map"
   },
   "entrypoints": [
     "static/css/main.02ddbbc4.css",
-    "static/js/main.492daa1f.js"
+    "static/js/main.f922ffaa.js"
   ]
 }

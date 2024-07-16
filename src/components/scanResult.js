@@ -142,6 +142,12 @@ export default function ScanResult() {
         </div>
       </div>)
   }
+
+  const onClickMyBooks = (e) => {
+    e.preventDefault();
+    navigate(`/`)
+  };
+
   const onClickBackHandler = (e) => {
     e.preventDefault();
     navigate(`/scan`)
@@ -170,6 +176,7 @@ export default function ScanResult() {
           {renderQrCodeResult()}
         </div>
         <div className="scanBtn">
+          <button onClick={onClickMyBooks}>MY BOOKS</button>
           <button onClick={onClickBackHandler}>SCAN AGAIN</button>
           {renderCopyToClipboardBtn()}
         </div>

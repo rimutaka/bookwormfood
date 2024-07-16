@@ -102,6 +102,7 @@ export default function Scan({
       });
       video.srcObject = null;
     }
+    navigate(`/`);
   };
 
   const tick = (time) => {
