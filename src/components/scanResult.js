@@ -117,10 +117,16 @@ export default function ScanResult() {
 
     return (
       <div>
-        <div className="pb-4">
+        <div>
           <HtmlH3 text={title} />
           <HtmlP text={`by ${authors}`} />
-          <p className="py-2">ISBN: {isbn}</p>
+          <small className="py-2">ISBN: {isbn}</small>
+        </div>
+        <div className="book-actions">
+          <i id="status-later" className="icon-alarm"></i>
+          <i id="status-read" className="icon-checkmark"></i>
+          <i id="status-liked" className="icon-heart"></i>
+          <i id="status-bin" className="icon-bin text-slate-500"></i>
         </div>
         <div className="result-table">
           <div>
