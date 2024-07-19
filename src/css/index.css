@@ -9,7 +9,7 @@ body,
 }
 
 h1 {
-  @apply font-display font-bold text-3xl mb-2 ;
+  @apply font-display font-bold text-3xl mb-2;
 }
 
 a {
@@ -99,11 +99,17 @@ button.done {
 
 /* The header row in the table */
 .result-table h3 {
-  @apply font-bold mb-3 flex justify-center;
+  background-position: bottom 0.3em left 0;
+  background-size: 0.75em;
+  background-repeat: no-repeat;
+
+  @apply font-bold mb-3 flex pl-4;
 }
 
+
+
 .result-table p {
-  @apply mb-1
+  @apply mb-1;
 }
 
 /* Animation effect for loading book details */
@@ -119,4 +125,18 @@ button.done {
   to {
     opacity: 100;
   }
+}
+
+/* ===== Icons ===== */
+
+.about {
+  background-image: url("icons/about.svg");
+}
+
+.buy {
+  background-image: url("icons/buy.svg");
+}
+
+.borrow {
+  background-image: url("icons/borrow.svg");
 }
