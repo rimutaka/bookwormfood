@@ -1,7 +1,7 @@
 import React from "react";
 import useState from 'react-usestateref';
 import { useNavigate, useLocation } from "react-router-dom";
-import initWasmModule, { get_book_data } from '../wasm-rust/isbn_mod.js';
+import initWasmModule, { get_book_data, BookStatus, update_book_status } from '../wasm-rust/isbn_mod.js';
 
 function HtmlP({ text }) {
 
@@ -109,8 +109,25 @@ export default function ScanResult() {
     }
   });
 
-  const renderQrCodeResult = () => {
 
+
+  const onClickStatusToRead = (e) => {
+    e.preventDefault();
+    update_book_status(isbn, BookStatus.ToRead);
+  };
+
+  const onClickStatusRead = (e) => {
+    e.preventDefault();
+    update_book_status(isbn, BookStatus.Read);
+  };
+
+  const onClickStatusLiked = (e) => {
+    e.preventDefault();
+    update_book_status(isbn, BookStatus.Liked);
+  };
+
+
+  const renderQrCodeResult = () => {
     // update page title
     let fullTitle = (title) ? title + " by " + authors : "Book not found";
     document.title = fullTitle;
@@ -123,26 +140,26 @@ export default function ScanResult() {
           <small className="py-2">ISBN: {isbn}</small>
         </div>
         <div className="book-actions">
-          <i id="status-later" className="icon-alarm"></i>
-          <i id="status-read" className="icon-checkmark"></i>
-          <i id="status-liked" className="icon-heart"></i>
-          <i id="status-bin" className="icon-bin text-slate-500"></i>
+          <i title="Read later" id="status-later" className="icon-alarm" onClick={onClickStatusToRead}></i>
+          <i title="Done reading it" id="status-read" className="icon-checkmark" onClick={onClickStatusRead}></i>
+          <i title="Liked it!" id="status-liked" className="icon-heart" onClick={onClickStatusLiked}></i>
+          <i title="Bin it" id="status-bin" className="icon-bin text-slate-500"></i>
         </div>
         <div className="result-table">
           <div>
-            <h3 class="about">About</h3>
+            <h3 className="about">About</h3>
             <p><a href={`https://www.goodreads.com/search?q=${isbn}`}>GoodReads</a></p>
             <p><a href={`https://app.thestorygraph.com/browse?search_term=${isbn}`}>StoryGraph</a></p>
             <p><a href={`https://www.google.com/search?tbo=p&tbm=bks&q=isbn:${isbn}`}>Google books</a></p>
           </div>
           <div>
-            <h3 class="buy">Buy</h3>
+            <h3 className="buy">Buy</h3>
             <p><a href={`https://www.thenile.co.nz/search?s.q=${isbn}`}>The Nile</a></p>
             <p><a href={`https://www.amazon.com/s?k=${isbn}`}>Amazon</a></p>
             <p><a href={`https://www.mightyape.co.nz/books?q=${isbn}`}>MightyApe</a></p>
           </div>
           <div>
-            <h3 class="borrow">Borrow</h3>
+            <h3 className="borrow">Borrow</h3>
             <p><a href={`https://discover.aucklandlibraries.govt.nz/search?query=${isbn}`}>Auckland libraries</a></p>
           </div>
         </div>

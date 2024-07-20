@@ -1,4 +1,4 @@
-use storage::BookRecord;
+use storage::Book;
 use utils::get_runtime;
 use wasm_bindgen::prelude::*;
 use wasm_response::{report_progress, WasmResponse, WasmResult};
@@ -64,7 +64,7 @@ pub async fn get_book_data(isbn: String) {
     // store the book record in the local storage, if possible
     if let WasmResponse::GoogleBooks(Some(Ok(v))) = resp {
         log!("Storing book in local storage");
-        if let Some(v) = BookRecord::from_google_books(v, &isbn) {
+        if let Some(v) = Book::from_google_books(v, &isbn) {
             v.store_locally(&runtime);
         }
     }
@@ -97,6 +97,43 @@ pub async fn get_scanned_books() {
             log!("Failed to get list of books");
             log!("{:?}", e);
             WasmResponse::LocalBooks(Some(WasmResult::Err(format!("{:?}", e))))
+        }
+    };
+
+    // log!("Book data below:");
+    // log!("{:?}", resp);
+
+    // send the response back to the UI thread
+    report_progress(resp.to_string());
+}
+
+/// Updates the status of a book in the local storage.
+/// Returns `WasmResponse::LocalBook::Ok` in a message if successful.
+#[wasm_bindgen]
+pub async fn update_book_status(isbn: String, status: Option<storage::BookStatus>) {
+    log!("Updating book status in local storage");
+
+    // need the runtime for the global context and fetch
+    let runtime = match get_runtime().await {
+        Ok(v) => v,
+
+        // if this happened it would be a bug
+        Err(e) => {
+            log!("Failed to get runtime: {:?}", e);
+            return;
+        }
+    };
+
+    // get Books from local storage and wrap them into a response struct
+    let resp = match storage::Book::update_status(&runtime, &isbn, status) {
+        Ok(_) => {
+            log!("Book status updated");
+            WasmResponse::LocalBook(Some(WasmResult::Ok(())))
+        }
+        Err(e) => {
+            log!("Failed to update book status");
+            log!("{:?}", e);
+            WasmResponse::LocalBook(Some(WasmResult::Err(format!("{:?}", e))))
         }
     };
 

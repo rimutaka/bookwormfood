@@ -15,6 +15,7 @@ pub(crate) type WasmResult<T> = std::result::Result<T, String>;
 pub(crate) enum WasmResponse {
     GoogleBooks(Option<WasmResult<crate::google::Volumes>>),
     LocalBooks(Option<WasmResult<crate::storage::Books>>),
+    LocalBook(Option<WasmResult<()>>),
 }
 
 impl fmt::Display for WasmResponse {
