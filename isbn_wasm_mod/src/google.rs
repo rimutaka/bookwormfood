@@ -23,7 +23,7 @@ use serde::{Deserialize, Serialize};
 // }
 
 /// Part of GoogleBooks API response
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ImageLinks {
     pub small_thumbnail: Option<String>,
@@ -53,7 +53,7 @@ pub struct ImageLinks {
 // }
 
 /// Part of GoogleBooks API response
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct VolumeInfo {
     pub title: String,
@@ -67,7 +67,7 @@ pub struct VolumeInfo {
     // pub page_count: Option<i64>,
     // #[serde(default = "Vec::new")]
     // pub categories: Vec<String>,
-    // #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub image_links: Option<ImageLinks>,
 }
 

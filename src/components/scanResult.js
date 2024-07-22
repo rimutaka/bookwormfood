@@ -1,7 +1,7 @@
 import React from "react";
 import useState from 'react-usestateref';
 import { useNavigate, useLocation } from "react-router-dom";
-import initWasmModule, { get_book_data, BookStatus, update_book_status } from '../wasm-rust/isbn_mod.js';
+import initWasmModule, { get_book_data, BookStatus, update_book_status, WasmResponse, WasmResult } from '../wasm-rust/isbn_mod.js';
 
 function HtmlP({ text }) {
 
@@ -28,9 +28,12 @@ function HtmlH3({ text }) {
 let previousIsbn = "";
 
 export function build_book_url(title, authors, isbn) {
-  let url = (title.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-by-" + authors.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/,/g, "") + "/" + isbn + "/").replace(/-{2,}/g, "-");
-  return url;
-
+  if (authors) {
+    return (title.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-by-" + authors.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/,/g, "") + "/" + isbn + "/").replace(/-{2,}/g, "-");
+  }
+  else {
+    return (title.toLowerCase().replace(/[^a-z0-9]/g, "-") + "/" + isbn + "/").replace(/-{2,}/g, "-");
+  }
 }
 
 export default function ScanResult() {
@@ -85,14 +88,15 @@ export default function ScanResult() {
     }
 
     // see `WasmResult` and `WasmResponse` in the WASM code for the structure of the data
-    if (data?.googleBooks?.Ok) {
-      let title = data.googleBooks.Ok?.items[0]?.volumeInfo?.title;
+    if (data?.localBook?.Ok) {
+      const book = data.localBook.Ok;
+      let title = book.volumeInfo.title;
       if (!title) title = "No data in Google for this ISBN code";
       // console.log(`Title: ${title}`);
       setTitle(title);
-      let authors = data.googleBooks.Ok?.items[0]?.volumeInfo?.authors?.join(", ");
+      let authors = book.volumeInfo.authors?.join(", ");
       setAuthors(authors);
-      let thumbnail = data.googleBooks.Ok?.items[0]?.volumeInfo?.imageLinks?.thumbnail;
+      let thumbnail = book.volumeInfo.imageLinks?.thumbnail;
       setThumbnail(thumbnail);
       // if (thumbnail) setThumbnail(thumbnail);
       // const amount = data.googleBooks.Ok?.items[0]?.saleInfo?.listPrice?.amount;

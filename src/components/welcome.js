@@ -47,7 +47,7 @@ export default function Welcome() {
     }
 
     // see `WasmResult` and `WasmResponse` in the WASM code for the structure of the data
-    if (data?.localBooks?.Ok) {
+    if (data?.localBooks?.Ok?.books) {
       let list_of_books = data.localBooks.Ok?.books;
       // console.log(`Books: ${JSON.stringify(list_of_books)}`);
       setBooks(list_of_books);
@@ -75,8 +75,10 @@ export default function Welcome() {
     const book_list = [];
 
     books.forEach((book) => {
-      let url = build_book_url(book.title, book.author, book.isbn);
-      book_list.push(<li key={book.isbn}><a href={url}>{book.title}</a> {" by " + book.author}</li>);
+      if (book.volumeInfo) {
+        let url = build_book_url(book.volumeInfo.title, book.volumeInfo.authors?.[0], book.isbn);
+        book_list.push(<li key={book.isbn}><a href={url}>{book.volumeInfo.title}</a> {book.volumeInfo.authors ? " by " + book.volumeInfo.authors[0] : ""}</li>);
+      }
     });
 
     return <ul className="scan-list">

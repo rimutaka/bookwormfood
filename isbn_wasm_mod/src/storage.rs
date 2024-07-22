@@ -1,4 +1,4 @@
-use crate::google::Volumes;
+use crate::google::{get_book_data, VolumeInfo};
 use crate::utils::log;
 use anyhow::{bail, Result};
 use chrono::{DateTime, Utc};
@@ -9,23 +9,23 @@ use web_sys::Window;
 /// An internal representation of a book record.
 /// Stored in the local storage.
 #[derive(Deserialize, Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct Book {
     #[serde(default)]
     pub isbn: String,
     #[serde(default)]
-    pub title: String,
-    #[serde(default)]
-    pub author: String,
-    #[serde(default)]
     pub timestamp: DateTime<Utc>,
     #[serde(default)]
     pub status: Option<BookStatus>,
+    #[serde(default)]
+    pub volume_info: VolumeInfo,
 }
 
 /// A list of book records.
 #[derive(Deserialize, Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct Books {
-    books: Vec<Book>,
+    pub books: Vec<Book>,
 }
 
 /// Where the reader is with the book.
@@ -43,7 +43,7 @@ impl Book {
     /// The book record is stored in the local storage (front-end only access).
     /// Fails silently if the record cannot be stored.
     /// TODO: Add error handling.
-    pub(crate) fn store_locally(self, runtime: &Window) {
+    pub(crate) fn store_locally(&self, runtime: &Window) {
         // get the book record from the database
 
         let ls = match runtime.local_storage() {
@@ -58,42 +58,18 @@ impl Book {
             }
         };
 
-        let mut book_record = match ls.get_item(&self.isbn) {
-            Ok(Some(v)) => match serde_json::from_str::<Book>(&v) {
-                Ok(v) => {
-                    log!("Book record found in local storage");
-                    v
-                }
-                Err(e) => {
-                    log!("Failed to parse local storage book record: {:?}", e);
-                    return;
-                }
-            },
-            Ok(None) => {
-                log!("Book record not found in local storage");
-                self
-            }
-            Err(e) => {
-                log!("Failed to get book record from local storage: {:?}", e);
-                return;
-            }
-        };
-
-        // add the note to the book record
-        book_record.timestamp = Utc::now();
-
         // replace the record in the database
-        let isbn = book_record.isbn.clone();
-        let book_record = match serde_json::to_string(&book_record) {
+        let key = self.isbn.clone();
+        let value = match serde_json::to_string(self) {
             Ok(v) => v,
             Err(e) => {
-                log!("Failed to serialize book record for {isbn}: {:?}", e);
+                log!("Failed to serialize book record for {key}: {:?}", e);
                 return;
             }
         };
-        match ls.set_item(&isbn, &book_record) {
-            Ok(()) => log!("Book record saved"),
-            Err(e) => log!("Failed to save book record: {:?}", e),
+        match ls.set_item(&key, &value) {
+            Ok(()) => log!("Book {key} saved in local storage"),
+            Err(e) => log!("Failed to save book {key} record: {:?}", e),
         }
     }
 
@@ -150,20 +126,53 @@ impl Book {
         Ok(())
     }
 
-    /// Converts the very first Volume into Self, if it exists.
-    /// Otherwise, returns None.
-    pub(crate) fn from_google_books(volumes: Volumes, isbn: &str) -> Option<Self> {
-        if volumes.items.is_empty() {
-            return None;
-        }
+    /// Fetches a book record from the local storage by ISBN.
+    /// if the book is not found in the local storage it fetches the book data from Google Books.
+    pub(crate) async fn get(runtime: &Window, isbn: &str) -> Result<Option<Self>> {
+        // try to get the book from the local storage first
 
-        Some(Self {
-            isbn: isbn.to_string(),
-            title: volumes.items[0].volume_info.title.clone(),
-            author: volumes.items[0].volume_info.authors[0].clone(),
-            timestamp: Utc::now(),
-            status: None,
-        })
+        // connect to the local storage
+        let ls = match runtime.local_storage() {
+            Ok(Some(v)) => v,
+            Err(e) => {
+                bail!("Failed to get local storage: {:?}", e);
+            }
+            _ => {
+                bail!("Local storage not available (OK(None))");
+            }
+        };
+
+        // return book details from LS by isbn, if found
+        if let Ok(Some(v)) = ls.get_item(isbn) {
+            match serde_json::from_str::<Book>(&v) {
+                Ok(v) => return Ok(Some(v)),
+                Err(e) => {
+                    log!("Failed to parse local storage book record for {isbn}: {:?}", e);
+                }
+            };
+        };
+
+        // if the book is not found in the local storage, fetch it from Google Books
+        let book = match get_book_data(isbn, runtime).await {
+            Ok(mut v) => match v.items.pop() {
+                Some(v) => Self {
+                    isbn: isbn.to_string(),
+                    timestamp: Utc::now(),
+                    status: None,
+                    volume_info: v.volume_info,
+                },
+                None => {
+                    bail!("Nothing in Google Books for ISBN {isbn}");
+                }
+            },
+
+            Err(e) => {
+                log!("Failed to get book data from Google Books for {isbn}: {:?}", e);
+                bail!("Cannot get book data from Google Books for ISBN {isbn}");
+            }
+        };
+
+        Ok(Some(book))
     }
 }
 
@@ -212,7 +221,7 @@ impl Books {
             };
 
             // get value by key
-            let value = match ls.get_item(&key) {
+            let book = match ls.get_item(&key) {
                 Ok(Some(v)) => v,
                 Ok(None) => {
                     log!("Value not found in local storage: {key}");
@@ -224,8 +233,10 @@ impl Books {
                 }
             };
 
+            // log!("{book}");
+
             // parse the string value into a book record
-            let book_record = match serde_json::from_str::<Book>(&value) {
+            let book = match serde_json::from_str::<Book>(&book) {
                 Ok(v) => v,
                 Err(e) => {
                     log!("Failed to parse local storage book record for {key}: {:?}", e);
@@ -233,7 +244,9 @@ impl Books {
                 }
             };
 
-            books.push(book_record);
+            // log!("{:?}", book);
+
+            books.push(book);
         }
 
         // the items in the local storage are never sorted

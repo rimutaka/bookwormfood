@@ -5,17 +5,19 @@ use wasm_bindgen::prelude::*;
 /// Wraps the result into a struct for JS to tell success from errors.
 /// The error is a text message to be logged in the console for now.
 /// It will have to be a more structured error in the future.
-pub(crate) type WasmResult<T> = std::result::Result<T, String>;
+pub type WasmResult<T> = std::result::Result<T, String>;
 
 /// A shared container for all types of responses placed in their own fields.
 /// There can only be one type of response at a time.
 /// This is needed for easy identification of the response type in JS.
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub(crate) enum WasmResponse {
-    GoogleBooks(Option<WasmResult<crate::google::Volumes>>),
-    LocalBooks(Option<WasmResult<crate::storage::Books>>),
-    LocalBook(Option<WasmResult<()>>),
+pub enum WasmResponse {
+    // everything has to be boxed because of the potential large difference in size
+    // between the different types of responses
+    // the memory is allocated based on the largest struct
+    LocalBooks(Box<Option<WasmResult<crate::storage::Books>>>),
+    LocalBook(Box<Option<WasmResult<crate::storage::Book>>>),
 }
 
 impl fmt::Display for WasmResponse {

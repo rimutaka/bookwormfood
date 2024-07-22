@@ -40,19 +40,21 @@ pub async fn get_book_data(isbn: String) {
         }
     };
 
-    // GoogleBooks seems to have the most accurate and most up to data on all books
-    // get it first, send back to the UI and use the bits of info from there to do more
-    // fetching from other sources
-    let resp = match google::get_book_data(&isbn, &runtime).await {
-        Ok(v) => {
-            log!("Book data received");
-            WasmResponse::GoogleBooks(Some(WasmResult::Ok(v)))
+    // get the book details from either the local storage or the Google Books API
+    let resp = match Book::get(&runtime, &isbn).await {
+        Ok(Some(v)) => {
+            log!("Sending book data to UI");
+            WasmResponse::LocalBook(Box::new(Some(WasmResult::Ok(v))))
+        }
+        Ok(None) => {
+            log!("Sending a blank msg to UI");
+            WasmResponse::LocalBook(Box::new(None))
         }
 
         Err(e) => {
             log!("Failed to get book data");
             log!("{:?}", e);
-            WasmResponse::GoogleBooks(Some(WasmResult::Err(format!("{:?}", e))))
+            WasmResponse::LocalBook(Box::new(Some(WasmResult::Err(format!("{:?}", e)))))
         }
     };
 
@@ -62,9 +64,9 @@ pub async fn get_book_data(isbn: String) {
     report_progress(resp.to_string());
 
     // store the book record in the local storage, if possible
-    if let WasmResponse::GoogleBooks(Some(Ok(v))) = resp {
-        log!("Storing book in local storage");
-        if let Some(v) = Book::from_google_books(v, &isbn) {
+    if let WasmResponse::LocalBook(v) = resp {
+        if let Some(Ok(v)) = *v {
+            log!("Storing book in local storage");
             v.store_locally(&runtime);
         }
     }
@@ -90,13 +92,13 @@ pub async fn get_scanned_books() {
     // get Books from local storage and wrap them into a response struct
     let resp = match storage::Books::get(&runtime) {
         Ok(v) => {
-            log!("Book list retrieved");
-            WasmResponse::LocalBooks(Some(WasmResult::Ok(v)))
+            log!("Book list retrieved: {}", v.books.len());
+            WasmResponse::LocalBooks(Box::new(Some(WasmResult::Ok(v))))
         }
         Err(e) => {
             log!("Failed to get list of books");
             log!("{:?}", e);
-            WasmResponse::LocalBooks(Some(WasmResult::Err(format!("{:?}", e))))
+            WasmResponse::LocalBooks(Box::new(Some(WasmResult::Err(format!("{:?}", e)))))
         }
     };
 
@@ -128,12 +130,12 @@ pub async fn update_book_status(isbn: String, status: Option<storage::BookStatus
     let resp = match storage::Book::update_status(&runtime, &isbn, status) {
         Ok(_) => {
             log!("Book status updated");
-            WasmResponse::LocalBook(Some(WasmResult::Ok(())))
+            WasmResponse::LocalBook(Box::new(None))
         }
         Err(e) => {
             log!("Failed to update book status");
             log!("{:?}", e);
-            WasmResponse::LocalBook(Some(WasmResult::Err(format!("{:?}", e))))
+            WasmResponse::LocalBook(Box::new(Some(WasmResult::Err(format!("{:?}", e)))))
         }
     };
 
