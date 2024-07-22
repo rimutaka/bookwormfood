@@ -33,9 +33,9 @@ pub struct Books {
 #[wasm_bindgen]
 #[derive(Copy, Clone, Deserialize, Serialize, Debug)]
 pub enum BookStatus {
+    ToRead,
     Read,
     Liked,
-    ToRead,
 }
 
 impl Book {
@@ -74,8 +74,9 @@ impl Book {
     }
 
     /// Updates the status of a book record in the local storage.
+    /// Returns the updated book details back.
     /// Does nothing if the record doesn't exist.
-    pub(crate) fn update_status(runtime: &Window, isbn: &str, status: Option<BookStatus>) -> Result<()> {
+    pub(crate) fn update_status(runtime: &Window, isbn: &str, status: Option<BookStatus>) -> Result<Self> {
         // connect to the local storage
         let ls = match runtime.local_storage() {
             Ok(Some(v)) => v,
@@ -98,7 +99,7 @@ impl Book {
             }
         };
 
-        // parse the book record
+        // parse and update the book record
         let book = match serde_json::from_str::<Book>(&book) {
             Ok(mut v) => {
                 v.timestamp = Utc::now();
@@ -111,19 +112,17 @@ impl Book {
         };
 
         // save the book record
-        let book = match serde_json::to_string(&book) {
-            Ok(v) => v,
+        match serde_json::to_string(&book) {
+            Ok(v) => match ls.set_item(isbn, &v) {
+                Ok(()) => log!("Book record updated"),
+                Err(e) => bail!("Failed to save book record: {:?}", e),
+            },
             Err(e) => {
                 bail!("Failed to serialize book record for {isbn}: {:?}", e);
             }
         };
 
-        match ls.set_item(isbn, &book) {
-            Ok(()) => log!("Book record updated"),
-            Err(e) => bail!("Failed to save book record: {:?}", e),
-        }
-
-        Ok(())
+        Ok(book)
     }
 
     /// Fetches a book record from the local storage by ISBN.

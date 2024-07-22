@@ -113,19 +113,28 @@ button.done {
 }
 
 .book-actions {
-
   @apply my-6 text-slate-400;
 }
 
 .book-actions i {
-
-  @apply px-5 py-1 mx-2 text-slate-500 border-2 rounded-md;
+  @apply px-5 py-1 mx-2 text-slate-500 border-2 rounded-md cursor-pointer;
 }
 
 i.active {
-  @apply text-slate-900 border-slate-900;
+  @apply bg-slate-200;
 }
 
+i.active.icon-alarm {
+  @apply text-slate-900;
+}
+
+i.active.icon-checkmark {
+  @apply text-green-900;
+}
+
+i.active.icon-heart {
+  @apply text-red-900;
+}
 
 /* Animation effect for loading book details */
 .fade-in {

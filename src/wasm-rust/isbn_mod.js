@@ -329,7 +329,7 @@ function __wbg_adapter_114(arg0, arg1, arg2, arg3) {
 * Where the reader is with the book.
 * Defaults to None.
 */
-export const BookStatus = Object.freeze({ Read:0,"0":"Read",Liked:1,"1":"Liked",ToRead:2,"2":"ToRead", });
+export const BookStatus = Object.freeze({ ToRead:0,"0":"ToRead",Read:1,"1":"Read",Liked:2,"2":"Liked", });
 
 async function __wbg_load(module, imports) {
     if (typeof Response === 'function' && module instanceof Response) {
