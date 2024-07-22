@@ -81,6 +81,19 @@ button.done {
   @apply mx-3;
 }
 
+.scan-list li {
+  @apply mb-3;
+}
+
+.scan-list a,
+.scan-list a:visited {
+  @apply text-blue-700 no-underline;
+}
+
+.scan-list i {
+  @apply w-5 inline-block text-xs;
+}
+
 /* The div that contains book details after the scan */
 .result {
   background-color: #ffffff;
@@ -124,14 +137,17 @@ i.active {
   @apply bg-slate-200;
 }
 
+.scan-list i.icon-alarm,
 i.active.icon-alarm {
-  @apply text-slate-900;
+  @apply text-blue-900;
 }
 
+.scan-list i.icon-checkmark,
 i.active.icon-checkmark {
   @apply text-green-900;
 }
 
+.scan-list i.icon-heart,
 i.active.icon-heart {
   @apply text-red-900;
 }
