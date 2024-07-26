@@ -115,21 +115,16 @@ export default function BookDetails() {
     }
   });
 
-
-
   const onClickStatusToRead = (e) => {
-    e.preventDefault();
-    update_book_status(isbn, BookStatus.ToRead);
+    update_book_status(isbn, status == BookStatus[0] ? null : BookStatus.ToRead);
   };
 
   const onClickStatusRead = (e) => {
-    e.preventDefault();
-    update_book_status(isbn, BookStatus.Read);
+    update_book_status(isbn, status == BookStatus[1] ? null : BookStatus.Read);
   };
 
   const onClickStatusLiked = (e) => {
-    e.preventDefault();
-    update_book_status(isbn, BookStatus.Liked);
+    update_book_status(isbn, status == BookStatus[2] ? null : BookStatus.Liked);
   };
 
   const onClickStatusBin = (e) => {
