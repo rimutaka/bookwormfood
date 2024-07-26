@@ -274,10 +274,20 @@ impl Books {
 
             // log!("{:?}", book);
 
+            // ignore books with no titles because it is likely to be a corrupted record
+            // from the format change or a bug
+            // the user will have no benefit from such records
+            // TODO: compare the ISBN inside Book and the key - they may differ
+            // TODO: delete these ignored records
+            if book.volume_info.title.is_empty() {
+                log!("Empty title for {key}");
+                continue;
+            }
+
             books.push(book);
         }
 
-        // the items in the local storage are never sorted
+        // the items in the local storage are randomly sorted
         // sort the list to make the latest scanned book come first
         books.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
 
