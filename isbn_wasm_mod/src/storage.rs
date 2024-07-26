@@ -31,7 +31,7 @@ pub struct Books {
 /// Where the reader is with the book.
 /// Defaults to None.
 #[wasm_bindgen]
-#[derive(Copy, Clone, Deserialize, Serialize, Debug)]
+#[derive(Copy, Clone, Deserialize, Serialize, Debug, PartialEq)]
 pub enum BookStatus {
     ToRead,
     Read,
@@ -75,8 +75,28 @@ impl Book {
 
     /// Updates the status of a book record in the local storage.
     /// Returns the updated book details back.
-    /// Does nothing if the record doesn't exist.
-    pub(crate) fn update_status(runtime: &Window, isbn: &str, status: Option<BookStatus>) -> Result<Self> {
+    /// Returns an error if the book cannot be found in LS or in GoogleBooks.
+    pub(crate) async fn update_status(runtime: &Window, isbn: &str, status: Option<BookStatus>) -> Result<Self> {
+        // get the book data
+        let book = match Book::get(runtime, isbn).await? {
+            Some(mut v) => {
+                // exit if the previous status is the same as the new one
+                // but I can't see how that may even happen if the UI behaves
+                if status == v.status {
+                    log!("New status == old for {isbn}");
+                    return Ok(v);
+                };
+
+                // update the status
+                v.timestamp = Utc::now();
+                v.status = status;
+                v
+            }
+            None => {
+                bail!("Book not found for ISBN {isbn}");
+            }
+        };
+
         // connect to the local storage
         let ls = match runtime.local_storage() {
             Ok(Some(v)) => v,
@@ -85,29 +105,6 @@ impl Book {
             }
             _ => {
                 bail!("Local storage not available (OK(None))");
-            }
-        };
-
-        // get the book's record
-        let book = match ls.get_item(isbn) {
-            Ok(Some(v)) => v,
-            Err(e) => {
-                bail!("Failed to get book from local storage: {:?}", e);
-            }
-            Ok(None) => {
-                bail!("Book not found in local storage");
-            }
-        };
-
-        // parse and update the book record
-        let book = match serde_json::from_str::<Book>(&book) {
-            Ok(mut v) => {
-                v.timestamp = Utc::now();
-                v.status = status;
-                v
-            }
-            Err(e) => {
-                bail!("Failed to parse book record: {:?}", e);
             }
         };
 
@@ -127,6 +124,8 @@ impl Book {
 
     /// Fetches a book record from the local storage by ISBN.
     /// if the book is not found in the local storage it fetches the book data from Google Books.
+    /// - Error - something went wrong
+    /// - None - the book was not found
     pub(crate) async fn get(runtime: &Window, isbn: &str) -> Result<Option<Self>> {
         // try to get the book from the local storage first
 

@@ -119,7 +119,7 @@ pub async fn update_book_status(isbn: String, status: Option<storage::BookStatus
     };
 
     // get Books from local storage and wrap them into a response struct
-    let resp = match storage::Book::update_status(&runtime, &isbn, status) {
+    let resp = match storage::Book::update_status(&runtime, &isbn, status).await {
         Ok(v) => {
             log!("Book status updated");
             WasmResponse::LocalBook(Box::new(Some(WasmResult::Ok(v))))
