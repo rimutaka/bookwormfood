@@ -16,8 +16,12 @@ pub enum WasmResponse {
     // everything has to be boxed because of the potential large difference in size
     // between the different types of responses
     // the memory is allocated based on the largest struct
+    /// A list of book records.
     LocalBooks(Box<Option<WasmResult<crate::storage::Books>>>),
+    /// A single book record.
     LocalBook(Box<Option<WasmResult<crate::storage::Book>>>),
+    /// Result of a deletion operation for the enclosed ISBN.
+    Deleted(Box<Option<WasmResult<String>>>)
 }
 
 impl fmt::Display for WasmResponse {

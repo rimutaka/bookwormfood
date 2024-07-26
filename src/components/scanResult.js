@@ -1,7 +1,7 @@
 import React from "react";
 import useState from 'react-usestateref';
 import { useNavigate, useLocation } from "react-router-dom";
-import initWasmModule, { get_book_data, BookStatus, update_book_status } from '../wasm-rust/isbn_mod.js';
+import initWasmModule, { get_book_data, BookStatus, update_book_status, delete_book } from '../wasm-rust/isbn_mod.js';
 
 function HtmlP({ text }) {
 
@@ -110,6 +110,10 @@ export default function ScanResult() {
       let url = build_book_url(title, authors, isbn);
       navigate(`/${url}`);
     }
+    else if (data?.deleted?.Ok) {
+      console.log("Book deletion confirmed");
+      navigate(`/`);
+    }
     else {
       // console.log(data);
       setTitle("Cannot get data from Google for this book");
@@ -133,6 +137,10 @@ export default function ScanResult() {
     update_book_status(isbn, BookStatus.Liked);
   };
 
+  const onClickStatusBin = (e) => {
+    e.preventDefault();
+    delete_book(isbn);
+  };
 
   const renderQrCodeResult = () => {
     // update page title
@@ -150,7 +158,7 @@ export default function ScanResult() {
           <i title="Read later" id="status-later" className={"icon-alarm" + (status == BookStatus[0] ? " active" : "")} onClick={onClickStatusToRead}></i>
           <i title="Done reading it" id="status-read" className={"icon-checkmark" + (status == BookStatus[1] ? " active" : "")} onClick={onClickStatusRead}></i>
           <i title="Liked it!" id="status-liked" className={"icon-heart" + (status == BookStatus[2] ? " active" : "")} onClick={onClickStatusLiked}></i>
-          <i title="Bin it" id="status-bin" className="icon-bin text-slate-500"></i>
+          <i title="Bin it" id="status-bin" className="icon-bin text-slate-500" onClick={onClickStatusBin}></i>
         </div>
         <div className="result-table">
           <div>

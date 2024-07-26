@@ -173,6 +173,32 @@ impl Book {
 
         Ok(Some(book))
     }
+
+    /// Deletes the book from the local storage.
+    /// Does nothing if the book is not found in the local storage.
+    pub(crate) async fn delete(runtime: &Window, isbn: &str) -> Result<()> {
+        // connect to the local storage
+        let ls = match runtime.local_storage() {
+            Ok(Some(v)) => v,
+            Err(e) => {
+                bail!("Failed to get local storage: {:?}", e);
+            }
+            _ => {
+                bail!("Local storage not available (OK(None))");
+            }
+        };
+
+        // delete the book from LS by isbn
+        match ls.remove_item(isbn) {
+            Ok(()) => log!("Book {isbn} removed from local storage"),
+            Err(e) => {
+                log!("Failed to remove local storage book record for {isbn}: {:?}", e);
+                bail!("Failed to remove local storage book record for {isbn}");
+            }
+        };
+
+        Ok(())
+    }
 }
 
 impl Books {

@@ -312,6 +312,19 @@ export function update_book_status(isbn, status) {
     return takeObject(ret);
 }
 
+/**
+* Deletes a book from the local storage.
+* Returns error or success via an async message.
+* @param {string} isbn
+* @returns {Promise<void>}
+*/
+export function delete_book(isbn) {
+    const ptr0 = passStringToWasm0(isbn, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.delete_book(ptr0, len0);
+    return takeObject(ret);
+}
+
 function handleError(f, args) {
     try {
         return f.apply(this, args);
@@ -319,7 +332,7 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
-function __wbg_adapter_114(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_117(arg0, arg1, arg2, arg3) {
     _assertNum(arg0);
     _assertNum(arg1);
     wasm.wasm_bindgen__convert__closures__invoke2_mut__h7e0de6a9770ded74(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
@@ -543,6 +556,9 @@ function __wbg_get_imports() {
         getInt32Memory0()[arg0 / 4 + 1] = len1;
         getInt32Memory0()[arg0 / 4 + 0] = ptr1;
     }, arguments) };
+    imports.wbg.__wbg_removeItem_c0321116dc514363 = function() { return handleError(function (arg0, arg1, arg2) {
+        getObject(arg0).removeItem(getStringFromWasm0(arg1, arg2));
+    }, arguments) };
     imports.wbg.__wbg_setItem_ba2bb41d73dac079 = function() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
         getObject(arg0).setItem(getStringFromWasm0(arg1, arg2), getStringFromWasm0(arg3, arg4));
     }, arguments) };
@@ -628,7 +644,7 @@ function __wbg_get_imports() {
                 const a = state0.a;
                 state0.a = 0;
                 try {
-                    return __wbg_adapter_114(a, state0.b, arg0, arg1);
+                    return __wbg_adapter_117(a, state0.b, arg0, arg1);
                 } finally {
                     state0.a = a;
                 }
@@ -729,8 +745,8 @@ function __wbg_get_imports() {
         const ret = wasm.memory;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper2252 = function() { return logError(function (arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 177, __wbg_adapter_44);
+    imports.wbg.__wbindgen_closure_wrapper2287 = function() { return logError(function (arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 182, __wbg_adapter_44);
         return addHeapObject(ret);
     }, arguments) };
 
