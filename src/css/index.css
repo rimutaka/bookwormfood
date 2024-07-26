@@ -125,12 +125,36 @@ button.done {
   @apply mb-1;
 }
 
+/* Expand-collapse description field */
+.descr-collapsed .descr-expand {
+  @apply text-blue-700 no-underline cursor-pointer ml-1;
+}
+
+.descr-full .descr-expand {
+  @apply hidden;
+}
+
+.descr-collapsed .descr-expand::before {
+  content: "...";
+  @apply pr-1 text-black;
+}
+
+.descr-collapsed .descr-extra-text {
+  @apply hidden;
+}
+
+.descr-full .descr-extra-text {
+  @apply visible;
+}
+
+/* Buttons to control book status and other actions on book details page */
+
 .book-actions {
   @apply my-6 text-slate-400 flex;
 }
 
 .book-actions i {
-  @apply px-5 py-1 mx-2 text-slate-500 border-2 rounded-md cursor-pointer flex-none ;
+  @apply px-5 py-1 mx-2 text-slate-500 border-2 rounded-md cursor-pointer flex-none;
 }
 
 i.active {

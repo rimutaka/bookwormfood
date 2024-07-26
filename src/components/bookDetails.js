@@ -23,6 +23,32 @@ function HtmlH3({ text }) {
   }
 }
 
+// An expandable book description. Expands once and does not collapse back.
+// Shorter descriptions are displayed in full.
+function HtmlDescription({ text }) {
+  const classNames = "fade-in py-2 text-xs max-w-prose"
+
+  if (text && !text.includes("undefined")) {
+    // make long passages collapsible
+    if (text.length > 500) {
+      return <p className={classNames}>
+        {text.substring(0, 200)}
+        <span className="descr-collapsed">
+          <span className="descr-expand" onClick={(e) => e.target.parentElement.className = "descr-full"}>more</span>
+          <span className="descr-extra-text">{text.substring(200)}</span>
+        </span>
+      </p>
+    }
+    else {
+      // short enough to be displayed in full
+      return <p className={classNames}>{text}</p>
+    }
+  }
+  else {
+    return null;
+  }
+}
+
 export function build_book_url(title, authors, isbn) {
   if (authors) {
     return (title.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-by-" + authors.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/,/g, "") + "/" + isbn + "/").replace(/-{2,}/g, "-");
@@ -145,7 +171,7 @@ export default function BookDetails() {
         <div>
           <HtmlH3 text={title} />
           <HtmlP text={`by ${authors}`} />
-          <HtmlP text={description} classNames="py-2 text-xs max-w-prose" />
+          <HtmlDescription text={description} />
           <p className="py-2 text-xs">ISBN: {isbn}</p>
         </div>
         <div className="book-actions">
