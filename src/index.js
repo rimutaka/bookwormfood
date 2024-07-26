@@ -5,7 +5,7 @@ import { Routes, Route, Outlet, Link } from "react-router-dom";
 
 import * as serviceWorker from './serviceWorker';
 import Scan from "./components/scan";
-import ScanResult from "./components/scanResult";
+import BookDetails from "./components/bookDetails";
 import Welcome from "./components/welcome";
 
 import ".//css/index.css";
@@ -23,7 +23,7 @@ ReactDOM.createRoot(document.getElementById("app")).render(
         <Route path="scan" element={<Scan scanRate={250} />} />
         <Route path="about" element={<About />} />
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="*" element={<ScanResult />} />
+        <Route path="*" element={<BookDetails />} />
       </Route>
     </Routes>
   </BrowserRouter>

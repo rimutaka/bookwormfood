@@ -94,7 +94,7 @@ pub struct Volumes {
 
 /// Fetches book data from Google Books API
 pub(crate) async fn get_book_data(isbn: &str, runtime: &Window) -> super::Result<Volumes> {
-    log!("get_book_data for: {isbn}");
+    log!("Querying google books for: {isbn}");
 
     let url = format!("https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}");
 

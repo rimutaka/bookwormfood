@@ -62,14 +62,6 @@ pub async fn get_book_data(isbn: String) {
     // log!("{:?}", resp);
 
     report_progress(resp.to_string());
-
-    // store the book record in the local storage, if possible
-    if let WasmResponse::LocalBook(v) = resp {
-        if let Some(Ok(v)) = *v {
-            log!("Storing book in local storage");
-            v.store_locally(&runtime);
-        }
-    }
 }
 
 /// Returns the list of previously scanned books from the local storage.

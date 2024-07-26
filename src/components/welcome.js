@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { build_book_url } from "./scanResult";
+import { build_book_url } from "./bookDetails.js";
 import useState from 'react-usestateref';
 import initWasmModule, { get_scanned_books, BookStatus } from '../wasm-rust/isbn_mod.js';
 
@@ -58,14 +58,20 @@ export default function Welcome() {
     }
   });
 
-  const onBtnClickHandler = async (e) => {
+  const onScanBtnClickHandler = async (e) => {
     e.preventDefault();
     navigate(`scan`)
   };
 
+  const onBookLinkClickHandler = async (e) => {
+    e.preventDefault();
+    const path = e.target.getAttribute('data-url');
+    navigate(path);
+  };
+
   const renderButtons = () => {
     return <div className="scanBtn">
-      <button onClick={onBtnClickHandler}>SCAN barcode</button>
+      <button onClick={onScanBtnClickHandler}>SCAN barcode</button>
     </div>
   };
 
@@ -95,7 +101,7 @@ export default function Welcome() {
         let url = build_book_url(book.volumeInfo.title, book.volumeInfo.authors?.[0], book.isbn);
         book_list.push(<li key={book.isbn}>
           <i className={statusIcon}></i>
-          <a href={url}>{book.volumeInfo.title}</a>
+          <a href={url} data-url={url} onClick={onBookLinkClickHandler}>{book.volumeInfo.title}</a>
           {book.volumeInfo.authors ? " by " + book.volumeInfo.authors[0] : ""}
         </li>);
       }

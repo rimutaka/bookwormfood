@@ -143,6 +143,7 @@ impl Book {
 
         // return book details from LS by isbn, if found
         if let Ok(Some(v)) = ls.get_item(isbn) {
+            log!("Found in local storage: {isbn}");
             match serde_json::from_str::<Book>(&v) {
                 Ok(v) => return Ok(Some(v)),
                 Err(e) => {
@@ -170,6 +171,9 @@ impl Book {
                 bail!("Cannot get book data from Google Books for ISBN {isbn}");
             }
         };
+
+        // store the book record in the local storage
+        book.store_locally(runtime);
 
         Ok(Some(book))
     }

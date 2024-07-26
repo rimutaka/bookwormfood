@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import useState from 'react-usestateref';
 import { useNavigate, useLocation } from "react-router-dom";
 import initWasmModule, { get_book_data, BookStatus, update_book_status, delete_book } from '../wasm-rust/isbn_mod.js';
@@ -23,10 +23,6 @@ function HtmlH3({ text }) {
   }
 }
 
-// stores the previous ISBN to check against the one in params
-// to avoid unnecessary calls to the WASM module
-let previousIsbn = "";
-
 export function build_book_url(title, authors, isbn) {
   if (authors) {
     return (title.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-by-" + authors.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/,/g, "") + "/" + isbn + "/").replace(/-{2,}/g, "-");
@@ -36,7 +32,7 @@ export function build_book_url(title, authors, isbn) {
   }
 }
 
-export default function ScanResult() {
+export default function BookDetails() {
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -56,21 +52,20 @@ export default function ScanResult() {
 
   // console.log("render");
 
-  // if the ISBN is different from the previous one, fetch book data
-  // from multiple sources with WASM
-  if (isbn && isbn !== previousIsbn) {
-    previousIsbn = isbn;
-    (async () => {
-      await initWasmModule(); // run the wasm initializer before calling wasm methods
-      // request book data from WASM module
-      // the responses are sent back as messages to the window object   
-      get_book_data(isbn);
-    })();
-  } else if (!isbn) {
-    isbn = "no ISBN code found in the URL";
-  }
+  useEffect(() => {
+    // fetch book data if the ISBN code is found in the URL
+    if (isbn) {
+      (async () => {
+        await initWasmModule(); // run the wasm initializer before calling wasm methods
+        // request book data from WASM module
+        // the responses are sent back as messages to the window object   
+        get_book_data(isbn);
+      })();
+    } else {
+      isbn = "no ISBN code found in the URL";
+    }
 
-  // useEffect(() => { }, []);
+  }, []);
 
   // handles messages with book data sent back by the WASM module
   window.addEventListener("message", (msg) => {
