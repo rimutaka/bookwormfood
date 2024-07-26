@@ -3,10 +3,10 @@ import useState from 'react-usestateref';
 import { useNavigate, useLocation } from "react-router-dom";
 import initWasmModule, { get_book_data, BookStatus, update_book_status, delete_book } from '../wasm-rust/isbn_mod.js';
 
-function HtmlP({ text }) {
+function HtmlP({ text, classNames }) {
 
   if (text && !text.includes("undefined")) {
-    return <p className="fade-in">{text}</p>
+    return <p className={"fade-in " + classNames ?? ""}>{text}</p>
   }
   else {
     return null;
@@ -49,6 +49,7 @@ export default function BookDetails() {
   // const [price, setPrice] = useState();
   const [thumbnail, setThumbnail] = useState();
   const [status, setStatus] = useState();
+  const [description, setDescription] = useState();
 
   // console.log("render");
 
@@ -96,6 +97,8 @@ export default function BookDetails() {
       setThumbnail(thumbnail);
       let status = book.status;
       setStatus(status);
+      let description = book.volumeInfo.description;
+      setDescription(description);
       // if (thumbnail) setThumbnail(thumbnail);
       // const amount = data.googleBooks.Ok?.items[0]?.saleInfo?.listPrice?.amount;
       // const currency = data.googleBooks.Ok?.items[0]?.saleInfo?.listPrice?.currencyCode;
@@ -142,12 +145,14 @@ export default function BookDetails() {
         <div>
           <HtmlH3 text={title} />
           <HtmlP text={`by ${authors}`} />
-          <small className="py-2">ISBN: {isbn}</small>
+          <HtmlP text={description} classNames="py-2 text-xs max-w-prose" />
+          <p className="py-2 text-xs">ISBN: {isbn}</p>
         </div>
         <div className="book-actions">
           <i title="Read later" id="status-later" className={"icon-alarm" + (status == BookStatus[0] ? " active" : "")} onClick={onClickStatusToRead}></i>
           <i title="Done reading it" id="status-read" className={"icon-checkmark" + (status == BookStatus[1] ? " active" : "")} onClick={onClickStatusRead}></i>
           <i title="Liked it!" id="status-liked" className={"icon-heart" + (status == BookStatus[2] ? " active" : "")} onClick={onClickStatusLiked}></i>
+          <span className="grow"></span>
           <i title="Bin it" id="status-bin" className="icon-bin text-slate-500" onClick={onClickStatusBin}></i>
         </div>
         <div className="result-table">
