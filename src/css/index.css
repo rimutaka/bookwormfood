@@ -147,6 +147,10 @@ button.done {
   @apply visible;
 }
 
+.book-cover {
+  @apply grid justify-items-center mt-6
+}
+
 /* Buttons to control book status and other actions on book details page */
 
 .book-actions {

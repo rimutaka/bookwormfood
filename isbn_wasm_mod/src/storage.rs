@@ -11,12 +11,19 @@ use web_sys::Window;
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Book {
+    /// This ISBN may differ from the key in the local storage or the industry IDs in the Google Books API.
     #[serde(default)]
     pub isbn: String,
+    /// When the book was last updated.
     #[serde(default)]
     pub timestamp: DateTime<Utc>,
+    /// Where the reader is with the book.
     #[serde(default)]
     pub status: Option<BookStatus>,
+    /// The cover image URL from Google Books API.
+    #[serde(default)]
+    pub cover: Option<String>,
+    /// The book details from Google Books API
     #[serde(default)]
     pub volume_info: VolumeInfo,
 }
@@ -158,6 +165,7 @@ impl Book {
                     isbn: isbn.to_string(),
                     timestamp: Utc::now(),
                     status: None,
+                    cover: v.volume_info.get_thumbnail(None),
                     volume_info: v.volume_info,
                 },
                 None => {

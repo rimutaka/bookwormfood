@@ -26,11 +26,17 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize, Serialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ImageLinks {
+    /// ~80 pixels wide
     pub small_thumbnail: Option<String>,
+    /// ~128 pixels wide
     pub thumbnail: Option<String>,
+    /// ~300 pixels wide
     pub small: Option<String>,
+    /// ~575 pixels wide
     pub medium: Option<String>,
+    /// ~800 pixels wide
     pub large: Option<String>,
+    /// ~1280 pixels wide
     pub extra_large: Option<String>,
 }
 
@@ -63,8 +69,8 @@ pub struct VolumeInfo {
     pub description: Option<String>,
     // #[serde(default = "Vec::new")]
     // pub industry_identifiers: Vec<IndustryIdentifier>,
-    // #[serde(skip_serializing_if = "Option::is_none")]
-    // pub page_count: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_count: Option<i64>,
     // #[serde(default = "Vec::new")]
     // pub categories: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -80,6 +86,65 @@ pub struct Volume {
     pub volume_info: VolumeInfo,
     // #[serde(skip_serializing_if = "Option::is_none")]
     // pub sale_info: Option<SaleInfo>,
+}
+
+impl VolumeInfo {
+    /// Returns the best fitting thumbnail for the given max_width out of what is available.
+    /// The result may not be optimal if no suitable size is available.
+    /// Prefers a larger image over a smaller one.
+    ///
+    /// Returns the largest image if max_width is None.
+    pub fn get_thumbnail(&self, max_width: Option<i32>) -> Option<String> {
+        let image_links = match &self.image_links {
+            Some(v) => v,
+            None => return None,
+        };
+
+        // find the largest image available
+        let largest = match image_links {
+            ImageLinks {
+                extra_large: Some(v), ..
+            } => Some(v),
+            ImageLinks { large: Some(v), .. } => Some(v),
+            ImageLinks { medium: Some(v), .. } => Some(v),
+            ImageLinks { small: Some(v), .. } => Some(v),
+            ImageLinks { thumbnail: Some(v), .. } => Some(v),
+            ImageLinks {
+                small_thumbnail: Some(v),
+                ..
+            } => Some(v),
+            _ => None,
+        };
+
+        // return the largest image if no max width was given
+        let max_width = match max_width {
+            Some(v) => v,
+            None => return largest.cloned(),
+        };
+
+        // find the smallest image that is larger than or equal to max_width
+        let larger_than_or_eq_max_width = match image_links {
+            ImageLinks {
+                small_thumbnail: Some(v),
+                ..
+            } if max_width <= 80 => Some(v),
+            ImageLinks { thumbnail: Some(v), .. } if max_width <= 128 => Some(v),
+            ImageLinks { small: Some(v), .. } if max_width <= 300 => Some(v),
+            ImageLinks { medium: Some(v), .. } if max_width <= 575 => Some(v),
+            ImageLinks { large: Some(v), .. } if max_width <= 800 => Some(v),
+            ImageLinks {
+                extra_large: Some(v), ..
+            } => Some(v),
+            _ => None,
+        };
+
+        // prefer the next one up, fall back to the largest available
+        match (larger_than_or_eq_max_width, largest) {
+            (Some(v), _) => Some(v.clone()),
+            (_, Some(v)) => Some(v.clone()),
+            _ => None,
+        }
+    }
 }
 
 /// The root of GoogleBooks API response

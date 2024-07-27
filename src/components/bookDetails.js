@@ -73,7 +73,7 @@ export default function BookDetails() {
   const [title, setTitle] = useState();
   const [authors, setAuthors] = useState();
   // const [price, setPrice] = useState();
-  const [thumbnail, setThumbnail] = useState();
+  const [cover, setCover] = useState();
   const [status, setStatus] = useState();
   const [description, setDescription] = useState();
 
@@ -119,8 +119,8 @@ export default function BookDetails() {
       setTitle(title);
       let authors = book.volumeInfo.authors?.join(", ");
       setAuthors(authors);
-      let thumbnail = book.volumeInfo.imageLinks?.thumbnail;
-      setThumbnail(thumbnail);
+      let cover = book.cover;
+      setCover(cover);
       let status = book.status;
       setStatus(status);
       let description = book.volumeInfo.description;
@@ -202,6 +202,12 @@ export default function BookDetails() {
       </div>)
   }
 
+  const renderCoverImage = () => {
+    if (cover) {
+      return <div className="book-cover fade-in"><img src={cover} alt="Book cover" /></div>
+    }
+  }
+
   const onClickMyBooks = (e) => {
     e.preventDefault();
     navigate(`/`)
@@ -239,6 +245,7 @@ export default function BookDetails() {
           <button onClick={onClickBackHandler}>SCAN AGAIN</button>
           {renderCopyToClipboardBtn()}
         </div>
+        {renderCoverImage()}
       </div>);
   };
 
