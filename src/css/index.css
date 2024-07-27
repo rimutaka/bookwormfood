@@ -20,7 +20,7 @@ a {
 
 /* The outer container */
 #app {
-  @apply w-full content-center;
+  @apply w-full content-center pb-6;
 }
 
 /* Main content container */
