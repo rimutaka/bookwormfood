@@ -64,7 +64,7 @@ export default function Scan({
 
         let res = result.data;
 
-        navigate(`/${res}`);
+        navigate(`/${res}`, { replace: true });
       }
     };
   };
@@ -102,7 +102,7 @@ export default function Scan({
       });
       video.srcObject = null;
     }
-    navigate(`/`);
+    navigate(`/`, { replace: true });
   };
 
   const tick = (time) => {

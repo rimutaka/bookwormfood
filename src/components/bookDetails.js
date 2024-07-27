@@ -132,7 +132,7 @@ export default function BookDetails() {
 
       // navigate to the new URL with the book title, e.g. https://localhost:8080/the-subtle-art-of-not-giving-a-f-k-by-mark-manson/9780062457714/
       let url = build_book_url(title, authors, isbn);
-      navigate(`/${url}`);
+      navigate(`/${url}`, { replace: true });
     }
     else if (data?.deleted?.Ok) {
       console.log("Book deletion confirmed");
