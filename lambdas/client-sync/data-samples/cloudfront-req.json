@@ -1,0 +1,53 @@
+{
+  "headers": {
+      "host": "jykwtit7hjvvd7tcmbrmquh62e0eetck.lambda-url.us-east-1.on.aws",
+      "user-agent": "Amazon CloudFront",
+      "via": "2.0 fc69a025b8d31536c9f86f29f3d9a032.cloudfront.net (CloudFront)",
+      "x-amz-cf-id": "1VDk7x451vB-j8Ws1LlqQEVp6BF_XuZwiNf-AP0YjYuda5R5Tm8JBQ==",
+      "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "x-amz-date": "20240708T190243Z",
+      "x-amz-security-token": "IQoJb3JpZ2luX2VjEFMaCXVzLWVhc3QtMSJHMEUCIHePEpt+lZ6zaFkF+sAQibTK8Z/ips4Y+crDfi/zdT/BAiEA9jlfqnXacHDdwwWaPQ45T610k2Mk8k7NOxh09iPs1kcq3wIIHBAAGgw4NTYzNjkwNTMxODEiDI0kHDMeb3r2JiMSoSq8Aqu36jbd01jlXJh4WbhsHMyBqwGzEusnKxajAxcSrwZdKKPTF75xtEoEQU67x4apvIOCXuE0UUOMwqGIP2MbQ6Ujht6Tn8Bk9t6S5HXYXtQDErk8XRHuwcGpvaUSCXfphTZKNIFP7xB+gJcgG5oYgdU8Ps+EL+nSTOZjIT5dO0yLW+MkJNL2rxG7TC6TN1B9ecuEgmI4eoQYF27VHVQwjRfwzWbbYFUvF4aXz1KRvCNtL8aYjMcnkLXSEAMT8ldOw6f788cRQxQHQESbw6aWL8oTWx+gFznUGj8Cp7Tfln46RjbKoQjuIlB34BanHVLkDpn/+aW/OvdSz5x+zpFn1HycYGrGR/+sjwnSMdeZ9lzRzpYGPWGrQwn5ILBgyOk31vYCKmUpg9Q1S0vcTl+CLGjJ0/yTdu+xOTu6KKIwruiwtAY6vwEIY/Kljvjm5MPx+nVDCJWFEkLX4cGvkJqt5pPEmHLMptlZsXBbNkeYrkJ+OMWxN897QS7Nxnly1F3ef1jpbZHh/sKOPc+2ex3jypGjOte8EQt4bkeCA9+L0bbFNr7ExTWV6zFLrHq/xDEqJlDPLw7QynBW80X/nDFxud63uPnX0H+0V6UPqfHJUtnyokCZgdhSYcaOK7gQFOblBA01EHD+zQNnhOVcQ75NNmn/NG+IyCwm1JKiUg2cWPwp9xAvog==",
+      "x-amz-source-account": "512295225992",
+      "x-amz-source-arn": "arn:aws:cloudfront::512295225992:distribution/E3FGXRC3VXQ2IF",
+      "x-amzn-tls-cipher-suite": "ECDHE-RSA-AES128-GCM-SHA256",
+      "x-amzn-tls-version": "TLSv1.2",
+      "x-amzn-trace-id": "Root=1-668c37d3-2f24cc6360b164e2787f34f9",
+      "x-forwarded-for": "222.152.186.98",
+      "x-forwarded-port": "443",
+      "x-forwarded-proto": "https"
+  },
+  "isBase64Encoded": false,
+  "rawPath": "/",
+  "rawQueryString": "",
+  "requestContext": {
+      "accountId": "856369053181",
+      "apiId": "jykwtit7hjvvd7tcmbrmquh62e0eetck",
+      "authorizer": {
+          "iam": {
+              "accessKey": "ASIA4OY4SXX6T5PPAVTL",
+              "accountId": "856369053181",
+              "callerId": "AROA4OY4SXX6VEIZRJRCJ:OriginAccessSession",
+              "cognitoIdentity": null,
+              "principalOrgId": null,
+              "userArn": "arn:aws:sts::856369053181:assumed-role/OriginAccessControlRole/OriginAccessSession",
+              "userId": "AROA4OY4SXX6VEIZRJRCJ:OriginAccessSession"
+          }
+      },
+      "domainName": "jykwtit7hjvvd7tcmbrmquh62e0eetck.lambda-url.us-east-1.on.aws",
+      "domainPrefix": "jykwtit7hjvvd7tcmbrmquh62e0eetck",
+      "http": {
+          "method": "GET",
+          "path": "/",
+          "protocol": "HTTP/1.1",
+          "sourceIp": "70.132.62.67",
+          "userAgent": "Amazon CloudFront"
+      },
+      "requestId": "8e110a76-5815-4de9-be4e-34967937cc07",
+      "routeKey": "$default",
+      "stage": "$default",
+      "time": "08/Jul/2024:19:02:43 +0000",
+      "timeEpoch": 1720465363505
+  },
+  "routeKey": "$default",
+  "version": "2.0"
+}

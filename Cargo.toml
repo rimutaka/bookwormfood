@@ -1,5 +1,5 @@
 [workspace]
-members = ["isbn_wasm_mod", "lambdas/index-html-server"]
+members = ["isbn_wasm_mod", "lambdas/index-html-server", "lambdas/client-sync"]
 resolver = "2"
 
 [workspace.dependencies]
