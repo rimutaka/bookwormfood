@@ -7,6 +7,9 @@ import * as serviceWorker from './serviceWorker';
 import Scan from "./components/scan";
 import BookDetails from "./components/bookDetails";
 import Welcome from "./components/welcome";
+import { CallbackPage } from "./components/authCallback";
+import { Auth0ProviderWithNavigate } from "./components/auth0-provider-with-navigate";
+import { ExternalApi } from "./components/externalApi";
 
 import ".//css/index.css";
 
@@ -17,15 +20,19 @@ console.log("app started")
 ReactDOM.createRoot(document.getElementById("app")).render(
 
   <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Welcome />} />
-        <Route path="scan" element={<Scan scanRate={250} />} />
-        <Route path="about" element={<About />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="*" element={<BookDetails />} />
-      </Route>
-    </Routes>
+    <Auth0ProviderWithNavigate>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Welcome />} />
+          <Route path="scan" element={<Scan scanRate={250} />} />
+          <Route path="about" element={<About />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="callback" element={<CallbackPage />} />
+          <Route path="profile" element={<ExternalApi />} />
+          <Route path="*" element={<BookDetails />} />
+        </Route>
+      </Routes>
+    </Auth0ProviderWithNavigate>
   </BrowserRouter>
 );
 

@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth0 } from "@auth0/auth0-react";
 import { build_book_url } from "./bookDetails.js";
 import useState from 'react-usestateref';
 import initWasmModule, { get_scanned_books, BookStatus } from '../wasm-rust/isbn_mod.js';
@@ -126,11 +127,30 @@ export default function Welcome() {
     </div>;
   };
 
+  const loginButton = () => {
+    const { loginWithRedirect } = useAuth0();
+
+    const handleLogin = async () => {
+      await loginWithRedirect({
+        appState: {
+          returnTo: "/profile",
+        },
+      });
+    };
+
+    return (
+      <button className="button__login" onClick={handleLogin}>
+        Log In
+      </button>
+    );
+  };
+
 
   return (
     <div>
       {renderWelcomeMsg()}
       {renderButtons()}
+      {loginButton()}
       {renderList()}
     </div>
   )
