@@ -1,4 +1,6 @@
-use storage::Book;
+use models::book::Book;
+use models::book_status::BookStatus;
+use models::books::Books;
 use utils::get_runtime;
 use wasm_bindgen::prelude::*;
 use wasm_response::{report_progress, WasmResponse, WasmResult};
@@ -7,7 +9,7 @@ use wasm_response::{report_progress, WasmResponse, WasmResult};
 pub(crate) mod utils;
 pub mod google;
 mod http_req;
-pub mod storage;
+pub mod models;
 pub mod wasm_response;
 
 /// All error handling in this crate is based on either retrying a request after some time
@@ -82,7 +84,7 @@ pub async fn get_scanned_books() {
     };
 
     // get Books from local storage and wrap them into a response struct
-    let resp = match storage::Books::get(&runtime) {
+    let resp = match Books::get(&runtime) {
         Ok(v) => {
             log!("Book list retrieved: {}", v.books.len());
             WasmResponse::LocalBooks(Box::new(Some(WasmResult::Ok(v))))
@@ -104,7 +106,7 @@ pub async fn get_scanned_books() {
 /// Updates the status of a book in the local storage.
 /// Returns `WasmResponse::LocalBook::Ok` in a message if successful.
 #[wasm_bindgen]
-pub async fn update_book_status(isbn: String, status: Option<storage::BookStatus>) {
+pub async fn update_book_status(isbn: String, status: Option<BookStatus>) {
     log!("Updating book status in local storage");
 
     // need the runtime for the global context and fetch
@@ -119,7 +121,7 @@ pub async fn update_book_status(isbn: String, status: Option<storage::BookStatus
     };
 
     // get Books from local storage and wrap them into a response struct
-    let resp = match storage::Book::update_status(&runtime, &isbn, status).await {
+    let resp = match Book::update_status(&runtime, &isbn, status).await {
         Ok(v) => {
             log!("Book status updated");
             WasmResponse::LocalBook(Box::new(Some(WasmResult::Ok(v))))
@@ -156,7 +158,7 @@ pub async fn delete_book(isbn: String) {
     };
 
     // get Books from local storage and wrap them into a response struct
-    let resp = match storage::Book::delete(&runtime, &isbn).await {
+    let resp = match Book::delete(&runtime, &isbn).await {
         Ok(_) => {
             log!("Book deleted");
             WasmResponse::Deleted(Box::new(Some(WasmResult::Ok(isbn))))

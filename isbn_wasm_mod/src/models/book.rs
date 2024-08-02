@@ -1,9 +1,9 @@
+use super::book_status::BookStatus;
 use crate::google::{get_book_data, VolumeInfo};
 use crate::utils::log;
 use anyhow::{bail, Result};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use wasm_bindgen::prelude::*;
 use web_sys::Window;
 
 /// An internal representation of a book record.
@@ -28,29 +28,12 @@ pub struct Book {
     pub volume_info: VolumeInfo,
 }
 
-/// A list of book records.
-#[derive(Deserialize, Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Books {
-    pub books: Vec<Book>,
-}
-
-/// Where the reader is with the book.
-/// Defaults to None.
-#[wasm_bindgen]
-#[derive(Copy, Clone, Deserialize, Serialize, Debug, PartialEq)]
-pub enum BookStatus {
-    ToRead,
-    Read,
-    Liked,
-}
-
 impl Book {
     /// Adds a not to an existing book record, creates a new record if the ISBN is not found.
     /// The book record is stored in the local storage (front-end only access).
     /// Fails silently if the record cannot be stored.
     /// TODO: Add error handling.
-    pub(crate) fn store_locally(&self, runtime: &Window) {
+    pub(crate) fn save(&self, runtime: &Window) {
         // get the book record from the database
 
         let ls = match runtime.local_storage() {
@@ -180,7 +163,7 @@ impl Book {
         };
 
         // store the book record in the local storage
-        book.store_locally(runtime);
+        book.save(runtime);
 
         Ok(Some(book))
     }
@@ -209,96 +192,5 @@ impl Book {
         };
 
         Ok(())
-    }
-}
-
-impl Books {
-    /// Returns a sorted array of all book records stored locally.
-    /// Errors are logged.
-    pub(crate) fn get(runtime: &Window) -> Result<Self> {
-        // connect to the local storage
-        let ls = match runtime.local_storage() {
-            Ok(Some(v)) => v,
-            Err(e) => {
-                bail!("Failed to get local storage: {:?}", e);
-            }
-            _ => {
-                bail!("Local storage not available (OK(None))");
-            }
-        };
-
-        // get the total number of records
-        let number_of_records = match ls.length() {
-            Ok(v) => v,
-            Err(e) => {
-                bail!("Failed to get local storage length: {:?}", e);
-            }
-        };
-
-        // init the books array to the max possible size
-        let mut books = Vec::with_capacity(number_of_records.try_into().unwrap_or_else(|_e| {
-            log!("Failed to convert local storage length {number_of_records} to usize. It's a bug.");
-            0
-        }));
-
-        // get one key at a time (inefficient, but the best we have with Local Storage)
-        for i in 0..number_of_records {
-            // get the key by index
-            let key = match ls.key(i) {
-                Ok(Some(v)) => v,
-                Ok(None) => {
-                    log!("Key {i} not found in local storage");
-                    continue;
-                }
-                Err(e) => {
-                    log!("Failed to get key {i} from local storage: {:?}", e);
-                    continue;
-                }
-            };
-
-            // get value by key
-            let book = match ls.get_item(&key) {
-                Ok(Some(v)) => v,
-                Ok(None) => {
-                    log!("Value not found in local storage: {key}");
-                    continue;
-                }
-                Err(e) => {
-                    log!("Failed to get value from local storage for {key}: {:?}", e);
-                    continue;
-                }
-            };
-
-            // log!("{book}");
-
-            // parse the string value into a book record
-            let book = match serde_json::from_str::<Book>(&book) {
-                Ok(v) => v,
-                Err(e) => {
-                    log!("Failed to parse local storage book record for {key}: {:?}", e);
-                    continue;
-                }
-            };
-
-            // log!("{:?}", book);
-
-            // ignore books with no titles because it is likely to be a corrupted record
-            // from the format change or a bug
-            // the user will have no benefit from such records
-            // TODO: compare the ISBN inside Book and the key - they may differ
-            // TODO: delete these ignored records
-            if book.volume_info.title.is_empty() {
-                log!("Empty title for {key}");
-                continue;
-            }
-
-            books.push(book);
-        }
-
-        // the items in the local storage are randomly sorted
-        // sort the list to make the latest scanned book come first
-        books.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
-
-        Ok(Books { books })
     }
 }
