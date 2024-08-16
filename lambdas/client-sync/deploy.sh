@@ -17,4 +17,4 @@ rm proxy.zip
 # aarch64-unknown-linux-musl
 
 # permissions script
-# aws lambda add-permission \--statement-id "AllowCloudFrontServicePrincipal" \--action "lambda:InvokeFunctionUrl" \--principal "cloudfront.amazonaws.com" \--source-arn "arn:aws:cloudfront::512295225992:distribution/E3FGXRC3VXQ2IF" \--region "us-east-1" \--function-name index-html-server
+# aws lambda add-permission \--statement-id "AllowCloudFrontServicePrincipal" \--action "lambda:InvokeFunctionUrl" \--principal "cloudfront.amazonaws.com" \--source-arn "arn:aws:cloudfront::512295225992:distribution/E3FGXRC3VXQ2IF" \--region "us-east-1" \--function-name client-sync
