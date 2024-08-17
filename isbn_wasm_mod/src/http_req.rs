@@ -1,7 +1,15 @@
 use crate::{Result, RetryAfter};
+use sha2::{Digest, Sha256};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{Request, RequestInit, RequestMode, Response, Window};
+
+pub type IdToken = String;
+/// The name of the authorisation header containing the ID token with the user email.
+pub const AUTH_HEADER: &str = "x-books-authorization";
+/// The domain name that is allowed to use the ID token.
+/// Normally it would be our own domain name where all the server functions are hosted.
+pub const TRUSTED_URLS: &str = "https://bookwormfood.com";
 
 /// Prepares and executes an HTTP request.
 /// ## Types
@@ -10,23 +18,41 @@ use web_sys::{Request, RequestInit, RequestMode, Response, Window};
 /// ## Request types
 /// * GET - if no payload is provided
 /// * POST - if payload is provided
-pub(super) async fn execute_http_request<R, P>(url: &str, payload: Option<&P>, runtime: &Window) -> Result<R>
+///
+/// Do not include the id_token for URLs other than our own server side.
+pub(super) async fn execute_http_request<R, P>(
+    url: &str,
+    payload: Option<&P>,
+    runtime: &Window,
+    id_token: Option<IdToken>,
+) -> Result<R>
 where
     R: for<'de> serde::Deserialize<'de>,
     P: serde::Serialize,
 {
     // log!("execute_get_request entered");
+
+    // check if the target URL is for the bookwormfood domain and reset the token if it is not
+    // ideally, this function should not even get the token if the URL is not trusted
+    // it's an additional safety measure
+    let id_token = if url.starts_with(TRUSTED_URLS) {
+        id_token
+    } else {
+        if id_token.is_some() {
+            log!("Token reset for untrusted URL. It's a bug.");
+        }
+        None
+    };
+
     // set request params
     let mut opts = RequestInit::new();
     opts.mode(RequestMode::Cors);
-    match payload {
-        Some(v) => {
-            opts.method("POST");
 
+    // serialize the payload, if any, into a string
+    let payload = match payload {
+        Some(v) => {
             match serde_json::to_string(v) {
-                Ok(v) => {
-                    opts.body(Some(&wasm_bindgen::JsValue::from_str(&v)));
-                }
+                Ok(v) => Some(v),
                 Err(e) => {
                     log!("Failed to serialize POST payload");
                     log!("{:?}", e);
@@ -34,6 +60,15 @@ where
                     return Err(RetryAfter::Never);
                 }
             }
+        }
+        None => None,
+    };
+
+    // decide if it's a POST or a GET request
+    match &payload {
+        Some(v) => {
+            opts.method("POST");
+            opts.body(Some(&wasm_bindgen::JsValue::from_str(v)));
         }
         None => {
             opts.method("GET");
@@ -62,11 +97,23 @@ where
         let _ = request.headers().set("content-type", "application/json");
     }
 
-    // log!("Headers set");
+    // set the auth header if the token is provided and the target is bookwormfood domain
+    if let Some(id_token) = id_token {
+        let _ = request.headers().set(AUTH_HEADER, &id_token);
+    }
 
-    // both window and globalscope have the same interface, but they are separate types so Rust has
-    // to have separate paths for them
-    // the output is the same type for both
+    // calculate the SHA256 hash of the payload and set the header
+    // needed for the CloudFront signed URLs
+    if let Some(payload) = &payload {
+        let mut hasher = Sha256::new();
+        hasher.update(payload);
+        let result = hasher.finalize();
+        let result = hex::encode(result);
+        // log!("x-Amz-Content-Sha256: {}", result);
+        let _ = request.headers().set("X-Amz-Content-Sha256", &result);
+    }
+
+    // send the request and wait for the response
     let resp = JsFuture::from(runtime.fetch_with_request(&request)).await;
 
     // unwrap the response
@@ -130,8 +177,7 @@ where
     let resp = match resp {
         Ok(v) => v,
         Err(e) => {
-            log!("Spotify request failed");
-            log!("{url}");
+            log!("HTTP request failed: {url}");
             log!("{:?}", e);
             // TODO: may be worth a retry
             return Err(RetryAfter::Never);

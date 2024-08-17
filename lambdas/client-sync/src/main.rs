@@ -5,6 +5,7 @@ use aws_lambda_events::{
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
 use tracing::info;
 use tracing_subscriber::filter::LevelFilter;
+use wasm_mod::AUTH_HEADER;
 
 mod jwt;
 
@@ -35,12 +36,14 @@ pub(crate) async fn my_handler(
     let headers = HeaderMap::new();
 
     // get bearer token from the event
-    let authorization = match event.payload.headers.get("x-books-authorization") {
+    let authorization = match event.payload.headers.get(AUTH_HEADER) {
         Some(v) => v.to_str().unwrap_or("").to_string(),
         None => String::new(),
     };
 
-    info!("Auth: {authorization}");
+    info!("{:?}", event.payload.body);
+
+    // info!("Auth: {authorization}");
     // info!("Headers: {:?}", event.payload.headers);
 
     // exit if no valid email is provided

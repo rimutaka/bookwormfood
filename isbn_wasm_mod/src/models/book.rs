@@ -1,7 +1,8 @@
 use super::book_status::BookStatus;
 use crate::google::{get_book_data, VolumeInfo};
+use crate::http_req::{execute_http_request, IdToken};
 use crate::utils::log;
-use anyhow::{bail, Result};
+use anyhow::{bail, Error, Result};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use web_sys::Window;
@@ -33,9 +34,8 @@ impl Book {
     /// The book record is stored in the local storage (front-end only access).
     /// Fails silently if the record cannot be stored.
     /// TODO: Add error handling.
-    pub(crate) fn save(&self, runtime: &Window) {
-        // get the book record from the database
-
+    pub(crate) async fn save(&self, runtime: &Window, id_token: Option<IdToken>) {
+        // get the reference to the local storage
         let ls = match runtime.local_storage() {
             Ok(Some(v)) => v,
             Err(e) => {
@@ -61,14 +61,27 @@ impl Book {
             Ok(()) => log!("Book {key} saved in local storage"),
             Err(e) => log!("Failed to save book {key} record: {:?}", e),
         }
+
+        // save the book to the cloud DB
+        // TODO: do something with the result
+        if id_token.is_some() {
+            _ = self.send_to_ddb(runtime, id_token).await;
+        } else {
+            log!("No token to send the book to the cloud DB");
+        }
     }
 
     /// Updates the status of a book record in the local storage.
     /// Returns the updated book details back.
     /// Returns an error if the book cannot be found in LS or in GoogleBooks.
-    pub(crate) async fn update_status(runtime: &Window, isbn: &str, status: Option<BookStatus>) -> Result<Self> {
+    pub(crate) async fn update_status(
+        runtime: &Window,
+        isbn: &str,
+        status: Option<BookStatus>,
+        id_token: Option<IdToken>,
+    ) -> Result<Self> {
         // get the book data
-        let book = match Book::get(runtime, isbn).await? {
+        let book = match Book::get(runtime, isbn, id_token).await? {
             Some(mut v) => {
                 // exit if the previous status is the same as the new one
                 // but I can't see how that may even happen if the UI behaves
@@ -116,7 +129,7 @@ impl Book {
     /// if the book is not found in the local storage it fetches the book data from Google Books.
     /// - Error - something went wrong
     /// - None - the book was not found
-    pub(crate) async fn get(runtime: &Window, isbn: &str) -> Result<Option<Self>> {
+    pub(crate) async fn get(runtime: &Window, isbn: &str, id_token: Option<IdToken>) -> Result<Option<Self>> {
         // try to get the book from the local storage first
 
         // connect to the local storage
@@ -142,7 +155,7 @@ impl Book {
         };
 
         // if the book is not found in the local storage, fetch it from Google Books
-        let book = match get_book_data(isbn, runtime).await {
+        let book = match get_book_data(isbn, runtime, None).await {
             Ok(mut v) => match v.items.pop() {
                 Some(v) => Self {
                     isbn: isbn.to_string(),
@@ -163,7 +176,7 @@ impl Book {
         };
 
         // store the book record in the local storage
-        book.save(runtime);
+        book.save(runtime, id_token).await;
 
         Ok(Some(book))
     }
@@ -192,5 +205,19 @@ impl Book {
         };
 
         Ok(())
+    }
+
+    /// Sends the book data to the cloud DB via a lambda.
+    /// The lambda decides what to store and where.
+    /// Logs any errors.
+    async fn send_to_ddb(&self, runtime: &Window, id_token: Option<IdToken>) -> Result<Self> {
+        log!("Sending book data to lambda: {}", self.isbn);
+
+        let url = "https://bookwormfood.com/sync.html";
+
+        // TODO: error handling is a mess
+        execute_http_request::<Book, Book>(url, Some(self), runtime, id_token)
+            .await
+            .map_err(|_| Error::msg("Failed to send book data to lambda"))
     }
 }
