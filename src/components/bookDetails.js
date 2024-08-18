@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import useState from 'react-usestateref';
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth0 } from '@auth0/auth0-react'
 import initWasmModule, { get_book_data, BookStatus, update_book_status, delete_book } from '../wasm-rust/isbn_mod.js';
 
 function HtmlP({ text, classNames }) {
@@ -58,10 +59,14 @@ export function build_book_url(title, authors, isbn) {
   }
 }
 
+// The key name for the last authentication timestamp in the localStorage
+export const LAST_AUTH_TIMESTAMP = "auth";
+
 export default function BookDetails() {
 
   const navigate = useNavigate();
   const location = useLocation();
+  const { getIdTokenClaims, isAuthenticated, loginWithRedirect } = useAuth0();
 
   // console.log(location);
   // the ISBN can be located anywhere in the URL, 
@@ -77,16 +82,39 @@ export default function BookDetails() {
   const [status, setStatus] = useState();
   const [description, setDescription] = useState();
 
-  // console.log("render");
-
   useEffect(() => {
     // fetch book data if the ISBN code is found in the URL
     if (isbn) {
       (async () => {
+
+        // log in the user if was logged in before
+        const lastAuth = localStorage.getItem(LAST_AUTH_TIMESTAMP);
+        console.log(`Last auth/auth'd: ${lastAuth}/${isAuthenticated}`);
+        if (lastAuth && !isAuthenticated) {
+          await loginWithRedirect({
+            appState: {
+              returnTo: window.location.pathname,
+            },
+          });
+        }
+
+        // get the ID token to send to the server, if the user is logged in
+        // the server only needs the email address from the claims
+        let idTokenClaims = null;
+        if (isAuthenticated) {
+          idTokenClaims = await getIdTokenClaims();
+          if (idTokenClaims?.__raw) {
+            // console.log(`JWT: ${idTokenClaims?.__raw}`);
+            // console.log(`Expiry: ${idTokenClaims?.exp}`);
+          } else {
+            console.log(`Token: ${JSON.stringify(idTokenClaims)}`);
+          }
+        }
+
         await initWasmModule(); // run the wasm initializer before calling wasm methods
         // request book data from WASM module
-        // the responses are sent back as messages to the window object   
-        get_book_data(isbn);
+        // the responses are sent back as messages to the window object
+        get_book_data(isbn, idTokenClaims?.__raw);
       })();
     } else {
       isbn = "no ISBN code found in the URL";

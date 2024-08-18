@@ -1,21 +1,21 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { Routes, Route, Outlet, Link } from "react-router-dom";
+import { Routes, Route, Outlet, Link, useLocation } from "react-router-dom";
+import { useAuth0 } from "@auth0/auth0-react";
+import { LAST_AUTH_TIMESTAMP } from "./components/bookDetails.js";
 
 import * as serviceWorker from './serviceWorker';
 import Scan from "./components/scan";
 import BookDetails from "./components/bookDetails";
 import Welcome from "./components/welcome";
-import { CallbackPage } from "./components/authCallback";
+import { AuthLogin } from "./components/authLogin";
+import { AuthLogout } from "./components/authLogout";
 import { Auth0ProviderWithNavigate } from "./components/auth0-provider-with-navigate";
-import { ExternalApi } from "./components/externalApi";
 
 import ".//css/index.css";
 
 console.log("app started")
-
-// check https://github.com/rafgraph/spa-github-pages for using GH Pages with BrowserRouter
 
 ReactDOM.createRoot(document.getElementById("app")).render(
 
@@ -27,8 +27,8 @@ ReactDOM.createRoot(document.getElementById("app")).render(
           <Route path="scan" element={<Scan scanRate={250} />} />
           <Route path="about" element={<About />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="callback" element={<CallbackPage />} />
-          <Route path="profile" element={<ExternalApi />} />
+          <Route path="login" element={<AuthLogin />} />
+          <Route path="logout" element={<AuthLogout />} />
           <Route path="*" element={<BookDetails />} />
         </Route>
       </Routes>
@@ -36,15 +36,25 @@ ReactDOM.createRoot(document.getElementById("app")).render(
   </BrowserRouter>
 );
 
-// ReactDom.render((
-//   <div className="main">
-//     <Scan scanRate={250} covid19={true} upnqr={true} />
-//   </div>
-// ), document.getElementById("app"));
-
 serviceWorker.register();
 
 function Layout() {
+
+  const location = useLocation();
+  const { isAuthenticated, isLoading } = useAuth0();
+
+  React.useEffect(() => {
+
+    console.log(`Layout load/auth: ${isLoading}/${isAuthenticated}`);
+
+    // save auth details in the localStorage
+    if (!isLoading && isAuthenticated) {
+      localStorage.setItem(LAST_AUTH_TIMESTAMP, Date.now());
+      console.log("Auth status updated");
+    }
+
+  }, [isAuthenticated]);
+
   return (
     <div className="main">
       <Outlet />
@@ -78,3 +88,4 @@ function NoMatch() {
     </div>
   );
 }
+

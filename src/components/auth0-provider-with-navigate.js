@@ -5,21 +5,22 @@ import { useNavigate } from "react-router-dom";
 export const Auth0ProviderWithNavigate = ({ children }) => {
   const navigate = useNavigate();
 
-  const domain = "bookwormfood.us.auth0.com";
+  const auth0Domain = "bookwormfood.us.auth0.com";
   const clientId = "nqzjY0VWUu8GoDVbqyfy2yOdgkydrEaf";
-  const redirectUri = "https://localhost:8080/callback";
+  const redirectUri = "https://" + window.location.hostname + (window.location.port == 80 ? "" : ":" + window.location.port) + "/login";
+  // console.log(`Redirect URI: ${redirectUri}`);
 
   const onRedirectCallback = (appState) => {
     navigate(appState?.returnTo || window.location.pathname);
   };
 
-  if (!(domain && clientId && redirectUri)) {
+  if (!(auth0Domain && clientId && redirectUri)) {
     return null;
   }
 
   return (
     <Auth0Provider
-      domain={domain}
+      domain={auth0Domain}
       clientId={clientId}
       authorizationParams={{
         redirect_uri: redirectUri,

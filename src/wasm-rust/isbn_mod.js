@@ -265,10 +265,10 @@ function logError(f, args) {
         throw e;
     }
 }
-function __wbg_adapter_44(arg0, arg1, arg2) {
+function __wbg_adapter_46(arg0, arg1, arg2) {
     _assertNum(arg0);
     _assertNum(arg1);
-    wasm._dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h1947c69586aa05ea(arg0, arg1, addHeapObject(arg2));
+    wasm._dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h5fa30a47fcd253c4(arg0, arg1, addHeapObject(arg2));
 }
 
 /**
@@ -276,12 +276,15 @@ function __wbg_adapter_44(arg0, arg1, arg2) {
 * Multiple responses are sent back via `progress.js` to the UI thread.
 * See `fn report_progress()` for more details.
 * @param {string} isbn
+* @param {string | undefined} [id_token]
 * @returns {Promise<void>}
 */
-export function get_book_data(isbn) {
+export function get_book_data(isbn, id_token) {
     const ptr0 = passStringToWasm0(isbn, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.get_book_data(ptr0, len0);
+    var ptr1 = isLikeNone(id_token) ? 0 : passStringToWasm0(id_token, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len1 = WASM_VECTOR_LEN;
+    const ret = wasm.get_book_data(ptr0, len0, ptr1, len1);
     return takeObject(ret);
 }
 
@@ -300,15 +303,18 @@ export function get_scanned_books() {
 * Returns `WasmResponse::LocalBook::Ok` in a message if successful.
 * @param {string} isbn
 * @param {BookStatus | undefined} [status]
+* @param {string | undefined} [id_token]
 * @returns {Promise<void>}
 */
-export function update_book_status(isbn, status) {
+export function update_book_status(isbn, status, id_token) {
     const ptr0 = passStringToWasm0(isbn, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
     if (!isLikeNone(status)) {
         _assertNum(status);
     }
-    const ret = wasm.update_book_status(ptr0, len0, isLikeNone(status) ? 3 : status);
+    var ptr1 = isLikeNone(id_token) ? 0 : passStringToWasm0(id_token, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len1 = WASM_VECTOR_LEN;
+    const ret = wasm.update_book_status(ptr0, len0, isLikeNone(status) ? 3 : status, ptr1, len1);
     return takeObject(ret);
 }
 
@@ -332,10 +338,10 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
-function __wbg_adapter_117(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_121(arg0, arg1, arg2, arg3) {
     _assertNum(arg0);
     _assertNum(arg1);
-    wasm.wasm_bindgen__convert__closures__invoke2_mut__h7e0de6a9770ded74(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
+    wasm.wasm_bindgen__convert__closures__invoke2_mut__h72f9017444b99ad4(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 
 /**
@@ -378,17 +384,6 @@ async function __wbg_load(module, imports) {
 function __wbg_get_imports() {
     const imports = {};
     imports.wbg = {};
-    imports.wbg.__wbg_reportprogress_631745a2bb962786 = function() { return logError(function (arg0, arg1) {
-        let deferred0_0;
-        let deferred0_1;
-        try {
-            deferred0_0 = arg0;
-            deferred0_1 = arg1;
-            report_progress(getStringFromWasm0(arg0, arg1));
-        } finally {
-            wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
-        }
-    }, arguments) };
     imports.wbg.__wbindgen_error_new = function(arg0, arg1) {
         const ret = new Error(getStringFromWasm0(arg0, arg1));
         return addHeapObject(ret);
@@ -435,6 +430,11 @@ function __wbg_get_imports() {
         _assertBoolean(ret);
         return ret;
     };
+    imports.wbg.__wbindgen_is_string = function(arg0) {
+        const ret = typeof(getObject(arg0)) === 'string';
+        _assertBoolean(ret);
+        return ret;
+    };
     imports.wbg.__wbindgen_jsval_eq = function(arg0, arg1) {
         const ret = getObject(arg0) === getObject(arg1);
         _assertBoolean(ret);
@@ -444,6 +444,17 @@ function __wbg_get_imports() {
         const ret = arg0;
         return addHeapObject(ret);
     };
+    imports.wbg.__wbg_reportprogress_631745a2bb962786 = function() { return logError(function (arg0, arg1) {
+        let deferred0_0;
+        let deferred0_1;
+        try {
+            deferred0_0 = arg0;
+            deferred0_1 = arg1;
+            report_progress(getStringFromWasm0(arg0, arg1));
+        } finally {
+            wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
+        }
+    }, arguments) };
     imports.wbg.__wbindgen_as_number = function(arg0) {
         const ret = +getObject(arg0);
         return ret;
@@ -629,6 +640,10 @@ function __wbg_get_imports() {
         const ret = new Date();
         return addHeapObject(ret);
     }, arguments) };
+    imports.wbg.__wbg_entries_95cc2c823b285a09 = function() { return logError(function (arg0) {
+        const ret = Object.entries(getObject(arg0));
+        return addHeapObject(ret);
+    }, arguments) };
     imports.wbg.__wbg_new_72fb9a18b5ae2624 = function() { return logError(function () {
         const ret = new Object();
         return addHeapObject(ret);
@@ -644,7 +659,7 @@ function __wbg_get_imports() {
                 const a = state0.a;
                 state0.a = 0;
                 try {
-                    return __wbg_adapter_117(a, state0.b, arg0, arg1);
+                    return __wbg_adapter_121(a, state0.b, arg0, arg1);
                 } finally {
                     state0.a = a;
                 }
@@ -745,8 +760,8 @@ function __wbg_get_imports() {
         const ret = wasm.memory;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper2347 = function() { return logError(function (arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 182, __wbg_adapter_44);
+    imports.wbg.__wbindgen_closure_wrapper2589 = function() { return logError(function (arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 193, __wbg_adapter_46);
         return addHeapObject(ret);
     }, arguments) };
 

@@ -47,6 +47,17 @@ a {
   @apply uppercase bg-sky-700 text-white p-3 cursor-pointer m-2 rounded-md font-semibold;
 }
 
+.loginBtn {
+  @apply m-5 content-center px-6 sm:px-0 flex justify-end;
+}
+
+.loginBtn button {
+  @apply p-1 cursor-pointer m-2 rounded-md
+  bg-slate-400 text-white 
+   font-medium text-sm px-2 py-1.5 text-center 
+   inline-flex items-center justify-between;
+}
+
 button.active {
   @apply bg-red-600;
 }
@@ -148,7 +159,7 @@ button.done {
 }
 
 .book-cover {
-  @apply grid justify-items-center mt-6
+  @apply grid justify-items-center mt-6;
 }
 
 /* Buttons to control book status and other actions on book details page */

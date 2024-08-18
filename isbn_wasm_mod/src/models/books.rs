@@ -54,6 +54,12 @@ impl Books {
                 }
             };
 
+            // ignore non-ISBN keys
+            if !key.starts_with("97") {
+                log!("Non-ISBN key ignored: {key}");
+                continue;
+            }
+
             // get value by key
             let book = match ls.get_item(&key) {
                 Ok(Some(v)) => v,
