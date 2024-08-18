@@ -1,11 +1,10 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { Routes, Route, Outlet, Link, useLocation } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
-import { LAST_AUTH_TIMESTAMP } from "./components/bookDetails.js";
+import { Routes, Route, Link } from "react-router-dom";
 
 import * as serviceWorker from './serviceWorker';
+import App from "./components/app";
 import Scan from "./components/scan";
 import BookDetails from "./components/bookDetails";
 import Welcome from "./components/welcome";
@@ -15,14 +14,14 @@ import { Auth0ProviderWithNavigate } from "./components/auth0-provider-with-navi
 
 import ".//css/index.css";
 
-console.log("app started")
+// console.log("app started")
 
 ReactDOM.createRoot(document.getElementById("app")).render(
 
   <BrowserRouter>
     <Auth0ProviderWithNavigate>
       <Routes>
-        <Route path="/" element={<Layout />}>
+        <Route path="/" element={<App />}>
           <Route index element={<Welcome />} />
           <Route path="scan" element={<Scan scanRate={250} />} />
           <Route path="about" element={<About />} />
@@ -37,30 +36,6 @@ ReactDOM.createRoot(document.getElementById("app")).render(
 );
 
 serviceWorker.register();
-
-function Layout() {
-
-  const location = useLocation();
-  const { isAuthenticated, isLoading } = useAuth0();
-
-  React.useEffect(() => {
-
-    console.log(`Layout load/auth: ${isLoading}/${isAuthenticated}`);
-
-    // save auth details in the localStorage
-    if (!isLoading && isAuthenticated) {
-      localStorage.setItem(LAST_AUTH_TIMESTAMP, Date.now());
-      console.log("Auth status updated");
-    }
-
-  }, [isAuthenticated]);
-
-  return (
-    <div className="main">
-      <Outlet />
-    </div>
-  );
-}
 
 function About() {
   return (

@@ -66,7 +66,7 @@ export default function BookDetails() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { getIdTokenClaims, isAuthenticated, loginWithRedirect } = useAuth0();
+  const { getIdTokenClaims, isAuthenticated } = useAuth0();
 
   // console.log(location);
   // the ISBN can be located anywhere in the URL, 
@@ -86,18 +86,6 @@ export default function BookDetails() {
     // fetch book data if the ISBN code is found in the URL
     if (isbn) {
       (async () => {
-
-        // log in the user if was logged in before
-        const lastAuth = localStorage.getItem(LAST_AUTH_TIMESTAMP);
-        console.log(`Last auth/auth'd: ${lastAuth}/${isAuthenticated}`);
-        if (lastAuth && !isAuthenticated) {
-          await loginWithRedirect({
-            appState: {
-              returnTo: window.location.pathname,
-            },
-          });
-        }
-
         // get the ID token to send to the server, if the user is logged in
         // the server only needs the email address from the claims
         let idTokenClaims = null;
@@ -109,6 +97,8 @@ export default function BookDetails() {
           } else {
             console.log(`Token: ${JSON.stringify(idTokenClaims)}`);
           }
+        } else {
+          console.log("User is not authenticated");
         }
 
         await initWasmModule(); // run the wasm initializer before calling wasm methods
