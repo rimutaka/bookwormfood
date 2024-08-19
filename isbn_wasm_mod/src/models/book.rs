@@ -1,4 +1,4 @@
-use super::book_status::BookStatus;
+use super::book_status::ReadStatus;
 use crate::google::{get_book_data, VolumeInfo};
 use crate::http_req::{execute_http_request, IdToken};
 use crate::utils::log;
@@ -9,7 +9,7 @@ use web_sys::Window;
 
 /// An internal representation of a book record.
 /// Stored in the local storage.
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Book {
     /// This ISBN may differ from the key in the local storage or the industry IDs in the Google Books API.
@@ -17,12 +17,15 @@ pub struct Book {
     pub isbn: String,
     /// When the book was last updated.
     #[serde(default)]
-    pub timestamp: DateTime<Utc>,
-    /// Where the reader is with the book.
-    #[serde(default)]
-    pub status: Option<BookStatus>,
-    /// The cover image URL from Google Books API.
-    #[serde(default)]
+    pub timestamp_update: DateTime<Utc>,
+    /// When the book was last sync'd.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub timestamp_sync: Option<DateTime<Utc>>,
+    /// Reading status, where the reader is with the book.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub read_status: Option<ReadStatus>,
+    /// The cover image URL.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cover: Option<String>,
     /// The book details from Google Books API
     #[serde(default)]
@@ -34,7 +37,7 @@ impl Book {
     /// The book record is stored in the local storage (front-end only access).
     /// Fails silently if the record cannot be stored.
     /// TODO: Add error handling.
-    pub(crate) async fn save(&self, runtime: &Window, id_token: Option<IdToken>) {
+    pub(crate) async fn save(&self, runtime: &Window, id_token: &Option<IdToken>) {
         // get the reference to the local storage
         let ls = match runtime.local_storage() {
             Ok(Some(v)) => v,
@@ -77,22 +80,22 @@ impl Book {
     pub(crate) async fn update_status(
         runtime: &Window,
         isbn: &str,
-        status: Option<BookStatus>,
-        id_token: Option<IdToken>,
+        status: Option<ReadStatus>,
+        id_token: &Option<IdToken>,
     ) -> Result<Self> {
         // get the book data
         let book = match Book::get(runtime, isbn, id_token).await? {
             Some(mut v) => {
                 // exit if the previous status is the same as the new one
                 // but I can't see how that may even happen if the UI behaves
-                if status == v.status {
+                if status == v.read_status {
                     log!("New status == old for {isbn}");
                     return Ok(v);
                 };
 
                 // update the status
-                v.timestamp = Utc::now();
-                v.status = status;
+                v.timestamp_update = Utc::now();
+                v.read_status = status;
                 v
             }
             None => {
@@ -122,6 +125,14 @@ impl Book {
             }
         };
 
+        // save the book to the cloud DB
+        // TODO: do something with the result
+        if id_token.is_some() {
+            _ = book.send_to_ddb(runtime, id_token).await;
+        } else {
+            log!("No token to send the book to the cloud DB");
+        }
+
         Ok(book)
     }
 
@@ -129,7 +140,7 @@ impl Book {
     /// if the book is not found in the local storage it fetches the book data from Google Books.
     /// - Error - something went wrong
     /// - None - the book was not found
-    pub(crate) async fn get(runtime: &Window, isbn: &str, id_token: Option<IdToken>) -> Result<Option<Self>> {
+    pub(crate) async fn get(runtime: &Window, isbn: &str, id_token: &Option<IdToken>) -> Result<Option<Self>> {
         // try to get the book from the local storage first
 
         // connect to the local storage
@@ -155,14 +166,14 @@ impl Book {
         };
 
         // if the book is not found in the local storage, fetch it from Google Books
-        let book = match get_book_data(isbn, runtime, None).await {
+        let book = match get_book_data(isbn, runtime).await {
             Ok(mut v) => match v.items.pop() {
                 Some(v) => Self {
                     isbn: isbn.to_string(),
-                    timestamp: Utc::now(),
-                    status: None,
+                    timestamp_update: Utc::now(),
                     cover: v.volume_info.get_thumbnail(None),
                     volume_info: v.volume_info,
+                    ..Default::default()
                 },
                 None => {
                     bail!("Nothing in Google Books for ISBN {isbn}");
@@ -210,7 +221,7 @@ impl Book {
     /// Sends the book data to the cloud DB via a lambda.
     /// The lambda decides what to store and where.
     /// Logs any errors.
-    async fn send_to_ddb(&self, runtime: &Window, id_token: Option<IdToken>) -> Result<Self> {
+    async fn send_to_ddb(&self, runtime: &Window, id_token: &Option<IdToken>) -> Result<Self> {
         log!("Sending book data to lambda: {}", self.isbn);
 
         let url = "https://bookwormfood.com/sync.html";

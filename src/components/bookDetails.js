@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import useState from 'react-usestateref';
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth0 } from '@auth0/auth0-react'
-import initWasmModule, { get_book_data, BookStatus, update_book_status, delete_book } from '../wasm-rust/isbn_mod.js';
+import initWasmModule, { get_book_data, ReadStatus, update_book_status, delete_book } from '../wasm-rust/isbn_mod.js';
 
 function HtmlP({ text, classNames }) {
 
@@ -81,30 +81,36 @@ export default function BookDetails() {
   const [cover, setCover] = useState();
   const [status, setStatus] = useState();
   const [description, setDescription] = useState();
+  const [token, setToken] = useState();
+
 
   useEffect(() => {
+
+    // get the ID token to send to the server, if the user is logged in
+    // the server only needs the email address from the claims
+    (async () => {
+      let idTokenClaims = null;
+      if (isAuthenticated) {
+        idTokenClaims = await getIdTokenClaims();
+        if (idTokenClaims?.__raw) {
+          setToken(idTokenClaims.__raw);
+          // console.log(`JWT: ${idTokenClaims?.__raw}`);
+          // console.log(`Expiry: ${idTokenClaims?.exp}`);
+        } else {
+          console.log(`Token: ${JSON.stringify(idTokenClaims)}`);
+        }
+      } else {
+        console.log("User is not authenticated");
+      }
+    })();
+
     // fetch book data if the ISBN code is found in the URL
     if (isbn) {
       (async () => {
-        // get the ID token to send to the server, if the user is logged in
-        // the server only needs the email address from the claims
-        let idTokenClaims = null;
-        if (isAuthenticated) {
-          idTokenClaims = await getIdTokenClaims();
-          if (idTokenClaims?.__raw) {
-            // console.log(`JWT: ${idTokenClaims?.__raw}`);
-            // console.log(`Expiry: ${idTokenClaims?.exp}`);
-          } else {
-            console.log(`Token: ${JSON.stringify(idTokenClaims)}`);
-          }
-        } else {
-          console.log("User is not authenticated");
-        }
-
         await initWasmModule(); // run the wasm initializer before calling wasm methods
         // request book data from WASM module
         // the responses are sent back as messages to the window object
-        get_book_data(isbn, idTokenClaims?.__raw);
+        get_book_data(isbn, token);
       })();
     } else {
       isbn = "no ISBN code found in the URL";
@@ -131,17 +137,17 @@ export default function BookDetails() {
     // see `WasmResult` and `WasmResponse` in the WASM code for the structure of the data
     if (data?.localBook?.Ok) {
       const book = data.localBook.Ok;
-      let title = book.volumeInfo.title;
+      let title = book.volumeInfo?.title;
       if (!title) title = "No data in Google for this ISBN code";
       // console.log(`Title: ${title}`);
       setTitle(title);
-      let authors = book.volumeInfo.authors?.join(", ");
+      let authors = book.volumeInfo?.authors?.join(", ");
       setAuthors(authors);
       let cover = book.cover;
       setCover(cover);
-      let status = book.status;
+      let status = book.readStatus;
       setStatus(status);
-      let description = book.volumeInfo.description;
+      let description = book.volumeInfo?.description;
       setDescription(description);
       // if (thumbnail) setThumbnail(thumbnail);
       // const amount = data.googleBooks.Ok?.items[0]?.saleInfo?.listPrice?.amount;
@@ -163,15 +169,15 @@ export default function BookDetails() {
   });
 
   const onClickStatusToRead = (e) => {
-    update_book_status(isbn, status == BookStatus[0] ? null : BookStatus.ToRead);
+    update_book_status(isbn, status == ReadStatus[0] ? null : ReadStatus.ToRead, token);
   };
 
   const onClickStatusRead = (e) => {
-    update_book_status(isbn, status == BookStatus[1] ? null : BookStatus.Read);
+    update_book_status(isbn, status == ReadStatus[1] ? null : ReadStatus.Read, token);
   };
 
   const onClickStatusLiked = (e) => {
-    update_book_status(isbn, status == BookStatus[2] ? null : BookStatus.Liked);
+    update_book_status(isbn, status == ReadStatus[2] ? null : ReadStatus.Liked, token);
   };
 
   const onClickStatusBin = (e) => {
@@ -193,9 +199,9 @@ export default function BookDetails() {
           <p className="py-2 text-xs">ISBN: {isbn}</p>
         </div>
         <div className="book-actions">
-          <i title="Read later" id="status-later" className={"icon-alarm" + (status == BookStatus[0] ? " active" : "")} onClick={onClickStatusToRead}></i>
-          <i title="Done reading it" id="status-read" className={"icon-checkmark" + (status == BookStatus[1] ? " active" : "")} onClick={onClickStatusRead}></i>
-          <i title="Liked it!" id="status-liked" className={"icon-heart" + (status == BookStatus[2] ? " active" : "")} onClick={onClickStatusLiked}></i>
+          <i title="Read later" id="status-later" className={"icon-alarm" + (status == ReadStatus[0] ? " active" : "")} onClick={onClickStatusToRead}></i>
+          <i title="Done reading it" id="status-read" className={"icon-checkmark" + (status == ReadStatus[1] ? " active" : "")} onClick={onClickStatusRead}></i>
+          <i title="Liked it!" id="status-liked" className={"icon-heart" + (status == ReadStatus[2] ? " active" : "")} onClick={onClickStatusLiked}></i>
           <span className="grow"></span>
           <i title="Bin it" id="status-bin" className="icon-bin text-slate-500" onClick={onClickStatusBin}></i>
         </div>

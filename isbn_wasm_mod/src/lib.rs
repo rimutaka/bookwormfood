@@ -1,11 +1,11 @@
 pub use http_req::IdToken;
+pub use http_req::AUTH_HEADER;
 use models::book::Book;
-use models::book_status::BookStatus;
+use models::book_status::ReadStatus;
 use models::books::Books;
 use utils::get_runtime;
 use wasm_bindgen::prelude::*;
 use wasm_response::{report_progress, WasmResponse, WasmResult};
-pub use http_req::AUTH_HEADER;
 
 #[macro_use]
 pub(crate) mod utils;
@@ -45,8 +45,9 @@ pub async fn get_book_data(isbn: String, id_token: Option<IdToken>) {
     };
 
     // get the book details from either the local storage or the Google Books API
-    let resp = match Book::get(&runtime, &isbn, id_token).await {
+    let resp = match Book::get(&runtime, &isbn, &id_token).await {
         Ok(Some(v)) => {
+            log!("{:?}", v);
             log!("Sending book data to UI");
             WasmResponse::LocalBook(Box::new(Some(WasmResult::Ok(v))))
         }
@@ -108,7 +109,7 @@ pub async fn get_scanned_books() {
 /// Updates the status of a book in the local storage.
 /// Returns `WasmResponse::LocalBook::Ok` in a message if successful.
 #[wasm_bindgen]
-pub async fn update_book_status(isbn: String, status: Option<BookStatus>, id_token: Option<IdToken>) {
+pub async fn update_book_status(isbn: String, status: Option<ReadStatus>, id_token: Option<IdToken>) {
     log!("Updating book status in local storage");
 
     // need the runtime for the global context and fetch
@@ -123,7 +124,7 @@ pub async fn update_book_status(isbn: String, status: Option<BookStatus>, id_tok
     };
 
     // get Books from local storage and wrap them into a response struct
-    let resp = match Book::update_status(&runtime, &isbn, status, id_token).await {
+    let resp = match Book::update_status(&runtime, &isbn, status, &id_token).await {
         Ok(v) => {
             log!("Book status updated");
             WasmResponse::LocalBook(Box::new(Some(WasmResult::Ok(v))))

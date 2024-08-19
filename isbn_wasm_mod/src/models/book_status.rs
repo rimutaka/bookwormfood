@@ -5,8 +5,11 @@ use wasm_bindgen::prelude::*;
 /// Defaults to None.
 #[wasm_bindgen]
 #[derive(Copy, Clone, Deserialize, Serialize, Debug, PartialEq)]
-pub enum BookStatus {
-    ToRead,
-    Read,
-    Liked,
+pub enum ReadStatus {
+    ToRead = 0,
+    Read = 1,
+    Liked = 2,
 }
+
+
+

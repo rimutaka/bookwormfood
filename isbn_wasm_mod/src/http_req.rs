@@ -24,7 +24,7 @@ pub(super) async fn execute_http_request<R, P>(
     url: &str,
     payload: Option<&P>,
     runtime: &Window,
-    id_token: Option<IdToken>,
+    id_token: &Option<IdToken>,
 ) -> Result<R>
 where
     R: for<'de> serde::Deserialize<'de>,
@@ -41,7 +41,7 @@ where
         if id_token.is_some() {
             log!("Token reset for untrusted URL. It's a bug.");
         }
-        None
+        &None
     };
 
     // set request params
@@ -99,7 +99,7 @@ where
 
     // set the auth header if the token is provided and the target is bookwormfood domain
     if let Some(id_token) = id_token {
-        let _ = request.headers().set(AUTH_HEADER, &id_token);
+        let _ = request.headers().set(AUTH_HEADER, id_token);
     }
 
     // calculate the SHA256 hash of the payload and set the header

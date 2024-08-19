@@ -302,7 +302,7 @@ export function get_scanned_books() {
 * Updates the status of a book in the local storage.
 * Returns `WasmResponse::LocalBook::Ok` in a message if successful.
 * @param {string} isbn
-* @param {BookStatus | undefined} [status]
+* @param {ReadStatus | undefined} [status]
 * @param {string | undefined} [id_token]
 * @returns {Promise<void>}
 */
@@ -348,7 +348,7 @@ function __wbg_adapter_121(arg0, arg1, arg2, arg3) {
 * Where the reader is with the book.
 * Defaults to None.
 */
-export const BookStatus = Object.freeze({ ToRead:0,"0":"ToRead",Read:1,"1":"Read",Liked:2,"2":"Liked", });
+export const ReadStatus = Object.freeze({ ToRead:0,"0":"ToRead",Read:1,"1":"Read",Liked:2,"2":"Liked", });
 
 async function __wbg_load(module, imports) {
     if (typeof Response === 'function' && module instanceof Response) {
@@ -760,8 +760,8 @@ function __wbg_get_imports() {
         const ret = wasm.memory;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper2589 = function() { return logError(function (arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 193, __wbg_adapter_46);
+    imports.wbg.__wbindgen_closure_wrapper2653 = function() { return logError(function (arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 220, __wbg_adapter_46);
         return addHeapObject(ret);
     }, arguments) };
 

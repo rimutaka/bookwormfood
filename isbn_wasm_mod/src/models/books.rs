@@ -101,7 +101,7 @@ impl Books {
 
         // the items in the local storage are randomly sorted
         // sort the list to make the latest scanned book come first
-        books.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
+        books.sort_by(|a, b| b.timestamp_update.cmp(&a.timestamp_update));
 
         Ok(Books { books })
     }

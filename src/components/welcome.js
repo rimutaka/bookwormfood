@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import { build_book_url } from "./bookDetails.js";
 import useState from 'react-usestateref';
-import initWasmModule, { get_scanned_books, BookStatus } from '../wasm-rust/isbn_mod.js';
+import initWasmModule, { get_scanned_books, ReadStatus } from '../wasm-rust/isbn_mod.js';
 
 
 export default function Welcome() {
@@ -89,13 +89,13 @@ export default function Welcome() {
         // default is a blank space
         let statusIcon = "blank";
         switch (book.status) {
-          case BookStatus[0]:
+          case ReadStatus[0]:
             statusIcon = "icon-alarm";
             break;
-          case BookStatus[1]:
+          case ReadStatus[1]:
             statusIcon = "icon-checkmark";
             break;
-          case BookStatus[2]:
+          case ReadStatus[2]:
             statusIcon = "icon-heart";
             break;
         }
