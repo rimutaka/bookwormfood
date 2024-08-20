@@ -2,13 +2,15 @@ use aws_lambda_events::{
     http::{HeaderMap, HeaderValue},
     lambda_function_urls::{LambdaFunctionUrlRequest, LambdaFunctionUrlResponse},
 };
-use aws_sdk_dynamodb::{types::AttributeValue, Client};
+use aws_sdk_dynamodb::Client;
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
+use models::book::DdbBook;
 use tracing::info;
 use tracing_subscriber::filter::LevelFilter;
-use wasm_mod::{models::book::Book, AUTH_HEADER};
+use wasm_mod::AUTH_HEADER;
 
 mod jwt;
+mod models;
 
 const USER_BOOKS_TABLE_NAME: &str = "user_books";
 
@@ -45,16 +47,16 @@ pub(crate) async fn my_handler(
 
     // try to deser the body into a book
     let book = match &event.payload.body {
-        Some(v) => match serde_json::from_str::<Book>(v) {
+        Some(v) => match serde_json::from_str::<DdbBook>(v) {
             Ok(v) => v,
             Err(e) => {
                 info!("Failed to parse payload: {:?}", e);
-                return handler_response(Some("Failed to parse book".to_string()), 400);
+                return handler_response(Some("Invalid payload. Expected DdbBook".to_string()), 400);
             }
         },
         None => {
             info!("Empty input");
-            return handler_response(Some("Empty input".to_string()), 400);
+            return handler_response(Some("Missing payload. Expected DdbBook".to_string()), 400);
         }
     };
 
@@ -71,46 +73,13 @@ pub(crate) async fn my_handler(
     };
     info!("Email: {:?}", email);
 
-    // validate isbn
-    if ((book.isbn.len() == 13 && book.isbn.starts_with("97")) || book.isbn.len() == 10)
-        && book.isbn.parse::<u64>().is_ok()
-    {
-        info!("ISBN: {}", book.isbn);
-    } else if book.isbn.parse::<u64>().is_err() {
-        info!("Invalid ISBN: {}", book.isbn);
-        return handler_response(Some("Invalid ISBN".to_string()), 400);
-    }
-
-    info!("ISBN: {}", book.isbn);
-
     // save the book to the database
     let client = Client::new(&aws_config::load_from_env().await);
-    match client
-        .put_item()
-        .table_name(USER_BOOKS_TABLE_NAME)
-        .item("uid", AttributeValue::S(email.clone()))
-        .item("isbn", AttributeValue::N(book.isbn.clone()))
-        .item(
-            "book",
-            match serde_json::to_string(&book) {
-                Ok(v) => AttributeValue::S(v),
-                Err(e) => {
-                    info!("Failed to serialize book: {:?}", e);
-                    return handler_response(Some("Failed to serialize book".to_string()), 400);
-                }
-            },
-        )
-        .send()
-        .await
-    {
-        Ok(_) => info!("Book saved in DDB"),
-        Err(e) => {
-            info!("Failed to save book {}/{}: {:?}", email, book.isbn, e);
-            return handler_response(Some("Failed to save book".to_string()), 500);
-        }
-    }
 
-    handler_response(Some("Book saved".to_string()), 200)
+    match book.save(&client, &email).await {
+        Ok(_) => handler_response(Some("Book saved".to_string()), 200),
+        Err(e) => handler_response(Some(e.to_string()), 400),
+    }
 }
 
 /// A shortcut for returning the lambda response in the required format.

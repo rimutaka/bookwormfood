@@ -7,7 +7,7 @@ description = "Returns modified index.html from S3"
 license = "AGPL-3.0"
 
 [dependencies]
-wasm_mod = { path = "../../isbn_wasm_mod" }
+wasm_mod = { path = "../../wasm_mod" }
 tokio = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
