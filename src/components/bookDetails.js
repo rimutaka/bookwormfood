@@ -137,11 +137,11 @@ export default function BookDetails() {
     // see `WasmResult` and `WasmResponse` in the WASM code for the structure of the data
     if (data?.localBook?.Ok) {
       const book = data.localBook.Ok;
-      let title = book.volumeInfo?.title;
+      let title = book.title;
       if (!title) title = "No data in Google for this ISBN code";
       // console.log(`Title: ${title}`);
       setTitle(title);
-      let authors = book.volumeInfo?.authors?.join(", ");
+      let authors = book.authors?.join(", ");
       setAuthors(authors);
       let cover = book.cover;
       setCover(cover);

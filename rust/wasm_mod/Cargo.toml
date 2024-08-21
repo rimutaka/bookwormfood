@@ -11,28 +11,29 @@ repository = ""
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+bookwormfood_types = { path = "../types" }
 wasm-bindgen = "0.2"
 js-sys = "0.3"
 wasm-bindgen-futures = "0.4"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.6"
-urlencoding = "2.1"
+# urlencoding = "2.1"
 sha2 = "0.10.8"
 hex = "0.4.3"
 
 # rand only works for WASM if JS support is enabled in a dependency
 # See https://docs.rs/getrandom/latest/getrandom/#webassembly-support
-rand = "0.8"
-getrandom = { version = "0.2", features = ["js"] }
+# rand = "0.8"
+# getrandom = { version = "0.2", features = ["js"] }
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
 # code size when deploying.
 console_error_panic_hook = { version = "0.1.7", optional = true }
 
-chrono = { version = "0.4.38", features = ["serde"] }
-anyhow = "1.0.86"
+chrono = { workspace = true }
+anyhow = { workspace = true }
 
 [dependencies.web-sys]
 version = "0.3"
@@ -50,7 +51,3 @@ features = [
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.36"
-
-[profile.release]
-# Tell `rustc` to optimize for small code size.
-opt-level = 3

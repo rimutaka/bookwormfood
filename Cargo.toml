@@ -1,5 +1,5 @@
 [workspace]
-members = ["rust/wasm_mod", "rust/lambdas/index-html-server", "rust/lambdas/client-sync"]
+members = ["rust/wasm_mod", "rust/lambdas/index-html-server", "rust/lambdas/client-sync", "rust/types"]
 resolver = "2"
 
 [workspace.dependencies]

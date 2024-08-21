@@ -7,7 +7,7 @@ description = "Returns modified index.html from S3"
 license = "AGPL-3.0"
 
 [dependencies]
-wasm_mod = { path = "../../wasm_mod" }
+bookwormfood_types = { path = "../../types" }
 tokio = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -15,16 +15,16 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 lambda_runtime = { workspace = true }
 aws_lambda_events = { workspace = true }
-aws-sdk-s3 = { workspace = true }
+# aws-sdk-s3 = { workspace = true }
 aws-sdk-dynamodb = { workspace = true }
 aws-config = { workspace = true }
 regex = { workspace = true }
-reqwest = { version = "0.12", features = [
-  "json",
-  "rustls-tls-native-roots",
-  "http2",
-  "charset",
-], default-features = false }
+# reqwest = { version = "0.12", features = [
+#   "json",
+#   "rustls-tls-native-roots",
+#   "http2",
+#   "charset",
+# ], default-features = false }
 jsonwebtoken = "9.3.0"
 chrono = { workspace = true }
 anyhow = { workspace = true }

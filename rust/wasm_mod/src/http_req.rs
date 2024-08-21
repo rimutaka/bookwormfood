@@ -45,8 +45,8 @@ where
     };
 
     // set request params
-    let mut opts = RequestInit::new();
-    opts.mode(RequestMode::Cors);
+    let opts = RequestInit::new();
+    opts.set_mode(RequestMode::Cors);
 
     // serialize the payload, if any, into a string
     let payload = match payload {
@@ -67,11 +67,11 @@ where
     // decide if it's a POST or a GET request
     match &payload {
         Some(v) => {
-            opts.method("POST");
-            opts.body(Some(&wasm_bindgen::JsValue::from_str(v)));
+            opts.set_method("POST");
+            opts.set_body(&wasm_bindgen::JsValue::from_str(v));
         }
         None => {
-            opts.method("GET");
+            opts.set_method("GET");
         }
     }
 

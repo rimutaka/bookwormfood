@@ -85,10 +85,10 @@ export default function Welcome() {
     books.forEach((book) => {
 
       // choose the right status icon
-      if (book.volumeInfo) {
+      if (book.title) {
         // default is a blank space
         let statusIcon = "blank";
-        switch (book.status) {
+        switch (book.readStatus) {
           case ReadStatus[0]:
             statusIcon = "icon-alarm";
             break;
@@ -100,11 +100,11 @@ export default function Welcome() {
             break;
         }
 
-        let url = build_book_url(book.volumeInfo.title, book.volumeInfo.authors?.[0], book.isbn);
+        let url = build_book_url(book.title, book.authors?.[0], book.isbn);
         book_list.push(<li key={book.isbn}>
           <i className={statusIcon}></i>
-          <a href={url} data-url={url} onClick={onBookLinkClickHandler}>{book.volumeInfo.title}</a>
-          {book.volumeInfo.authors ? " by " + book.volumeInfo.authors[0] : ""}
+          <a href={url} data-url={url} onClick={onBookLinkClickHandler}>{book.title}</a>
+          {book.authors ? " by " + book.authors?.[0] : ""}
         </li>);
       }
     });

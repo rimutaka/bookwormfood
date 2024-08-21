@@ -9,7 +9,7 @@ use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
 use index::get_index_from_s3;
 use tracing::{error, info};
 use tracing_subscriber::filter::LevelFilter;
-use wasm_mod::google;
+use bookwormfood_types::google;
 
 mod index;
 

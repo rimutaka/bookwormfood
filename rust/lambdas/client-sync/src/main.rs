@@ -3,14 +3,13 @@ use aws_lambda_events::{
     lambda_function_urls::{LambdaFunctionUrlRequest, LambdaFunctionUrlResponse},
 };
 use aws_sdk_dynamodb::Client;
+use bookwormfood_types::{Book, AUTH_HEADER};
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
-use models::book::DdbBook;
 use tracing::info;
 use tracing_subscriber::filter::LevelFilter;
-use wasm_mod::AUTH_HEADER;
 
+mod book;
 mod jwt;
-mod models;
 
 const USER_BOOKS_TABLE_NAME: &str = "user_books";
 
@@ -47,7 +46,7 @@ pub(crate) async fn my_handler(
 
     // try to deser the body into a book
     let book = match &event.payload.body {
-        Some(v) => match serde_json::from_str::<DdbBook>(v) {
+        Some(v) => match serde_json::from_str::<Book>(v) {
             Ok(v) => v,
             Err(e) => {
                 info!("Failed to parse payload: {:?}", e);
@@ -76,7 +75,7 @@ pub(crate) async fn my_handler(
     // save the book to the database
     let client = Client::new(&aws_config::load_from_env().await);
 
-    match book.save(&client, &email).await {
+    match book::save(&book, &client, &email).await {
         Ok(_) => handler_response(Some("Book saved".to_string()), 200),
         Err(e) => handler_response(Some(e.to_string()), 400),
     }
