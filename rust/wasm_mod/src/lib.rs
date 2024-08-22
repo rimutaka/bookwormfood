@@ -1,6 +1,7 @@
 use bookwormfood_types::ReadStatus;
 pub use http_req::IdToken;
 pub use http_req::AUTH_HEADER;
+use sync::sync_book;
 use utils::get_runtime;
 use wasm_bindgen::prelude::*;
 use wasm_response::{report_progress, WasmResponse, WasmResult};
@@ -11,6 +12,7 @@ mod book;
 mod books;
 pub mod google;
 mod http_req;
+mod sync;
 pub mod wasm_response;
 
 /// All error handling in this crate is based on either retrying a request after some time
@@ -44,9 +46,9 @@ pub async fn get_book_data(isbn: String, id_token: Option<IdToken>) {
     };
 
     // get the book details from either the local storage or the Google Books API
-    let resp = match book::get(&runtime, &isbn, &id_token).await {
+    let resp = match book::get(&runtime, &isbn).await {
         Ok(Some(v)) => {
-            log!("{:?}", v);
+            // log!("{:?}", v);
             log!("Sending book data to UI");
             WasmResponse::LocalBook(Box::new(Some(WasmResult::Ok(v))))
         }
@@ -66,6 +68,8 @@ pub async fn get_book_data(isbn: String, id_token: Option<IdToken>) {
     // log!("{:?}", resp);
 
     report_progress(resp.to_string());
+
+    let _ = sync_book(&isbn, &runtime, &id_token).await;
 }
 
 /// Returns the list of previously scanned books from the local storage.
@@ -123,7 +127,7 @@ pub async fn update_book_status(isbn: String, status: Option<ReadStatus>, id_tok
     };
 
     // get Books from local storage and wrap them into a response struct
-    let resp = match book::update_status(&runtime, &isbn, status, &id_token).await {
+    let resp = match book::update_status(&runtime, &isbn, status).await {
         Ok(v) => {
             log!("Book status updated");
             WasmResponse::LocalBook(Box::new(Some(WasmResult::Ok(v))))
@@ -140,6 +144,8 @@ pub async fn update_book_status(isbn: String, status: Option<ReadStatus>, id_tok
 
     // send the response back to the UI thread
     report_progress(resp.to_string());
+
+    let _ = sync_book(&isbn, &runtime, &id_token).await;
 }
 
 /// Deletes a book from the local storage.

@@ -20,12 +20,12 @@ pub const TRUSTED_URLS: &str = "https://bookwormfood.com";
 /// * POST - if payload is provided
 ///
 /// Do not include the id_token for URLs other than our own server side.
-pub(super) async fn execute_http_request<R, P>(
+pub(super) async fn execute_http_request<P, R>(
     url: &str,
     payload: Option<&P>,
     runtime: &Window,
     id_token: &Option<IdToken>,
-) -> Result<R>
+) -> Result<Option<R>>
 where
     R: for<'de> serde::Deserialize<'de>,
     P: serde::Serialize,
@@ -155,26 +155,37 @@ where
     // log!("Resp as Response:");
     // log!("{:?}", resp);
 
+    // return an error if the status is anything but success
+    let status = resp.status();
+    log!("HTTP status: {status}");
+    if !(200..300).contains(&status) {
+        log!("HTTP request failed: {:?}", resp);
+        return Err(RetryAfter::Never);
+    }
+
+    // return success if there is no response body
+    if status == 204 {
+        return Ok(None);
+    }
+
     // Read the response stream to completion.
     // In theory, the stream may still be open and the op may take some time to complete
-    let resp = match resp.json() {
+    let resp_body = match resp.json() {
         Ok(v) => JsFuture::from(v).await,
         Err(e) => {
-            log!("Cannot convert Promise to Future");
-            log!("{url}");
-            log!("{:?}", e);
+            log!("Cannot convert response to Future for {url}: {:?}", e);
             // TODO: may be worth a retry
             return Err(RetryAfter::Never);
         }
     };
 
     // log!("Resp as Response JSON:");
-    // log!("{:?}", resp);
-
+    // log!("resp: {:?}", resp);
+    // log!("body: {:?}", resp_body);
     // log!("HTTP request completed");
 
     // Unwrap the response and handle the error
-    let resp = match resp {
+    let resp_body = match resp_body {
         Ok(v) => v,
         Err(e) => {
             log!("HTTP request failed: {url}");
@@ -187,16 +198,14 @@ where
     // log!("Resp as string:");
     // log!("{:?}", resp);
 
-    // convert into a rust struct
-    let playlist = match serde_wasm_bindgen::from_value::<R>(resp) {
-        Ok(v) => v,
+    // return a rust struct
+    match serde_wasm_bindgen::from_value::<R>(resp_body) {
+        Ok(v) => Ok(Some(v)),
         Err(e) => {
             log!("Cannot deser HTTP response into rust struct");
             log!("{url}");
             log!("{:?}", e);
-            return Err(RetryAfter::Never);
+            Err(RetryAfter::Never)
         }
-    };
-
-    Ok(playlist)
+    }
 }

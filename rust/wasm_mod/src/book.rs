@@ -1,7 +1,6 @@
 use crate::google::get_book_data;
-use crate::http_req::{execute_http_request, IdToken};
-use crate::utils::log;
-use anyhow::{bail, Error, Result};
+use crate::utils::{get_local_storage, log};
+use anyhow::{bail, Result};
 use bookwormfood_types::{Book, ReadStatus};
 use chrono::Utc;
 use web_sys::Window;
@@ -10,7 +9,7 @@ use web_sys::Window;
 /// The book record is stored in the local storage (front-end only access).
 /// Fails silently if the record cannot be stored.
 /// TODO: Add error handling.
-pub(crate) async fn save(book: &Book, runtime: &Window, id_token: &Option<IdToken>) {
+pub(crate) async fn save(book: &Book, runtime: &Window) {
     // get the reference to the local storage
     let ls = match runtime.local_storage() {
         Ok(Some(v)) => v,
@@ -26,7 +25,7 @@ pub(crate) async fn save(book: &Book, runtime: &Window, id_token: &Option<IdToke
 
     // replace the record in the database
     let key = book.isbn.clone();
-    let value = match serde_json::to_string(book) {
+    let value = match serde_json::to_string(&book) {
         Ok(v) => v,
         Err(e) => {
             log!("Failed to serialize book record for {key}: {:?}", e);
@@ -37,27 +36,14 @@ pub(crate) async fn save(book: &Book, runtime: &Window, id_token: &Option<IdToke
         Ok(()) => log!("Book {key} saved in local storage"),
         Err(e) => log!("Failed to save book {key} record: {:?}", e),
     }
-
-    // save the book to the cloud DB
-    // TODO: do something with the result
-    if id_token.is_some() {
-        _ = send_to_ddb(book, runtime, id_token).await;
-    } else {
-        log!("No token to send the book to the cloud DB");
-    }
 }
 
 /// Updates the status of a book record in the local storage.
 /// Returns the updated book details back.
 /// Returns an error if the book cannot be found in LS or in GoogleBooks.
-pub(crate) async fn update_status(
-    runtime: &Window,
-    isbn: &str,
-    status: Option<ReadStatus>,
-    id_token: &Option<IdToken>,
-) -> Result<Book> {
+pub(crate) async fn update_status(runtime: &Window, isbn: &str, status: Option<ReadStatus>) -> Result<Book> {
     // get the book data
-    let book = match get(runtime, isbn, id_token).await? {
+    let book = match get(runtime, isbn).await? {
         Some(mut v) => {
             // exit if the previous status is the same as the new one
             // but I can't see how that may even happen if the UI behaves
@@ -98,14 +84,6 @@ pub(crate) async fn update_status(
         }
     };
 
-    // save the book to the cloud DB
-    // TODO: do something with the result
-    if id_token.is_some() {
-        _ = send_to_ddb(&book, runtime, id_token).await;
-    } else {
-        log!("No token to send the book to the cloud DB");
-    }
-
     Ok(book)
 }
 
@@ -113,19 +91,11 @@ pub(crate) async fn update_status(
 /// if the book is not found in the local storage it fetches the book data from Google Books.
 /// - Error - something went wrong
 /// - None - the book was not found
-pub(crate) async fn get(runtime: &Window, isbn: &str, id_token: &Option<IdToken>) -> Result<Option<Book>> {
+pub(crate) async fn get(runtime: &Window, isbn: &str) -> Result<Option<Book>> {
     // try to get the book from the local storage first
 
     // connect to the local storage
-    let ls = match runtime.local_storage() {
-        Ok(Some(v)) => v,
-        Err(e) => {
-            bail!("Failed to get local storage: {:?}", e);
-        }
-        _ => {
-            bail!("Local storage not available (OK(None))");
-        }
-    };
+    let ls = get_local_storage(runtime)?;
 
     // return book details from LS by isbn, if found
     if let Ok(Some(v)) = ls.get_item(isbn) {
@@ -162,8 +132,8 @@ pub(crate) async fn get(runtime: &Window, isbn: &str, id_token: &Option<IdToken>
         }
     };
 
-    // store the book record in the local storage
-    save(&book, runtime, id_token).await;
+    // store the book record in the local storage and sync with the cloud DB
+    save(&book, runtime).await;
 
     Ok(Some(book))
 }
@@ -192,18 +162,4 @@ pub(crate) async fn delete(runtime: &Window, isbn: &str) -> Result<()> {
     };
 
     Ok(())
-}
-
-/// Sends the book data to the cloud DB via a lambda.
-/// The lambda decides what to store and where.
-/// Logs any errors.
-async fn send_to_ddb(book: &Book, runtime: &Window, id_token: &Option<IdToken>) -> Result<Book> {
-    log!("Sending book data to lambda: {}", book.isbn);
-
-    let url = "https://bookwormfood.com/sync.html";
-
-    // TODO: error handling is a mess
-    execute_http_request::<Book, Book>(url, Some(book), runtime, id_token)
-        .await
-        .map_err(|_| Error::msg("Failed to send book data to lambda"))
 }

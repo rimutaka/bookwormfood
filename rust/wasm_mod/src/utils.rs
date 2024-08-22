@@ -1,4 +1,5 @@
-use web_sys::Window;
+use web_sys::{Storage, Window};
+use anyhow::{bail, Result};
 
 /// Logs output into browser console.
 macro_rules!  log {
@@ -16,7 +17,7 @@ pub(crate) async fn get_runtime() -> std::result::Result<Window, &'static str> {
     // web workers
     match web_sys::window() {
         Some(v) => {
-            log!("Runtime Window found");
+            // log!("Runtime Window found");
             Ok(v)
         }
         None => Err("Missing browser runtime. It's a bug."),
@@ -33,4 +34,19 @@ pub fn set_panic_hook() {
     // https://github.com/rustwasm/console_error_panic_hook#readme
     #[cfg(feature = "console_error_panic_hook")]
     console_error_panic_hook::set_once();
+}
+
+/// A shorcut for getting the local storage.
+/// TODO: put it inside OneCell, but it's probably not Send
+pub(crate) fn get_local_storage(runtime: &Window) -> Result<Storage> {
+    // connect to the local storage
+    match runtime.local_storage() {
+        Ok(Some(v)) => Ok(v),
+        Err(e) => {
+            bail!("Failed to get local storage: {:?}", e);
+        }
+        _ => {
+            bail!("Local storage not available (OK(None))");
+        }
+    }
 }

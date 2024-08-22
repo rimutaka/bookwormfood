@@ -86,31 +86,31 @@ export default function BookDetails() {
 
   useEffect(() => {
 
-    // get the ID token to send to the server, if the user is logged in
-    // the server only needs the email address from the claims
-    (async () => {
-      let idTokenClaims = null;
-      if (isAuthenticated) {
-        idTokenClaims = await getIdTokenClaims();
-        if (idTokenClaims?.__raw) {
-          setToken(idTokenClaims.__raw);
-          // console.log(`JWT: ${idTokenClaims?.__raw}`);
-          // console.log(`Expiry: ${idTokenClaims?.exp}`);
-        } else {
-          console.log(`Token: ${JSON.stringify(idTokenClaims)}`);
-        }
-      } else {
-        console.log("User is not authenticated");
-      }
-    })();
-
     // fetch book data if the ISBN code is found in the URL
     if (isbn) {
       (async () => {
+        // try to get the token
+        let idTokenClaims = null;
+        if (isAuthenticated) {
+          idTokenClaims = await getIdTokenClaims();
+          if (idTokenClaims?.__raw) {
+            setToken(idTokenClaims.__raw);
+            // console.log(`JWT: ${idTokenClaims?.__raw}`);
+            // console.log(`Expiry: ${idTokenClaims?.exp}`);
+          } else {
+            console.log(`Missing token: ${JSON.stringify(idTokenClaims)}`);
+          }
+        } else {
+          console.log("User is not authenticated");
+        }
+
+        // get book details
         await initWasmModule(); // run the wasm initializer before calling wasm methods
         // request book data from WASM module
         // the responses are sent back as messages to the window object
-        get_book_data(isbn, token);
+        // have to use the local for the token because `token` var is not updated in time
+        // console.log(`Read token: ${idTokenClaims?.__raw}`);
+        get_book_data(isbn, idTokenClaims?.__raw);
       })();
     } else {
       isbn = "no ISBN code found in the URL";

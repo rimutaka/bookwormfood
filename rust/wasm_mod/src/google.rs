@@ -10,14 +10,26 @@
 //
 use crate::http_req::execute_http_request;
 use crate::utils::log;
-use web_sys::Window;
+use crate::{Result, RetryAfter};
 use bookwormfood_types::google::Volumes;
+use web_sys::Window;
 
 /// Fetches book data from Google Books API
-pub(crate) async fn get_book_data(isbn: &str, runtime: &Window) -> super::Result<Volumes> {
+pub(crate) async fn get_book_data(isbn: &str, runtime: &Window) -> Result<Volumes> {
     log!("Querying google books for: {isbn}");
 
     let url = format!("https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}");
 
-    execute_http_request::<Volumes, u8>(&url, None, runtime, &None).await
+    match execute_http_request::<u8, Volumes>(&url, None, runtime, &None).await {
+        Ok(Some(v)) => Ok(v),
+        Ok(None) => {
+            log!("Blank response from Google for {isbn}");
+            Err(RetryAfter::Never)
+        }
+        Err(e) => {
+            log!("Failed to get book data for {isbn}");
+            log!("{:?}", e);
+            Err(e)
+        }
+    }
 }
