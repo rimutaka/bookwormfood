@@ -1,6 +1,7 @@
 use crate::google::VolumeInfo;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 
 pub mod google;
@@ -46,9 +47,22 @@ impl std::fmt::Display for ReadStatus {
     }
 }
 
+impl FromStr for ReadStatus {
+    type Err = ();
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        match s {
+            "ToRead" => Ok(ReadStatus::ToRead),
+            "Read" => Ok(ReadStatus::Read),
+            "Liked" => Ok(ReadStatus::Liked),
+            _ => Err(()),
+        }
+    }
+}
+
 /// An internal representation of a book record.
 /// Stored in the local storage and in the cloud.
-#[derive(Deserialize, Serialize, Debug)]
+/// This struct does not Default implementation to force thinking what attributes go where.
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Book {
     /// This ISBN may differ from the key in the local storage or the industry IDs in the Google Books API.
@@ -82,11 +96,34 @@ impl Book {
         ((self.isbn.len() == 13 && self.isbn.starts_with("97")) || self.isbn.len() == 10)
             && self.isbn.parse::<u64>().is_ok()
     }
+
+    /// Updates the sync timestamp to the current time
+    /// and returns the updated Self.
+    pub fn with_new_sync_timestamp(self) -> Self {
+        let mut book = self;
+        book.timestamp_sync = Some(Utc::now());
+        book
+    }
+
+    /// Reset the sync timestamp to None because the book failed to sync
+    /// and returns the updated Self.
+    pub fn without_sync_timestamp(self) -> Self {
+        let mut book = self;
+        book.timestamp_sync = None;
+        book
+    }
 }
 
 /// A list of book records.
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Books {
     pub books: Vec<Book>,
+}
+
+impl Books {
+    /// Sort the list of books by the timestamp of the last update - the latest update comes first.
+    pub fn sort(&mut self) {
+        self.books.sort_by(|a, b| b.timestamp_update.cmp(&a.timestamp_update));
+    }
 }

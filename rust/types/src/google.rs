@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 // }
 
 /// Part of GoogleBooks API response
-#[derive(Deserialize, Serialize, Debug, Default)]
+#[derive(Deserialize, Serialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ImageLinks {
     /// ~80 pixels wide
@@ -54,7 +54,7 @@ pub struct ImageLinks {
 // }
 
 /// Part of GoogleBooks API response
-#[derive(Deserialize, Serialize, Debug, Default)]
+#[derive(Deserialize, Serialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct VolumeInfo {
     pub title: String,
@@ -73,7 +73,7 @@ pub struct VolumeInfo {
 }
 
 /// Part of GoogleBooks API response
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Volume {
     pub id: String,

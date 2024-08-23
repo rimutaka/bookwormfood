@@ -1,7 +1,7 @@
 use crate::http_req::{execute_http_request, IdToken};
 use crate::utils::{get_local_storage, log};
-use anyhow::{bail, Result};
-use bookwormfood_types::Book;
+use anyhow::{bail, Error, Result};
+use bookwormfood_types::{Book, Books};
 use chrono::Utc;
 use web_sys::Window;
 
@@ -95,4 +95,114 @@ pub(crate) async fn sync_book(isbn: &str, runtime: &Window, id_token: &Option<Id
     };
 
     Ok(())
+}
+
+/// Get the list of books from the cloud DB and update the local storage.
+/// Returns:
+/// - the updated list of books on success
+/// - None if there was no change
+/// - Error with a user-friendly message on error
+///
+/// TODO: send unsync'd books to the cloud
+pub(crate) async fn sync_books(books: Books, runtime: &Window, id_token: &Option<IdToken>) -> Result<Option<Books>> {
+    // nothing to do if the user is not logged in
+    if id_token.is_none() {
+        log!("No token. Sync skipped.");
+        return Ok(None);
+    }
+
+    let url = "https://bookwormfood.com/sync.html";
+
+    // get the list of books from the lambda
+    let cloud_books = match execute_http_request::<(), Books>(url, None, runtime, id_token).await {
+        Ok(Some(v)) => v,
+        Ok(None) => {
+            log!("No books in the cloud DB");
+            return Ok(None);
+        }
+        Err(e) => {
+            log!("Failed to get books from the cloud DB: {:?}", e);
+            return Err(Error::msg("Failed to get books from the cloud DB"));
+        }
+    };
+
+    log!("Cloud books: {}, local: {}", cloud_books.books.len(), books.books.len());
+
+    // index the books by ISBN
+    let local_books = books
+        .books
+        .iter()
+        .map(|v| (v.isbn.clone(), v.timestamp_update))
+        .collect::<std::collections::HashMap<_, _>>();
+
+    // loop thru the cloud books to find what is missing from the local storage
+    let new_cloud_books = cloud_books
+        .books
+        .into_iter()
+        .filter_map(|v| {
+            match local_books.get(&v.isbn) {
+                Some(local_book_timestamp_update) => {
+                    // the book is already in the local storage
+                    // check if the cloud book is newer
+                    if &v.timestamp_update > local_book_timestamp_update {
+                        // the cloud book is newer
+                        // update the local book
+                        log!("Updating local book with ISBN: {}", v.isbn);
+                        Some(v)
+                    } else {
+                        // the local book is newer
+                        None
+                    }
+                }
+                None => {
+                    // the book is not in the local storage
+                    // add it
+                    log!("Adding new book with ISBN: {}", v.isbn);
+                    Some(v)
+                }
+            }
+        })
+        .collect::<Vec<_>>();
+
+    if new_cloud_books.is_empty() {
+        log!("No new books to add or update");
+        return Ok(None);
+    };
+
+    log!("Cloud books to add: {}", new_cloud_books.len());
+
+    let ls = get_local_storage(runtime)?;
+
+    // reallocate the local list of books to accommodate the new books
+    let mut books = books;
+    books.books.reserve(new_cloud_books.len());
+
+    // save the new books to the local storage and add them to the list of local books
+    for cloud_book in new_cloud_books {
+        // try to save the book with the updated sync field in the local storage
+        let cloud_book = cloud_book.with_new_sync_timestamp();
+        let cloud_book = match serde_json::to_string(&cloud_book) {
+            Ok(v) => match ls.set_item(&cloud_book.isbn, &v) {
+                Ok(()) => {
+                    log!("Added to local storage: {}", cloud_book.isbn);
+                    cloud_book
+                }
+                Err(e) => {
+                    log!("Failed to update sync status for {}: {:?}", cloud_book.isbn, e);
+                    // this makes no sense because the record in LS may have a different value
+                    cloud_book.without_sync_timestamp()
+                }
+            },
+            Err(e) => {
+                log!("Failed to serialize book record for {}: {:?}", cloud_book.isbn, e);
+                cloud_book.without_sync_timestamp()
+            }
+        };
+
+        books.books.push(cloud_book);
+    }
+
+    books.sort();
+
+    Ok(Some(books))
 }

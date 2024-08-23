@@ -96,12 +96,17 @@ pub(crate) fn get(runtime: &Window) -> Result<Books> {
             }
         }
 
+        // remove extra book details not used for the list of books
+        let mut book = book;
+        book.volume_info = None;
+
         books.push(book);
     }
 
     // the items in the local storage are randomly sorted
     // sort the list to make the latest scanned book come first
-    books.sort_by(|a, b| b.timestamp_update.cmp(&a.timestamp_update));
+    let mut books = Books { books };
+    books.sort();
 
-    Ok(Books { books })
+    Ok(books)
 }

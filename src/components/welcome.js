@@ -10,7 +10,8 @@ export default function Welcome() {
 
   const navigate = useNavigate();
   const [books, setBooks] = useState([]); // the list of books saved in localStorage
-  const { isAuthenticated } = useAuth0();
+  const { isAuthenticated, getIdTokenClaims } = useAuth0();
+  const [token, setToken] = useState();
 
   useEffect(() => {
 
@@ -23,11 +24,29 @@ export default function Welcome() {
 
     // get the list of books from the localStorage
     (async () => {
+
+      // try to get the token
+      let idTokenClaims = null;
+      if (isAuthenticated) {
+        idTokenClaims = await getIdTokenClaims();
+        if (idTokenClaims?.__raw) {
+          setToken(idTokenClaims.__raw);
+          // console.log(`JWT: ${idTokenClaims?.__raw}`);
+          // console.log(`Expiry: ${idTokenClaims?.exp}`);
+        } else {
+          console.log(`Missing token: ${JSON.stringify(idTokenClaims)}`);
+        }
+      } else {
+        console.log("User is not authenticated");
+      }
+
+
       await initWasmModule(); // run the wasm initializer before calling wasm methods
       // console.log("Requesting scanned books");
       // request book data from WASM module
-      // the responses are sent back as messages to the window object   
-      get_scanned_books();
+      // the responses are sent back as messages to the window object 
+      // console.log(`Read token: ${idTokenClaims?.__raw}`);
+      get_scanned_books(idTokenClaims?.__raw);
       // console.log("Requested scanned books (inside async)");
     })();
 

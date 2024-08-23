@@ -1,7 +1,8 @@
+use bookwormfood_types::Books;
 use bookwormfood_types::ReadStatus;
 pub use http_req::IdToken;
 pub use http_req::AUTH_HEADER;
-use sync::sync_book;
+use sync::{sync_book, sync_books};
 use utils::get_runtime;
 use wasm_bindgen::prelude::*;
 use wasm_response::{report_progress, WasmResponse, WasmResult};
@@ -75,7 +76,7 @@ pub async fn get_book_data(isbn: String, id_token: Option<IdToken>) {
 /// Returns the list of previously scanned books from the local storage.
 /// See `fn report_progress()` for more details.
 #[wasm_bindgen]
-pub async fn get_scanned_books() {
+pub async fn get_scanned_books(id_token: Option<IdToken>) {
     log!("Getting the list of books from local storage");
 
     // need the runtime for the global context and fetch
@@ -89,11 +90,15 @@ pub async fn get_scanned_books() {
         }
     };
 
+    // get the list of books from the local storage
+    let local_books = books::get(&runtime);
+
     // get Books from local storage and wrap them into a response struct
-    let resp = match books::get(&runtime) {
+    let resp = match &local_books {
         Ok(v) => {
             log!("Book list retrieved: {}", v.books.len());
-            WasmResponse::LocalBooks(Box::new(Some(WasmResult::Ok(v))))
+            // TODO: get rid of this clone
+            WasmResponse::LocalBooks(Box::new(Some(WasmResult::Ok(v.clone()))))
         }
         Err(e) => {
             log!("Failed to get list of books");
@@ -106,6 +111,33 @@ pub async fn get_scanned_books() {
     // log!("{:?}", resp);
 
     // send the response back to the UI thread
+    report_progress(resp.to_string());
+
+    // proceed to getting potentially more user books from the cloud DB
+    let local_books = match local_books {
+        Ok(v) => v,
+        Err(_) => Books { books: Vec::new() },
+    };
+
+    // try to sync the books with the cloud DB
+    let resp = match sync_books(local_books, &runtime, &id_token).await {
+        Ok(Some(v)) => {
+            log!("Update book list from cloud DB: {}", v.books.len());
+            WasmResponse::LocalBooks(Box::new(Some(WasmResult::Ok(v))))
+        }
+        Ok(None) => {
+            // no need to send anything to the UI
+            log!("No new books from the cloud DB");
+            return;
+        }
+        Err(_) => {
+            log!("Getting list of cloud DB books failed");
+            // TODO: send a report back to the UI
+            return;
+        }
+    };
+
+    // send the updated list of books to the UI
     report_progress(resp.to_string());
 }
 
