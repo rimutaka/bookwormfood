@@ -76,7 +76,7 @@ export default function Welcome() {
       let list_of_books = data.localBooks.Ok?.books;
       // console.log(`Books: ${JSON.stringify(list_of_books)}`);
       setBooks(list_of_books);
-      withCloudSync = false; // books synced - do not sync again
+      withCloudSync = !token; // books synced - do not sync again
     }
     else {
       // console.log("Welcome screen received a message that is not a list of books");
