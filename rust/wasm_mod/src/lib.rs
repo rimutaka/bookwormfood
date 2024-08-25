@@ -59,8 +59,8 @@ pub async fn get_book_data(isbn: String, id_token: Option<IdToken>) {
         }
 
         Err(e) => {
-            log!("Failed to get book data");
-            log!("{:?}", e);
+            log!("Sending an error msg to UI");
+            // log!("{:?}", e);
             WasmResponse::LocalBook(Box::new(Some(WasmResult::Err(format!("{:?}", e)))))
         }
     };

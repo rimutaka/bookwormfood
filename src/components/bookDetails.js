@@ -116,7 +116,7 @@ export default function BookDetails() {
       isbn = "no ISBN code found in the URL";
     }
 
-  }, []);
+  }, [isAuthenticated]);
 
   // handles messages with book data sent back by the WASM module
   window.addEventListener("message", (msg) => {

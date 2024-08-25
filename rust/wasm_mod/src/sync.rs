@@ -2,7 +2,6 @@ use crate::http_req::{execute_http_request, IdToken};
 use crate::utils::{get_local_storage, log};
 use anyhow::{bail, Error, Result};
 use bookwormfood_types::{Book, Books};
-use chrono::Utc;
 use web_sys::Window;
 
 /// Try to save the book to the cloud DB and update the sync status in the local storage.
@@ -18,7 +17,7 @@ pub(crate) async fn sync_book(isbn: &str, runtime: &Window, id_token: &Option<Id
 
     let ls = get_local_storage(runtime)?;
 
-    let book = match ls.get_item(isbn) {
+    let local_book = match ls.get_item(isbn) {
         Ok(Some(v)) => {
             log!("Found in local storage: {isbn}");
             match serde_json::from_str::<Book>(&v) {
@@ -40,42 +39,41 @@ pub(crate) async fn sync_book(isbn: &str, runtime: &Window, id_token: &Option<Id
     };
 
     // check if the books needs a sync
-    if let Some(v) = book.timestamp_sync {
-        if v > book.timestamp_update {
+    if let Some(v) = local_book.timestamp_sync {
+        if v > local_book.timestamp_update {
             log!("Book sync is current: {isbn}");
             return Ok(());
         }
     }
 
-    log!("Sending book data to lambda: {}", book.isbn);
+    log!("Sending book data to lambda: {}", local_book.isbn);
 
     // some fields are never saved in the cloud
-    let book = Book {
+    let cloud_book = Book {
         volume_info: None,
         cover: None,
         timestamp_sync: None,
         // these fields are saved in the cloud
-        authors: book.authors.clone(),
-        isbn: book.isbn.clone(),
-        read_status: book.read_status,
-        timestamp_update: book.timestamp_update,
-        title: book.title.clone(),
+        authors: local_book.authors.clone(),
+        isbn: local_book.isbn.clone(),
+        read_status: local_book.read_status,
+        timestamp_update: local_book.timestamp_update,
+        title: local_book.title.clone(),
     };
 
     let url = "https://bookwormfood.com/sync.html";
 
-    let mut book = book;
     // send the data to the cloud DB
     // set the new sync timestamp to the current time on success or None on failure
-    book.timestamp_sync = if execute_http_request::<Book, ()>(url, Some(&book), runtime, id_token)
+    let book = if execute_http_request::<Book, ()>(url, Some(&cloud_book), runtime, id_token)
         .await
         .is_ok()
     {
         log!("Book sync'd with the cloud DB");
-        Some(Utc::now())
+        local_book.with_new_sync_timestamp()
     } else {
         log!("Failed to sync the book with the cloud DB");
-        None
+        local_book.without_sync_timestamp()
     };
 
     // try to save the book with the updated sync field in the local storage
@@ -84,13 +82,10 @@ pub(crate) async fn sync_book(isbn: &str, runtime: &Window, id_token: &Option<Id
             Ok(()) => log!("Sync status updated to {:?}", book.timestamp_sync),
             Err(e) => {
                 log!("Failed to update sync status: {:?}", e);
-                // this makes no sense because the record in LS may have a different value
-                book.timestamp_sync = None;
             }
         },
         Err(e) => {
             log!("Failed to serialize book record for {}: {:?}", book.isbn, e);
-            book.timestamp_sync = None;
         }
     };
 
@@ -128,7 +123,7 @@ pub(crate) async fn sync_books(books: Books, runtime: &Window, id_token: &Option
 
     log!("Cloud books: {}, local: {}", cloud_books.books.len(), books.books.len());
 
-    // index the books by ISBN
+    // index the local books by ISBN for faster lookups
     let local_books = books
         .books
         .iter()
@@ -157,12 +152,14 @@ pub(crate) async fn sync_books(books: Books, runtime: &Window, id_token: &Option
                 None => {
                     // the book is not in the local storage
                     // add it
-                    log!("Adding new book with ISBN: {}", v.isbn);
+                    log!("Cloud book not in LS: {}", v.isbn);
                     Some(v)
                 }
             }
         })
         .collect::<Vec<_>>();
+
+    // TODO: check status updates
 
     if new_cloud_books.is_empty() {
         log!("No new books to add or update");

@@ -69,7 +69,7 @@ pub struct Book {
     #[serde(default)]
     pub isbn: String,
     /// When the book was last updated.
-    #[serde(default, rename = "tsu")]
+    #[serde(default)]
     pub timestamp_update: DateTime<Utc>,
     /// When the book was last sync'd.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -85,7 +85,7 @@ pub struct Book {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub authors: Option<Vec<String>>,
     /// The book details from Google Books API
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub volume_info: Option<VolumeInfo>,
 }
 
@@ -111,6 +111,25 @@ impl Book {
         let mut book = self;
         book.timestamp_sync = None;
         book
+    }
+
+    /// Sets ISBN and timestamp_update=now fields.
+    pub fn new(isbn: &str) -> Self {
+        Book {
+            isbn: isbn.to_string(),
+            timestamp_update: Utc::now(),
+            timestamp_sync: None,
+            read_status: None,
+            cover: None,
+            title: None,
+            authors: None,
+            volume_info: None,
+        }
+    }
+
+    /// Returns true if title, authors or vol info are missing
+    pub fn needs_enhancing(&self) -> bool {
+        self.title.is_none() || self.authors.is_none() || self.volume_info.is_none()
     }
 }
 

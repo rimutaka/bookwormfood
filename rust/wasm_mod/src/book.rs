@@ -8,20 +8,9 @@ use web_sys::Window;
 /// Adds a not to an existing book record, creates a new record if the ISBN is not found.
 /// The book record is stored in the local storage (front-end only access).
 /// Fails silently if the record cannot be stored.
-/// TODO: Add error handling.
-pub(crate) async fn save(book: &Book, runtime: &Window) {
+pub(crate) async fn save(book: &Book, runtime: &Window) -> Result<()> {
     // get the reference to the local storage
-    let ls = match runtime.local_storage() {
-        Ok(Some(v)) => v,
-        Err(e) => {
-            log!("Failed to get local storage: {:?}", e);
-            return;
-        }
-        _ => {
-            log!("Local storage not available (OK(None))");
-            return;
-        }
-    };
+    let ls = get_local_storage(runtime)?;
 
     // replace the record in the database
     let key = book.isbn.clone();
@@ -29,12 +18,56 @@ pub(crate) async fn save(book: &Book, runtime: &Window) {
         Ok(v) => v,
         Err(e) => {
             log!("Failed to serialize book record for {key}: {:?}", e);
-            return;
+            bail!("Book {key} not saved locally");
         }
     };
+
+    // log!("Book to save: {value}");
+
     match ls.set_item(&key, &value) {
-        Ok(()) => log!("Book {key} saved in local storage"),
-        Err(e) => log!("Failed to save book {key} record: {:?}", e),
+        Ok(()) => {
+            log!("Book {key} saved in local storage");
+            bail!("Book {key} saved locally");
+        }
+        Err(e) => {
+            log!("Failed to save book {key} record: {:?}", e);
+            bail!("Book {key} not saved locally");
+        }
+    }
+}
+
+/// Adds Google Books data to the book record.
+/// Returns an unchanged book if the call fails or no data was found.
+/// All errors are logged.
+pub(crate) async fn enhance_from_google_books(book: Book, runtime: &Window) -> Book {
+    if book.volume_info.is_some() {
+        log!("Insufficient Google Books data: {}", book.isbn);
+        return book;
+    }
+
+    log!("Insufficient details: {}", book.isbn);
+    match get_book_data(&book.isbn, runtime).await {
+        Ok(mut v) => match v.items.pop() {
+            Some(v) => Book {
+                isbn: book.isbn,
+                timestamp_update: book.timestamp_update,
+                cover: v.volume_info.get_thumbnail(None),
+                title: Some(v.volume_info.title.clone()),
+                authors: Some(v.volume_info.authors.clone()),
+                volume_info: Some(v.volume_info),
+                read_status: book.read_status,
+                timestamp_sync: None,
+            },
+            None => {
+                log!("Nothing in Google Books for ISBN {}", book.isbn);
+                book
+            }
+        },
+
+        Err(e) => {
+            log!("Failed to get book data from Google Books for {}: {:?}", book.isbn, e);
+            book
+        }
     }
 }
 
@@ -97,43 +130,32 @@ pub(crate) async fn get(runtime: &Window, isbn: &str) -> Result<Option<Book>> {
     // connect to the local storage
     let ls = get_local_storage(runtime)?;
 
-    // return book details from LS by isbn, if found
-    if let Ok(Some(v)) = ls.get_item(isbn) {
-        log!("Found in local storage: {isbn}");
-        match serde_json::from_str::<Book>(&v) {
-            Ok(v) => return Ok(Some(v)),
-            Err(e) => {
-                log!("Failed to parse local storage book record for {isbn}: {:?}", e);
+    // get book details from LS by isbn or create a shell for populating it with data from other sources
+    let local_book = match ls.get_item(isbn) {
+        Ok(Some(v)) => {
+            log!("Found in local storage: {isbn}");
+            match serde_json::from_str::<Book>(&v) {
+                Ok(v) => v,
+                Err(e) => {
+                    log!("Failed to parse local storage book record for {isbn}: {:?}", e);
+                    Book::new(isbn)
+                }
             }
-        };
+        }
+        _ => Book::new(isbn),
     };
+
+    // check if the book has everything the user needs
+    if !local_book.needs_enhancing() {
+        return Ok(Some(local_book));
+    }
 
     // if the book is not found in the local storage, fetch it from Google Books
-    let book = match get_book_data(isbn, runtime).await {
-        Ok(mut v) => match v.items.pop() {
-            Some(v) => Book {
-                isbn: isbn.to_string(),
-                timestamp_update: Utc::now(),
-                cover: v.volume_info.get_thumbnail(None),
-                title: Some(v.volume_info.title.clone()),
-                authors: Some(v.volume_info.authors.clone()),
-                volume_info: Some(v.volume_info),
-                read_status: None,
-                timestamp_sync: None,
-            },
-            None => {
-                bail!("Nothing in Google Books for ISBN {isbn}");
-            }
-        },
-
-        Err(e) => {
-            log!("Failed to get book data from Google Books for {isbn}: {:?}", e);
-            bail!("Cannot get book data from Google Books for ISBN {isbn}");
-        }
-    };
+    let book = enhance_from_google_books(local_book, runtime).await;
 
     // store the book record in the local storage and sync with the cloud DB
-    save(&book, runtime).await;
+    // TODO: add error handling
+    let _ = save(&book, runtime).await;
 
     Ok(Some(book))
 }

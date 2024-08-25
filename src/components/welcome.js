@@ -51,7 +51,7 @@ export default function Welcome() {
     })();
 
     // console.log("Requested scanned books (outside async)");
-  }, []);
+  }, [isAuthenticated]);
 
   window.addEventListener("message", (msg) => {
     // console.log(`WASM msg: ${msg.data} / ${msg.origin} / ${msg.source}`);
