@@ -76,8 +76,8 @@ pub async fn get_book_data(isbn: String, id_token: Option<IdToken>) {
 /// Returns the list of previously scanned books from the local storage.
 /// See `fn report_progress()` for more details.
 #[wasm_bindgen]
-pub async fn get_scanned_books(id_token: Option<IdToken>) {
-    log!("Getting the list of books from local storage");
+pub async fn get_scanned_books(id_token: Option<IdToken>, with_cloud_sync: bool) {
+    log!("Getting the list of books from local storage. Sync: {}", with_cloud_sync);
 
     // need the runtime for the global context and fetch
     let runtime = match get_runtime().await {
@@ -112,6 +112,11 @@ pub async fn get_scanned_books(id_token: Option<IdToken>) {
 
     // send the response back to the UI thread
     report_progress(resp.to_string());
+
+    if !with_cloud_sync {
+        log!("Skipping cloud sync");
+        return;
+    }
 
     // proceed to getting potentially more user books from the cloud DB
     let local_books = match local_books {

@@ -273,13 +273,15 @@ export function get_book_data(isbn, id_token) {
 /**
 * Returns the list of previously scanned books from the local storage.
 * See `fn report_progress()` for more details.
-* @param {string | undefined} [id_token]
+* @param {string | undefined} id_token
+* @param {boolean} with_cloud_sync
 * @returns {Promise<void>}
 */
-export function get_scanned_books(id_token) {
+export function get_scanned_books(id_token, with_cloud_sync) {
     var ptr0 = isLikeNone(id_token) ? 0 : passStringToWasm0(id_token, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     var len0 = WASM_VECTOR_LEN;
-    const ret = wasm.get_scanned_books(ptr0, len0);
+    _assertBoolean(with_cloud_sync);
+    const ret = wasm.get_scanned_books(ptr0, len0, with_cloud_sync);
     return takeObject(ret);
 }
 
@@ -757,8 +759,8 @@ function __wbg_get_imports() {
         const ret = wasm.memory;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper2058 = function() { return logError(function (arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 97, __wbg_adapter_46);
+    imports.wbg.__wbindgen_closure_wrapper2059 = function() { return logError(function (arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 98, __wbg_adapter_46);
         return addHeapObject(ret);
     }, arguments) };
 

@@ -5,6 +5,11 @@ import { build_book_url } from "./bookDetails.js";
 import useState from 'react-usestateref';
 import initWasmModule, { get_scanned_books, ReadStatus } from '../wasm-rust/isbn_mod.js';
 
+// Books should be fetched from the cloud only once.
+// The local storage is expected to be in sync while the app is active.
+// A reload resets the flag.
+// true: fetch books from the cloud, false: already fetched
+let withCloudSync = true;
 
 export default function Welcome() {
 
@@ -40,13 +45,12 @@ export default function Welcome() {
         console.log("User is not authenticated");
       }
 
-
       await initWasmModule(); // run the wasm initializer before calling wasm methods
       // console.log("Requesting scanned books");
       // request book data from WASM module
       // the responses are sent back as messages to the window object 
-      // console.log(`Read token: ${idTokenClaims?.__raw}`);
-      get_scanned_books(idTokenClaims?.__raw);
+      // console.log(`Read token: ${idTokenClaims?.__raw}, sync: ${withCloudSync}`);
+      get_scanned_books(idTokenClaims?.__raw, withCloudSync);
       // console.log("Requested scanned books (inside async)");
     })();
 
@@ -72,6 +76,7 @@ export default function Welcome() {
       let list_of_books = data.localBooks.Ok?.books;
       // console.log(`Books: ${JSON.stringify(list_of_books)}`);
       setBooks(list_of_books);
+      withCloudSync = false; // books synced - do not sync again
     }
     else {
       // console.log("Welcome screen received a message that is not a list of books");
