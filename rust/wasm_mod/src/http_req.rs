@@ -11,6 +11,13 @@ pub const AUTH_HEADER: &str = "x-books-authorization";
 /// Normally it would be our own domain name where all the server functions are hosted.
 pub const TRUSTED_URLS: &str = "https://bookwormfood.com";
 
+/// The HTTP methods that are supported by the app.
+pub(crate) enum HttpMethod<P> {
+    Get,
+    Post(P),
+    Delete,
+}
+
 /// Prepares and executes an HTTP request.
 /// ## Types
 /// * R - Response type, always required
@@ -22,13 +29,13 @@ pub const TRUSTED_URLS: &str = "https://bookwormfood.com";
 /// Do not include the id_token for URLs other than our own server side.
 pub(super) async fn execute_http_request<P, R>(
     url: &str,
-    payload: Option<&P>,
+    method: HttpMethod<P>,
     runtime: &Window,
     id_token: &Option<IdToken>,
 ) -> Result<Option<R>>
 where
-    R: for<'de> serde::Deserialize<'de>,
     P: serde::Serialize,
+    R: for<'de> serde::Deserialize<'de>,
 {
     // log!("execute_get_request entered");
 
@@ -48,11 +55,20 @@ where
     let opts = RequestInit::new();
     opts.set_mode(RequestMode::Cors);
 
-    // serialize the payload, if any, into a string
-    let payload = match payload {
-        Some(v) => {
+    // set HTTP method, add the payload and get a copy of it for later
+    let payload = match &method {
+        HttpMethod::Get => {
+            opts.set_method("GET");
+            None
+        }
+        HttpMethod::Post(v) => {
+            opts.set_method("POST");
             match serde_json::to_string(v) {
-                Ok(v) => Some(v),
+                Ok(v) => {
+                    // log!("Payload: {v}");
+                    opts.set_body(&wasm_bindgen::JsValue::from_str(&v));
+                    Some(v)
+                }
                 Err(e) => {
                     log!("Failed to serialize POST payload");
                     log!("{:?}", e);
@@ -61,19 +77,11 @@ where
                 }
             }
         }
-        None => None,
+        HttpMethod::Delete => {
+            opts.set_method("DELETE");
+            None
+        }
     };
-
-    // decide if it's a POST or a GET request
-    match &payload {
-        Some(v) => {
-            opts.set_method("POST");
-            opts.set_body(&wasm_bindgen::JsValue::from_str(v));
-        }
-        None => {
-            opts.set_method("GET");
-        }
-    }
 
     // log!("{url}");
 
@@ -92,24 +100,24 @@ where
 
     // add headers
     let _ = request.headers().set("Accept", "application/json");
-    if payload.is_some() {
-        // only set the content type if there is POST payload
-        let _ = request.headers().set("content-type", "application/json");
-    }
 
     // set the auth header if the token is provided and the target is bookwormfood domain
     if let Some(id_token) = id_token {
         let _ = request.headers().set(AUTH_HEADER, id_token);
     }
 
-    // calculate the SHA256 hash of the payload and set the header
-    // needed for the CloudFront signed URLs
-    if let Some(payload) = &payload {
+    // payload-related headers
+    if let Some(payload) = payload {
+        // only set the content type if there is POST payload
+        let _ = request.headers().set("content-type", "application/json");
+
+        // calculate the SHA256 hash of the payload and set the header
+        // needed for the CloudFront signed URLs
         let mut hasher = Sha256::new();
         hasher.update(payload);
         let result = hasher.finalize();
         let result = hex::encode(result);
-        // log!("x-Amz-Content-Sha256: {}", result);
+        // log!("X-Amz-Content-Sha256: {}", result);
         let _ = request.headers().set("X-Amz-Content-Sha256", &result);
     }
 

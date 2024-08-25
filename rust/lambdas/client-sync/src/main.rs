@@ -3,7 +3,7 @@ use aws_lambda_events::{
     lambda_function_urls::{LambdaFunctionUrlRequest, LambdaFunctionUrlResponse},
 };
 use aws_sdk_dynamodb::Client;
-use bookwormfood_types::{Book, AUTH_HEADER};
+use bookwormfood_types::{Book, AUTH_HEADER, ISBN_URL_PARAM_NAME};
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
 use tracing::info;
 use tracing_subscriber::filter::LevelFilter;
@@ -72,6 +72,7 @@ pub(crate) async fn my_handler(
             return handler_response(Some("Missing HTTP method. It's a bug.".to_string()), 400);
         }
     };
+    info!("Method: {}", method);
 
     // save the book to the database
     let client = Client::new(&aws_config::load_from_env().await);
@@ -110,6 +111,23 @@ pub(crate) async fn my_handler(
             },
             Err(e) => handler_response(Some(e.to_string()), 400),
         },
+        // delete the book from the database
+        Method::DELETE => {
+            // get the book's ISBN from the query string
+            let isbn = match event.payload.query_string_parameters.get(ISBN_URL_PARAM_NAME) {
+                Some(v) => v,
+                None => {
+                    info!("Missing ISBN param.");
+                    info!("All params: {:?}", event.payload.query_string_parameters);
+                    return handler_response(Some("Missing ISBN param".to_string()), 400);
+                }
+            };
+
+            match book::delete(isbn, &client, &email).await {
+                Ok(_) => handler_response(None, 204),
+                Err(e) => handler_response(Some(e.to_string()), 400),
+            }
+        }
         // unsupported method
         _ => handler_response(Some("Unsupported HTTP method".to_string()), 400),
     }

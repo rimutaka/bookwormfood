@@ -1,7 +1,7 @@
-use crate::http_req::{execute_http_request, IdToken};
+use crate::http_req::{execute_http_request, HttpMethod, IdToken};
 use crate::utils::{get_local_storage, log};
 use anyhow::{bail, Error, Result};
-use bookwormfood_types::{Book, Books};
+use bookwormfood_types::{Book, Books, ISBN_URL_PARAM_NAME};
 use web_sys::Window;
 
 /// Try to save the book to the cloud DB and update the sync status in the local storage.
@@ -65,7 +65,7 @@ pub(crate) async fn sync_book(isbn: &str, runtime: &Window, id_token: &Option<Id
 
     // send the data to the cloud DB
     // set the new sync timestamp to the current time on success or None on failure
-    let book = if execute_http_request::<Book, ()>(url, Some(&cloud_book), runtime, id_token)
+    let book = if execute_http_request::<Book, ()>(url, HttpMethod::Post(cloud_book), runtime, id_token)
         .await
         .is_ok()
     {
@@ -109,7 +109,7 @@ pub(crate) async fn sync_books(books: Books, runtime: &Window, id_token: &Option
     let url = "https://bookwormfood.com/sync.html";
 
     // get the list of books from the lambda
-    let cloud_books = match execute_http_request::<(), Books>(url, None, runtime, id_token).await {
+    let cloud_books = match execute_http_request::<(), Books>(url, HttpMethod::Get, runtime, id_token).await {
         Ok(Some(v)) => v,
         Ok(None) => {
             log!("No books in the cloud DB");
@@ -202,4 +202,32 @@ pub(crate) async fn sync_books(books: Books, runtime: &Window, id_token: &Option
     books.sort();
 
     Ok(Some(books))
+}
+
+/// Try to delete the book from the cloud DB.
+/// By this time the book should not exist in the local storage.
+/// No action is taken if the book fails to delete - it will reappear on the next sync.
+pub(crate) async fn delete_book(isbn: &str, runtime: &Window, id_token: &Option<IdToken>) -> Result<()> {
+    // nothing to do if the user is not logged in
+    if id_token.is_none() {
+        log!("No token. Sync skipped.");
+        return Ok(());
+    }
+
+    log!("Sending book deletion request to lambda: {}", isbn);
+
+    // the lambda only needs the ISBN for this operation
+    let url = ["https://bookwormfood.com/sync.html?", ISBN_URL_PARAM_NAME, "=", isbn].concat();
+
+    // send the ISBN to the cloud DB
+    if execute_http_request::<Book, ()>(&url, HttpMethod::Delete, runtime, id_token)
+        .await
+        .is_ok()
+    {
+        log!("Book deleted from the cloud DB");
+        Ok(())
+    } else {
+        log!("Failed to delete the book from the cloud DB");
+        bail!("Failed to delete the book from the cloud DB");
+    }
 }

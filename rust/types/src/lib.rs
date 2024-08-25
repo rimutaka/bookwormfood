@@ -20,6 +20,10 @@ pub type Result<T> = std::result::Result<T, RetryAfter>;
 
 /// The name of the authorisation header containing the ID token with the user email.
 pub const AUTH_HEADER: &str = "x-books-authorization";
+
+/// Value: `isbn`. The URL parameter name for ISBN.
+pub const ISBN_URL_PARAM_NAME: &str = "isbn";
+
 /// The domain name that is allowed to use the ID token.
 /// Normally it would be our own domain name where all the server functions are hosted.
 pub const TRUSTED_URLS: &str = "https://bookwormfood.com";

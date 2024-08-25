@@ -122,6 +122,27 @@ pub(crate) async fn get_by_user(client: &Client, uid: &str) -> Result<Books, Err
     Ok(books)
 }
 
+/// Deletes a book from user_books table.
+pub(crate) async fn delete(isbn: &str, client: &Client, uid: &str) -> Result<(), Error> {
+    match client
+        .delete_item()
+        .table_name(USER_BOOKS_TABLE_NAME)
+        .key(FIELD_UID, AttributeValue::S(uid.to_string()))
+        .key(FIELD_ISBN, AttributeValue::S(isbn.to_string()))
+        .send()
+        .await
+    {
+        Ok(_) => {
+            info!("Book deleted from DDB: {uid}/{isbn}");
+            Ok(())
+        }
+        Err(e) => {
+            info!("Failed to delete book {}/{}: {:?}", uid, isbn, e);
+            Err(Error::msg("Failed to delete book".to_string()))
+        }
+    }
+}
+
 ///Converts the value into an AttributeValue
 fn attr_val_s(v: &Option<String>) -> AttributeValue {
     v.as_ref()

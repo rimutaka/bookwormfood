@@ -183,7 +183,7 @@ pub async fn update_book_status(isbn: String, status: Option<ReadStatus>, id_tok
 /// Deletes a book from the local storage.
 /// Returns error or success via an async message.
 #[wasm_bindgen]
-pub async fn delete_book(isbn: String) {
+pub async fn delete_book(isbn: String, id_token: Option<IdToken>) {
     log!("Deleting book from local storage");
 
     // need the runtime for the global context and fetch
@@ -201,7 +201,7 @@ pub async fn delete_book(isbn: String) {
     let resp = match book::delete(&runtime, &isbn).await {
         Ok(_) => {
             log!("Book deleted");
-            WasmResponse::Deleted(Box::new(Some(WasmResult::Ok(isbn))))
+            WasmResponse::Deleted(Box::new(Some(WasmResult::Ok(isbn.clone()))))
         }
         Err(e) => {
             log!("Failed to delete book {isbn}");
@@ -215,4 +215,7 @@ pub async fn delete_book(isbn: String) {
 
     // send the response back to the UI thread
     report_progress(resp.to_string());
+
+    // TODO: handle possible errors
+    let _ = crate::sync::delete_book(&isbn, &runtime, &id_token).await;
 }

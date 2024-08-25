@@ -307,12 +307,15 @@ export function update_book_status(isbn, status, id_token) {
 * Deletes a book from the local storage.
 * Returns error or success via an async message.
 * @param {string} isbn
+* @param {string | undefined} [id_token]
 * @returns {Promise<void>}
 */
-export function delete_book(isbn) {
+export function delete_book(isbn, id_token) {
     const ptr0 = passStringToWasm0(isbn, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.delete_book(ptr0, len0);
+    var ptr1 = isLikeNone(id_token) ? 0 : passStringToWasm0(id_token, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len1 = WASM_VECTOR_LEN;
+    const ret = wasm.delete_book(ptr0, len0, ptr1, len1);
     return takeObject(ret);
 }
 
@@ -754,7 +757,7 @@ function __wbg_get_imports() {
         const ret = wasm.memory;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper2030 = function() { return logError(function (arg0, arg1, arg2) {
+    imports.wbg.__wbindgen_closure_wrapper2058 = function() { return logError(function (arg0, arg1, arg2) {
         const ret = makeMutClosure(arg0, arg1, 97, __wbg_adapter_46);
         return addHeapObject(ret);
     }, arguments) };

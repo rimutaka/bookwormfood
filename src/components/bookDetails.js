@@ -182,7 +182,7 @@ export default function BookDetails() {
 
   const onClickStatusBin = (e) => {
     e.preventDefault();
-    delete_book(isbn);
+    delete_book(isbn, token);
   };
 
   const renderQrCodeResult = () => {

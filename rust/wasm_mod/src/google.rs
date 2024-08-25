@@ -8,7 +8,7 @@
 /// API Reference: https://developers.google.com/books/docs/v1/reference/volumes#resource
 ///
 //
-use crate::http_req::execute_http_request;
+use crate::http_req::{execute_http_request, HttpMethod};
 use crate::utils::log;
 use crate::{Result, RetryAfter};
 use bookwormfood_types::google::Volumes;
@@ -20,7 +20,7 @@ pub(crate) async fn get_book_data(isbn: &str, runtime: &Window) -> Result<Volume
 
     let url = format!("https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}");
 
-    match execute_http_request::<u8, Volumes>(&url, None, runtime, &None).await {
+    match execute_http_request::<u8, Volumes>(&url, HttpMethod::Get, runtime, &None).await {
         Ok(Some(v)) => Ok(v),
         Ok(None) => {
             log!("Blank response from Google for {isbn}");
