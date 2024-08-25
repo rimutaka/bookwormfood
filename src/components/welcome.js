@@ -137,7 +137,7 @@ export default function Welcome() {
     return <div id="welcomeMsg" className="welcome">
       <div>
         <h1>Scan the book's barcode to learn, record or share</h1>
-        <ul>
+        <ul className={books.length > 4 ? "hidden" : ""}>
           <li>View reviews, book and author details</li>
           <li>Borrow from Auckland Libraries</li>
           <li>Buy new or secondhand</li>
