@@ -20,12 +20,12 @@ a {
 
 /* The outer container */
 #app {
-  @apply w-full content-center pb-6;
+  @apply w-full content-center pb-6 container mx-auto;
 }
 
 /* Main content container */
 .main {
-  @apply flex flex-row min-h-screen justify-center;
+  @apply flex flex-row min-h-screen justify-center px-3;
 }
 
 .scan {
@@ -39,7 +39,7 @@ a {
 
 /* A div that holds the buttons */
 .scanBtn {
-  @apply m-5 content-center justify-center flex;
+  @apply my-5 content-center justify-center flex;
 }
 
 /* Individual scan/stop/share buttons */
@@ -48,14 +48,13 @@ a {
 }
 
 .loginBtn {
-  @apply m-5 content-center px-6 sm:px-0 flex justify-end;
+  @apply content-center px-6 sm:px-0 flex justify-end;
 }
 
 .loginBtn button {
-  @apply p-1 cursor-pointer m-2 rounded-md
+  @apply p-1 cursor-pointer rounded-md
   bg-slate-400 text-white 
-   font-medium text-sm px-2 py-1.5 text-center 
-   inline-flex items-center justify-between;
+   font-medium text-sm text-center ;
 }
 
 button.active {
@@ -76,7 +75,7 @@ button.done {
     ),
     url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 
-  @apply max-w-96 m-3 content-center justify-center flex p-5 bg-right-bottom rounded-lg;
+  @apply max-w-96 my-3 content-center justify-center flex p-5 bg-right-bottom rounded-lg;
 }
 
 .welcome ul {
@@ -88,9 +87,9 @@ button.done {
   @apply mb-3;
 }
 
-.scan-list {
-  @apply mx-3;
-}
+/* .scan-list li div{
+  @apply ps-4 -indent-4;
+}  */
 
 .scan-list li {
   @apply mb-3;

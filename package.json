@@ -30,8 +30,8 @@
     "tailwindcss": "^3.4.3"
   },
   "scripts": {
-    "start": "HTTPS=true PORT=8080 HOST=0.0.0.0 react-app-rewired start",
-    "build": "react-app-rewired build && npm run build-sw && npm run clean-cra-sw",
+    "start": "export REACT_APP_BUILD_TS=$(date --rfc-3339=seconds) && HTTPS=true PORT=8080 HOST=0.0.0.0 react-app-rewired start",
+    "build": "export REACT_APP_BUILD_TS=$(date --rfc-3339=seconds) && react-app-rewired build && npm run build-sw && npm run clean-cra-sw",
     "build-sw": "node ./src/sw-build.js",
     "clean-cra-sw": "rm -f build/precache-manifest.*.js && rm -f build/service-worker.js",
     "test": "react-app-rewired test",

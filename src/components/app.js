@@ -3,6 +3,8 @@ import { useLocation, Outlet } from "react-router-dom";
 import { useAuth0 } from '@auth0/auth0-react'
 import { LAST_AUTH_TIMESTAMP } from "./bookDetails.js";
 
+import Navbar from "./navbar.js";
+
 export default function App() {
 
   const location = useLocation();
@@ -49,7 +51,10 @@ export default function App() {
 
   return (
     <div className="main">
-      <Outlet />
+      <div>
+        <Outlet />
+        <Navbar />
+      </div>
     </div>
   );
 };
