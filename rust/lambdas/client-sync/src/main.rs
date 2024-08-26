@@ -10,6 +10,7 @@ use tracing_subscriber::filter::LevelFilter;
 
 mod book;
 mod jwt;
+mod pic;
 
 const USER_BOOKS_TABLE_NAME: &str = "user_books";
 
@@ -111,6 +112,27 @@ pub(crate) async fn my_handler(
             },
             Err(e) => handler_response(Some(e.to_string()), 400),
         },
+        Method::PUT => {
+            // try to deser the body into a book
+            let book = match &event.payload.body {
+                Some(v) => match serde_json::from_str::<Book>(v) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        info!("Failed to parse payload: {:?}", e);
+                        return handler_response(Some("Invalid payload. Expected DdbBook".to_string()), 400);
+                    }
+                },
+                None => {
+                    info!("Empty input");
+                    return handler_response(Some("Missing payload. Expected DdbBook".to_string()), 400);
+                }
+            };
+
+            match pic::get_signed_url(&book, &email).await {
+                Ok(v) => handler_response(Some(["\"".to_string(), v, "\"".to_string()].concat()), 200),
+                Err(e) => handler_response(Some(e.to_string()), 400),
+            }
+        }
         // delete the book from the database
         Method::DELETE => {
             // get the book's ISBN from the query string

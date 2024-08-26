@@ -31,6 +31,14 @@ pub const TRUSTED_URLS: &str = "https://bookwormfood.com";
 /// Name of DDB table with the list of books per user
 pub const USER_BOOKS_TABLE_NAME: &str = "user_books";
 
+/// Name of S3 bucket for storing user photos
+/// Value: `bookwormfood.com`.
+pub const USER_PHOTOS_BUCKET_NAME: &str = "bookwormfood.com";
+/// The path within the bucket where the user photos are stored.
+/// Must include trailing slash.
+/// Value: `pics/`.
+pub const USER_PHOTOS_S3_PREFIX: &str = "pics/";
+
 /// Where the reader is with the book.
 /// Defaults to None.
 #[wasm_bindgen]
@@ -63,6 +71,16 @@ impl FromStr for ReadStatus {
     }
 }
 
+/// User photos of a book
+#[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct Photo {
+    /// Photo ID, a random string, used as an S3 key.
+    pub id: String,
+    /// When the photo was uploaded.
+    pub ts: DateTime<Utc>,
+}
+
 /// An internal representation of a book record.
 /// Stored in the local storage and in the cloud.
 /// This struct does not Default implementation to force thinking what attributes go where.
@@ -71,7 +89,7 @@ impl FromStr for ReadStatus {
 pub struct Book {
     /// This ISBN may differ from the key in the local storage or the industry IDs in the Google Books API.
     #[serde(default)]
-    pub isbn: String,
+    pub isbn: u64,
     /// When the book was last updated.
     #[serde(default)]
     pub timestamp_update: DateTime<Utc>,
@@ -91,14 +109,22 @@ pub struct Book {
     /// The book details from Google Books API
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub volume_info: Option<VolumeInfo>,
+    /// A list of user-uploaded photos of the book
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pics: Option<Vec<Photo>>,
+    /// Dummy field to prevent struct instantiation without ISBN.
+    #[serde(default, skip)]
+    _dummy: usize,
 }
 
 impl Book {
-    /// A very naive check if ISBN is a 10 or 13 digit number.
+    /// A fake ISBN to be used in cases where the real ISBN is not available.
+    pub const FAKE_ISBN: u64 = 9700000000000;
+
+    /// A very naive check if ISBN is a 10 or 13 digit number and has 97* prefix.
     /// TODO: changed it to a regex check.
-    pub fn is_valid_isbn(&self) -> bool {
-        ((self.isbn.len() == 13 && self.isbn.starts_with("97")) || self.isbn.len() == 10)
-            && self.isbn.parse::<u64>().is_ok()
+    pub fn is_valid_isbn(isbn: &str) -> bool {
+        ((isbn.len() == 13 && isbn.starts_with("97")) || isbn.len() == 10) && isbn.parse::<u64>().is_ok()
     }
 
     /// Updates the sync timestamp to the current time
@@ -118,9 +144,10 @@ impl Book {
     }
 
     /// Sets ISBN and timestamp_update=now fields.
-    pub fn new(isbn: &str) -> Self {
+    /// Use ::is_valid_isbn() to validate the value.
+    pub fn new(isbn: u64) -> Self {
         Book {
-            isbn: isbn.to_string(),
+            isbn,
             timestamp_update: Utc::now(),
             timestamp_sync: None,
             read_status: None,
@@ -128,6 +155,8 @@ impl Book {
             title: None,
             authors: None,
             volume_info: None,
+            pics: None,
+            _dummy: 0,
         }
     }
 

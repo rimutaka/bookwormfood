@@ -15,7 +15,7 @@ use bookwormfood_types::google::Volumes;
 use web_sys::Window;
 
 /// Fetches book data from Google Books API
-pub(crate) async fn get_book_data(isbn: &str, runtime: &Window) -> Result<Volumes> {
+pub(crate) async fn get_book_data(isbn: u64, runtime: &Window) -> Result<Volumes> {
     log!("Querying google books for: {isbn}");
 
     let url = format!("https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}");

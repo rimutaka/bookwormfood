@@ -8,7 +8,7 @@ use web_sys::Window;
 /// No action is taken if there is no token or the book is already sync'd.
 /// The sync is only from local to cloud.
 /// All errors are logged.
-pub(crate) async fn sync_book(isbn: &str, runtime: &Window, id_token: &Option<IdToken>) -> Result<()> {
+pub(crate) async fn sync_book(isbn: u64, runtime: &Window, id_token: &Option<IdToken>) -> Result<()> {
     // nothing to do if the user is not logged in
     if id_token.is_none() {
         log!("No token. Sync skipped.");
@@ -17,7 +17,7 @@ pub(crate) async fn sync_book(isbn: &str, runtime: &Window, id_token: &Option<Id
 
     let ls = get_local_storage(runtime)?;
 
-    let local_book = match ls.get_item(isbn) {
+    let local_book = match ls.get_item(&isbn.to_string()) {
         Ok(Some(v)) => {
             log!("Found in local storage: {isbn}");
             match serde_json::from_str::<Book>(&v) {
@@ -49,17 +49,12 @@ pub(crate) async fn sync_book(isbn: &str, runtime: &Window, id_token: &Option<Id
     log!("Sending book data to lambda: {}", local_book.isbn);
 
     // some fields are never saved in the cloud
-    let cloud_book = Book {
-        volume_info: None,
-        cover: None,
-        timestamp_sync: None,
-        // these fields are saved in the cloud
-        authors: local_book.authors.clone(),
-        isbn: local_book.isbn.clone(),
-        read_status: local_book.read_status,
-        timestamp_update: local_book.timestamp_update,
-        title: local_book.title.clone(),
-    };
+    let mut cloud_book = Book::new(local_book.isbn);
+    // these fields are saved in the cloud
+    cloud_book.authors = local_book.authors.clone();
+    cloud_book.read_status = local_book.read_status;
+    cloud_book.timestamp_update = local_book.timestamp_update;
+    cloud_book.title = local_book.title.clone();
 
     let url = "https://bookwormfood.com/sync.html";
 
@@ -78,7 +73,7 @@ pub(crate) async fn sync_book(isbn: &str, runtime: &Window, id_token: &Option<Id
 
     // try to save the book with the updated sync field in the local storage
     match serde_json::to_string(&book) {
-        Ok(v) => match ls.set_item(&book.isbn, &v) {
+        Ok(v) => match ls.set_item(&book.isbn.to_string(), &v) {
             Ok(()) => log!("Sync status updated to {:?}", book.timestamp_sync),
             Err(e) => {
                 log!("Failed to update sync status: {:?}", e);
@@ -127,7 +122,7 @@ pub(crate) async fn sync_books(books: Books, runtime: &Window, id_token: &Option
     let local_books = books
         .books
         .iter()
-        .map(|v| (v.isbn.clone(), v.timestamp_update))
+        .map(|v| (v.isbn, v.timestamp_update))
         .collect::<std::collections::HashMap<_, _>>();
 
     // loop thru the cloud books to find what is missing from the local storage
@@ -179,7 +174,7 @@ pub(crate) async fn sync_books(books: Books, runtime: &Window, id_token: &Option
         // try to save the book with the updated sync field in the local storage
         let cloud_book = cloud_book.with_new_sync_timestamp();
         let cloud_book = match serde_json::to_string(&cloud_book) {
-            Ok(v) => match ls.set_item(&cloud_book.isbn, &v) {
+            Ok(v) => match ls.set_item(&cloud_book.isbn.to_string(), &v) {
                 Ok(()) => {
                     log!("Added to local storage: {}", cloud_book.isbn);
                     cloud_book

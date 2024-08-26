@@ -1,5 +1,10 @@
 [workspace]
-members = ["rust/wasm_mod", "rust/lambdas/index-html-server", "rust/lambdas/client-sync", "rust/types"]
+members = [
+  "rust/wasm_mod",
+  "rust/lambdas/index-html-server",
+  "rust/lambdas/client-sync",
+  "rust/types",
+]
 resolver = "2"
 
 [workspace.dependencies]
@@ -21,6 +26,9 @@ aws-sdk-dynamodb = "1.39.1"
 regex = "1.10.5"
 chrono = { version = "0.4.38", features = ["serde"] }
 anyhow = "1.0.86"
+uuid = { version = "1", features = ["v4"] }
+sha2 = "0.10.8"
+hex = "0.4.3"
 
 [profile.release]
 lto = true

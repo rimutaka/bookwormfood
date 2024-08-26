@@ -35,6 +35,14 @@ pub type Result<T> = std::result::Result<T, RetryAfter>;
 pub async fn get_book_data(isbn: String, id_token: Option<IdToken>) {
     log!("Getting book data for ISBN: {isbn}");
 
+    let isbn = match isbn.parse::<u64>() {
+        Ok(v) => v,
+        Err(e) => {
+            log!("Failed to parse ISBN {isbn}. It's a bug. {:?}", e);
+            return;
+        }
+    };
+
     // need the runtime for the global context and fetch
     let runtime = match get_runtime().await {
         Ok(v) => v,
@@ -47,7 +55,7 @@ pub async fn get_book_data(isbn: String, id_token: Option<IdToken>) {
     };
 
     // get the book details from either the local storage or the Google Books API
-    let resp = match book::get(&runtime, &isbn).await {
+    let resp = match book::get(&runtime, isbn).await {
         Ok(Some(v)) => {
             // log!("{:?}", v);
             log!("Sending book data to UI");
@@ -70,14 +78,17 @@ pub async fn get_book_data(isbn: String, id_token: Option<IdToken>) {
 
     report_progress(resp.to_string());
 
-    let _ = sync_book(&isbn, &runtime, &id_token).await;
+    let _ = sync_book(isbn, &runtime, &id_token).await;
 }
 
 /// Returns the list of previously scanned books from the local storage.
 /// See `fn report_progress()` for more details.
 #[wasm_bindgen]
 pub async fn get_scanned_books(id_token: Option<IdToken>, with_cloud_sync: bool) {
-    log!("Getting the list of books from local storage. Sync: {}", with_cloud_sync);
+    log!(
+        "Getting the list of books from local storage. Sync: {}",
+        with_cloud_sync
+    );
 
     // need the runtime for the global context and fetch
     let runtime = match get_runtime().await {
@@ -152,6 +163,14 @@ pub async fn get_scanned_books(id_token: Option<IdToken>, with_cloud_sync: bool)
 pub async fn update_book_status(isbn: String, status: Option<ReadStatus>, id_token: Option<IdToken>) {
     log!("Updating book status in local storage");
 
+    let isbn = match isbn.parse::<u64>() {
+        Ok(v) => v,
+        Err(e) => {
+            log!("Failed to parse ISBN {isbn}. It's a bug. {:?}", e);
+            return;
+        }
+    };
+
     // need the runtime for the global context and fetch
     let runtime = match get_runtime().await {
         Ok(v) => v,
@@ -164,7 +183,7 @@ pub async fn update_book_status(isbn: String, status: Option<ReadStatus>, id_tok
     };
 
     // get Books from local storage and wrap them into a response struct
-    let resp = match book::update_status(&runtime, &isbn, status).await {
+    let resp = match book::update_status(&runtime, isbn, status).await {
         Ok(v) => {
             log!("Book status updated");
             WasmResponse::LocalBook(Box::new(Some(WasmResult::Ok(v))))
@@ -182,7 +201,7 @@ pub async fn update_book_status(isbn: String, status: Option<ReadStatus>, id_tok
     // send the response back to the UI thread
     report_progress(resp.to_string());
 
-    let _ = sync_book(&isbn, &runtime, &id_token).await;
+    let _ = sync_book(isbn, &runtime, &id_token).await;
 }
 
 /// Deletes a book from the local storage.

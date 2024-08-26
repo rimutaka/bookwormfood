@@ -15,6 +15,7 @@ pub const TRUSTED_URLS: &str = "https://bookwormfood.com";
 pub(crate) enum HttpMethod<P> {
     Get,
     Post(P),
+    Put(P),
     Delete,
 }
 
@@ -71,6 +72,22 @@ where
                 }
                 Err(e) => {
                     log!("Failed to serialize POST payload");
+                    log!("{:?}", e);
+                    // TODO: may be worth a retry
+                    return Err(RetryAfter::Never);
+                }
+            }
+        }
+        HttpMethod::Put(v) => {
+            opts.set_method("PUT");
+            match serde_json::to_string(v) {
+                Ok(v) => {
+                    // log!("Payload: {v}");
+                    opts.set_body(&wasm_bindgen::JsValue::from_str(&v));
+                    Some(v)
+                }
+                Err(e) => {
+                    log!("Failed to serialize PUT payload");
                     log!("{:?}", e);
                     // TODO: may be worth a retry
                     return Err(RetryAfter::Never);

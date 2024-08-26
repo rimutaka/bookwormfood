@@ -21,7 +21,7 @@ pub(crate) async fn save(book: &Book, client: &Client, uid: &str) -> Result<(), 
         .put_item()
         .table_name(USER_BOOKS_TABLE_NAME)
         .item(FIELD_UID, AttributeValue::S(uid.to_string()))
-        .item(FIELD_ISBN, AttributeValue::S(book.isbn.clone()))
+        .item(FIELD_ISBN, AttributeValue::N(book.isbn.to_string()))
         .item(FIELD_TITLE, attr_val_s(&book.title))
         .item(FIELD_AUTHORS, attr_val_ss(&book.authors))
         .item(FIELD_UPDATED, AttributeValue::S(book.timestamp_update.to_rfc3339()))
@@ -62,22 +62,15 @@ pub(crate) async fn get_by_user(client: &Client, uid: &str) -> Result<Books, Err
                 let mut books = Vec::with_capacity(items.len());
                 // loop thru the records
                 for item in items {
-                    let mut book = Book {
-                        isbn: "".to_string(),
-                        title: None,
-                        authors: None,
-                        timestamp_update: DateTime::<Utc>::MIN_UTC,
-                        read_status: None,
-                        cover: None,
-                        timestamp_sync: None,
-                        volume_info: None,
-                    };
+                    let mut book = Book::new(Book::FAKE_ISBN);
 
                     // iterate through the list of attributes for the record
                     // instead of looking them up by name
                     for attr in item {
                         match attr.0.as_str() {
-                            FIELD_ISBN => book.isbn = attr_to_string(attr.1),
+                            FIELD_ISBN => {
+                                book.isbn = attr_to_string(attr.1).parse::<u64>().unwrap_or(Book::FAKE_ISBN)
+                            }
                             FIELD_TITLE => book.title = attr_to_option(attr.1),
                             FIELD_AUTHORS => {
                                 book.authors = match attr.1 {
@@ -97,7 +90,7 @@ pub(crate) async fn get_by_user(client: &Client, uid: &str) -> Result<Books, Err
                     }
 
                     // skip the book if invalid
-                    if !book.is_valid_isbn() {
+                    if book.isbn == Book::FAKE_ISBN {
                         info!("Invalid ISBN {} / {:?}", uid, book);
                         continue;
                     }
