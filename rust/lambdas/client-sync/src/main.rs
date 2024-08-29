@@ -3,7 +3,10 @@ use aws_lambda_events::{
     lambda_function_urls::{LambdaFunctionUrlRequest, LambdaFunctionUrlResponse},
 };
 use aws_sdk_dynamodb::Client;
-use bookwormfood_types::{Book, AUTH_HEADER, ISBN_URL_PARAM_NAME};
+use bookwormfood_types::{
+    lambda::{Email, Uid, USER_BOOKS_TABLE_NAME},
+    Book, AUTH_HEADER, ISBN_URL_PARAM_NAME,
+};
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
 use sha2::{Digest, Sha256};
 use tracing::info;
@@ -12,14 +15,6 @@ use tracing_subscriber::filter::LevelFilter;
 mod book;
 mod jwt;
 mod pic;
-
-const USER_BOOKS_TABLE_NAME: &str = "user_books";
-
-/// A unique identifier for the user.
-#[derive(Clone)]
-struct Uid(String);
-/// The user email address from the JWT.
-struct Email(String);
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {

@@ -5,6 +5,8 @@ use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 
 pub mod google;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod lambda;
 
 /// All error handling in this crate is based on either retrying a request after some time
 /// or exiting gracefully.
