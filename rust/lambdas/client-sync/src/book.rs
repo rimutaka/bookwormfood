@@ -1,13 +1,13 @@
-use std::str::FromStr;
-
-use crate::USER_BOOKS_TABLE_NAME;
+use crate::{Email, Uid, USER_BOOKS_TABLE_NAME};
 use anyhow::Error;
 use aws_sdk_dynamodb::{types::AttributeValue, Client};
 use bookwormfood_types::{Book, Books, ReadStatus};
 use chrono::{DateTime, Utc};
+use std::str::FromStr;
 use tracing::info;
 
 const FIELD_UID: &str = "uid"; // used in a query
+const FIELD_EMAIL: &str = "email"; // from JWT, never returned to the caller
 const FIELD_ISBN: &str = "isbn";
 const FIELD_TITLE: &str = "title";
 const FIELD_AUTHORS: &str = "authors";
@@ -16,11 +16,12 @@ const FIELD_READ_STATUS: &str = "read_status";
 
 /// Save a book in the user_books table.
 /// Replaces existing records unconditionally.
-pub(crate) async fn save(book: &Book, client: &Client, uid: &str) -> Result<(), Error> {
+pub(crate) async fn save(book: &Book, client: &Client, uid: Uid, email: Email) -> Result<(), Error> {
     match client
         .put_item()
         .table_name(USER_BOOKS_TABLE_NAME)
-        .item(FIELD_UID, AttributeValue::S(uid.to_string()))
+        .item(FIELD_UID, AttributeValue::S(uid.0.clone()))
+        .item(FIELD_EMAIL, AttributeValue::S(email.0))
         .item(FIELD_ISBN, AttributeValue::N(book.isbn.to_string()))
         .item(FIELD_TITLE, attr_val_s(&book.title))
         .item(FIELD_AUTHORS, attr_val_ss(&book.authors))
@@ -38,7 +39,7 @@ pub(crate) async fn save(book: &Book, client: &Client, uid: &str) -> Result<(), 
             Ok(())
         }
         Err(e) => {
-            info!("Failed to save book {}/{}: {:?}", uid, book.isbn, e);
+            info!("Failed to save book {}/{}: {:?}", uid.0, book.isbn, e);
             Err(Error::msg("Failed to save book".to_string()))
         }
     }
@@ -46,13 +47,13 @@ pub(crate) async fn save(book: &Book, client: &Client, uid: &str) -> Result<(), 
 
 /// Returns all book records for the given user.
 /// Returns an empty list if no records found.
-pub(crate) async fn get_by_user(client: &Client, uid: &str) -> Result<Books, Error> {
+pub(crate) async fn get_by_user(client: &Client, uid: Uid) -> Result<Books, Error> {
     let books = match client
         .query()
         .table_name(USER_BOOKS_TABLE_NAME)
         .key_condition_expression("#uid = :uid")
         .expression_attribute_names("#uid", FIELD_UID)
-        .expression_attribute_values(":uid", AttributeValue::S(uid.to_string()))
+        .expression_attribute_values(":uid", AttributeValue::S(uid.0.clone()))
         .send()
         .await
     {
@@ -72,7 +73,7 @@ pub(crate) async fn get_by_user(client: &Client, uid: &str) -> Result<Books, Err
                                 book.isbn = match attr_to_string(attr.1).parse::<u64>() {
                                     Ok(v) => v,
                                     Err(_) => {
-                                        info!("Invalid ISBN for user {uid}");
+                                        info!("Invalid ISBN for user {}", uid.0);
                                         continue 'item;
                                     }
                                 }
@@ -103,36 +104,36 @@ pub(crate) async fn get_by_user(client: &Client, uid: &str) -> Result<Books, Err
                 Books { books }
             }
             None => {
-                info!("No books found for user {}", uid);
+                info!("No books found for user {}", uid.0);
                 Books { books: Vec::new() }
             }
         },
         Err(e) => {
-            info!("Failed to get books for {}: {:?}", uid, e);
+            info!("Failed to get books for {}: {:?}", uid.0, e);
             return Err(Error::msg("Failed to save book".to_string()));
         }
     };
 
-    info!("Returning {} books for {}", books.books.len(), uid);
+    info!("Returning {} books for {}", books.books.len(), uid.0);
     Ok(books)
 }
 
 /// Deletes a book from user_books table.
-pub(crate) async fn delete(isbn: &str, client: &Client, uid: &str) -> Result<(), Error> {
+pub(crate) async fn delete(isbn: &str, client: &Client, uid: Uid) -> Result<(), Error> {
     match client
         .delete_item()
         .table_name(USER_BOOKS_TABLE_NAME)
-        .key(FIELD_UID, AttributeValue::S(uid.to_string()))
+        .key(FIELD_UID, AttributeValue::S(uid.0.clone()))
         .key(FIELD_ISBN, AttributeValue::S(isbn.to_string()))
         .send()
         .await
     {
         Ok(_) => {
-            info!("Book deleted from DDB: {uid}/{isbn}");
+            info!("Book deleted from DDB: {}/{}", uid.0, isbn);
             Ok(())
         }
         Err(e) => {
-            info!("Failed to delete book {}/{}: {:?}", uid, isbn, e);
+            info!("Failed to delete book {}/{}: {:?}", uid.0, isbn, e);
             Err(Error::msg("Failed to delete book".to_string()))
         }
     }

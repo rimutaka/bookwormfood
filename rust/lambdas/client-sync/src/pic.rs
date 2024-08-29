@@ -1,23 +1,16 @@
+use crate::Uid;
 use anyhow::Error;
 use aws_sdk_s3::{presigning::PresigningConfig, Client};
 use bookwormfood_types::{Book, USER_PHOTOS_BUCKET_NAME, USER_PHOTOS_S3_PREFIX};
-use sha2::{Digest, Sha256};
 use std::time::Duration;
 use tracing::info;
 
 /// Generates a presigned URL for uploading a photo of the book.
-pub(crate) async fn get_signed_url(book: &Book, uid: &str) -> Result<String, Error> {
-    // the object name is [uid/email hash]-[isbn]-[uuid].jpg
-
-    // hash the email
-    let mut hasher = Sha256::new();
-    hasher.update(uid);
-    let uid_hash = hex::encode(hasher.finalize());
-
+pub(crate) async fn get_signed_url(book: &Book, uid: &Uid) -> Result<String, Error> {
     // join the different parts together with the path prefix
     let pid = [
         USER_PHOTOS_S3_PREFIX,
-        &uid_hash,
+        &uid.0,
         "-",
         &book.isbn.to_string(),
         "-",
@@ -41,7 +34,7 @@ pub(crate) async fn get_signed_url(book: &Book, uid: &str) -> Result<String, Err
             Ok(url)
         }
         Err(e) => {
-            info!("Failed to generate presigned request {}/{}: {:?}", uid, book.isbn, e);
+            info!("Failed to generate presigned request {}/{}: {:?}", uid.0, book.isbn, e);
             Err(Error::msg("Failed to generate presigned request".to_string()))
         }
     }

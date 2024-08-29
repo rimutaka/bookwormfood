@@ -5,6 +5,7 @@ use aws_lambda_events::{
 use aws_sdk_dynamodb::Client;
 use bookwormfood_types::{Book, AUTH_HEADER, ISBN_URL_PARAM_NAME};
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
+use sha2::{Digest, Sha256};
 use tracing::info;
 use tracing_subscriber::filter::LevelFilter;
 
@@ -13,6 +14,12 @@ mod jwt;
 mod pic;
 
 const USER_BOOKS_TABLE_NAME: &str = "user_books";
+
+/// A unique identifier for the user.
+#[derive(Clone)]
+struct Uid(String);
+/// The user email address from the JWT.
+struct Email(String);
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -50,13 +57,19 @@ pub(crate) async fn my_handler(
 
     // exit if no valid email is provided
     let email = match jwt::get_email(&authorization) {
-        Ok(v) => v.to_lowercase(),
+        Ok(v) => Email(v.to_lowercase()),
         Err(e) => {
             info!("Unauthorized via JWT: {:?}", e);
             return handler_response(Some("Unauthorized via JWT".to_string()), 403);
         }
     };
-    info!("Email: {:?}", email);
+    info!("Email: {}", email.0);
+
+    // hash the email
+    let mut hasher = Sha256::new();
+    hasher.update(email.0.clone());
+    let uid = Uid(hex::encode(hasher.finalize()));
+    info!("UID: {}", uid.0);
 
     // decide on the action depending on the HTTP method
     let method = match event.payload.request_context.http.method {
@@ -75,7 +88,7 @@ pub(crate) async fn my_handler(
     };
     info!("Method: {}", method);
 
-    // save the book to the database
+    // TODO: make it OnceCell
     let client = Client::new(&aws_config::load_from_env().await);
 
     match method {
@@ -96,17 +109,17 @@ pub(crate) async fn my_handler(
                 }
             };
 
-            match book::save(&book, &client, &email).await {
+            match book::save(&book, &client, uid, email).await {
                 Ok(_) => handler_response(None, 204),
                 Err(e) => handler_response(Some(e.to_string()), 400),
             }
         }
         // return the list of all books
-        Method::GET => match book::get_by_user(&client, &email).await {
+        Method::GET => match book::get_by_user(&client, uid.clone()).await {
             Ok(v) => match serde_json::to_string(&v) {
                 Ok(v) => handler_response(Some(v), 200),
                 Err(e) => {
-                    info!("Failed to serialize books for {email}: {:?}", e);
+                    info!("Failed to serialize books for {}: {:?}", uid.0, e);
                     handler_response(Some(e.to_string()), 400)
                 }
             },
@@ -128,7 +141,7 @@ pub(crate) async fn my_handler(
                 }
             };
 
-            match pic::get_signed_url(&book, &email).await {
+            match pic::get_signed_url(&book, &uid).await {
                 Ok(v) => handler_response(Some(["\"".to_string(), v, "\"".to_string()].concat()), 200),
                 Err(e) => handler_response(Some(e.to_string()), 400),
             }
@@ -145,7 +158,7 @@ pub(crate) async fn my_handler(
                 }
             };
 
-            match book::delete(isbn, &client, &email).await {
+            match book::delete(isbn, &client, uid).await {
                 Ok(_) => handler_response(None, 204),
                 Err(e) => handler_response(Some(e.to_string()), 400),
             }
