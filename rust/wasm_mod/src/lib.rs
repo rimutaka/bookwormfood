@@ -6,6 +6,7 @@ use sync::{sync_book, sync_books};
 use utils::get_runtime;
 use wasm_bindgen::prelude::*;
 use wasm_response::{report_progress, WasmResponse, WasmResult};
+use web_sys::FileList;
 
 #[macro_use]
 pub(crate) mod utils;
@@ -13,6 +14,7 @@ mod book;
 mod books;
 pub mod google;
 mod http_req;
+mod pic;
 mod sync;
 pub mod wasm_response;
 
@@ -242,4 +244,49 @@ pub async fn delete_book(isbn: String, id_token: Option<IdToken>) {
 
     // TODO: handle possible errors
     let _ = crate::sync::delete_book(&isbn, &runtime, &id_token).await;
+}
+
+/// Uploads a file to S3.
+/// Returns error or success via an async message.
+#[wasm_bindgen]
+pub async fn upload_pic(isbn: String, files: FileList, id_token: Option<IdToken>) {
+    log!("Uploading an image to S3");
+
+    let isbn = match isbn.parse::<u64>() {
+        Ok(v) => v,
+        Err(e) => {
+            log!("Failed to parse ISBN {isbn}. It's a bug. {:?}", e);
+            return;
+        }
+    };
+
+    // need the runtime for the global context and fetch
+    let runtime = match get_runtime().await {
+        Ok(v) => v,
+
+        // if this happened it would be a bug
+        Err(e) => {
+            log!("Failed to get runtime: {:?}", e);
+            return;
+        }
+    };
+
+    // get Books from local storage and wrap them into a response struct
+    let resp = match pic::upload(&runtime, isbn, files, id_token).await {
+        Ok(_) => {
+            log!("Pic uploaded");
+            WasmResponse::Uploaded(Box::new(Some(WasmResult::Ok(isbn.to_string()))))
+        }
+        Err(e) => {
+            log!("Pic upload failed for {isbn}");
+            log!("{:?}", e);
+            WasmResponse::Uploaded(Box::new(Some(WasmResult::Err(format!("{:?}", e)))))
+        }
+    };
+
+    // log!("Book data below:");
+    // log!("{:?}", resp);
+
+    // send the response back to the UI thread
+    report_progress(resp.to_string());
 }

@@ -28,6 +28,9 @@ pub const ISBN_URL_PARAM_NAME: &str = "isbn";
 /// Normally it would be our own domain name where all the server functions are hosted.
 pub const TRUSTED_URLS: &str = "https://bookwormfood.com";
 
+/// URL of sync.html lambda function.
+pub const SYNC_HTML_URL: &str = "https://bookwormfood.com/sync.html";
+
 /// Name of DDB table with the list of books per user
 pub const USER_BOOKS_TABLE_NAME: &str = "user_books";
 

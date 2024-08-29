@@ -47,6 +47,8 @@ features = [
     'RequestMode',
     'Response',
     "Storage",
+    "File",
+    "FileList",
 ]
 
 [dev-dependencies]

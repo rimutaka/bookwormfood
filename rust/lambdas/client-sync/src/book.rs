@@ -61,7 +61,7 @@ pub(crate) async fn get_by_user(client: &Client, uid: &str) -> Result<Books, Err
             Some(items) => {
                 let mut books = Vec::with_capacity(items.len());
                 // loop thru the records
-                for item in items {
+                'item: for item in items {
                     let mut book = Book::new(Book::FAKE_ISBN);
 
                     // iterate through the list of attributes for the record
@@ -69,7 +69,13 @@ pub(crate) async fn get_by_user(client: &Client, uid: &str) -> Result<Books, Err
                     for attr in item {
                         match attr.0.as_str() {
                             FIELD_ISBN => {
-                                book.isbn = attr_to_string(attr.1).parse::<u64>().unwrap_or(Book::FAKE_ISBN)
+                                book.isbn = match attr_to_string(attr.1).parse::<u64>() {
+                                    Ok(v) => v,
+                                    Err(_) => {
+                                        info!("Invalid ISBN for user {uid}");
+                                        continue 'item;
+                                    }
+                                }
                             }
                             FIELD_TITLE => book.title = attr_to_option(attr.1),
                             FIELD_AUTHORS => {
@@ -89,11 +95,7 @@ pub(crate) async fn get_by_user(client: &Client, uid: &str) -> Result<Books, Err
                         }
                     }
 
-                    // skip the book if invalid
-                    if book.isbn == Book::FAKE_ISBN {
-                        info!("Invalid ISBN {} / {:?}", uid, book);
-                        continue;
-                    }
+                    // there is potential for an incomplete record if ISBN/Updated fields are missing
 
                     books.push(book);
                 }

@@ -1,5 +1,6 @@
-use web_sys::{Storage, Window};
 use anyhow::{bail, Result};
+use wasm_bindgen::prelude::*;
+use web_sys::{File, Storage, Window};
 
 /// Logs output into browser console.
 macro_rules!  log {
@@ -49,4 +50,18 @@ pub(crate) fn get_local_storage(runtime: &Window) -> Result<Storage> {
             bail!("Local storage not available (OK(None))");
         }
     }
+}
+
+/// Uploads a file to S3 using a signed URL via an external JS function call.
+/// Returns the HTTP status code of the upload or `0` if the upload failed with an error.
+/// The error is logged in the console by the JS function.
+pub(crate) async fn upload_file(signed_url: &str, file: File) -> u32 {
+    let result = upload_file_return_http_status(signed_url, file).await;
+    result.as_f64().unwrap_or(0.0).trunc() as u32
+}
+
+/// A JS-based file uploader using fetch+PUT for S3.
+#[wasm_bindgen(module = "/src/upload_file.js")]
+extern "C" {
+    async fn upload_file_return_http_status(signed_url: &str, file: File) -> JsValue;
 }

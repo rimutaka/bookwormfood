@@ -1,7 +1,7 @@
 use crate::http_req::{execute_http_request, HttpMethod, IdToken};
 use crate::utils::{get_local_storage, log};
 use anyhow::{bail, Error, Result};
-use bookwormfood_types::{Book, Books, ISBN_URL_PARAM_NAME};
+use bookwormfood_types::{Book, Books, ISBN_URL_PARAM_NAME, SYNC_HTML_URL};
 use web_sys::Window;
 
 /// Try to save the book to the cloud DB and update the sync status in the local storage.
@@ -56,11 +56,9 @@ pub(crate) async fn sync_book(isbn: u64, runtime: &Window, id_token: &Option<IdT
     cloud_book.timestamp_update = local_book.timestamp_update;
     cloud_book.title = local_book.title.clone();
 
-    let url = "https://bookwormfood.com/sync.html";
-
     // send the data to the cloud DB
     // set the new sync timestamp to the current time on success or None on failure
-    let book = if execute_http_request::<Book, ()>(url, HttpMethod::Post(cloud_book), runtime, id_token)
+    let book = if execute_http_request::<Book, ()>(SYNC_HTML_URL, HttpMethod::Post(cloud_book), runtime, id_token)
         .await
         .is_ok()
     {
@@ -101,10 +99,8 @@ pub(crate) async fn sync_books(books: Books, runtime: &Window, id_token: &Option
         return Ok(None);
     }
 
-    let url = "https://bookwormfood.com/sync.html";
-
     // get the list of books from the lambda
-    let cloud_books = match execute_http_request::<(), Books>(url, HttpMethod::Get, runtime, id_token).await {
+    let cloud_books = match execute_http_request::<(), Books>(SYNC_HTML_URL, HttpMethod::Get, runtime, id_token).await {
         Ok(Some(v)) => v,
         Ok(None) => {
             log!("No books in the cloud DB");
@@ -212,7 +208,7 @@ pub(crate) async fn delete_book(isbn: &str, runtime: &Window, id_token: &Option<
     log!("Sending book deletion request to lambda: {}", isbn);
 
     // the lambda only needs the ISBN for this operation
-    let url = ["https://bookwormfood.com/sync.html?", ISBN_URL_PARAM_NAME, "=", isbn].concat();
+    let url = [SYNC_HTML_URL, "?", ISBN_URL_PARAM_NAME, "=", isbn].concat();
 
     // send the ISBN to the cloud DB
     if execute_http_request::<Book, ()>(&url, HttpMethod::Delete, runtime, id_token)

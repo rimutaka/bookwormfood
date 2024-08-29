@@ -23,6 +23,8 @@ pub enum WasmResponse {
     LocalBook(Box<Option<WasmResult<Book>>>),
     /// Result of a deletion operation for the enclosed ISBN.
     Deleted(Box<Option<WasmResult<String>>>),
+    /// Result of a file upload operation for the enclosed file name.
+    Uploaded(Box<Option<WasmResult<String>>>),
 }
 
 impl fmt::Display for WasmResponse {

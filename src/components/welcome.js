@@ -18,7 +18,37 @@ export default function Welcome() {
   const { isAuthenticated, getIdTokenClaims } = useAuth0();
   const [token, setToken] = useState();
 
+  const handleWasmMessage = (msg) => {
+    // console.log(`WASM msg: ${msg.data} / ${msg.origin} / ${msg.source}`);
+    // WASM messages should be JSON objects
+    let data;
+    try {
+      data = JSON.parse(msg.data);
+    }
+    catch (e) {
+      // use this log for debugging, but this mostly logs messages sent from React tooling
+      // in development mode, not sure it's worth logging this in production
+      // console.log(`Error parsing JSON data: ${e}`);
+      return;
+    }
+
+    // see `WasmResult` and `WasmResponse` in the WASM code for the structure of the data
+    if (data?.localBooks?.Ok?.books) {
+      let list_of_books = data.localBooks.Ok?.books;
+      // console.log(`Books: ${JSON.stringify(list_of_books)}`);
+      setBooks(list_of_books);
+      withCloudSync = !token; // books synced - do not sync again
+    }
+    else {
+      // console.log("Welcome screen received a message that is not a list of books");
+      // console.log(data);
+    }
+  };
+
+
   useEffect(() => {
+    // handles messages with book data sent back by the WASM module
+    window.addEventListener("message", handleWasmMessage);
 
     // these values are used to set the meta tags in index.html
     // and have to be reset when the component is mounted from
@@ -55,34 +85,10 @@ export default function Welcome() {
     })();
 
     // console.log("Requested scanned books (outside async)");
+
+    // remove the listener to avoid adding it multiple times
+    return () => window.removeEventListener("message", handleWasmMessage);
   }, [isAuthenticated]);
-
-  window.addEventListener("message", (msg) => {
-    // console.log(`WASM msg: ${msg.data} / ${msg.origin} / ${msg.source}`);
-    // WASM messages should be JSON objects
-    let data;
-    try {
-      data = JSON.parse(msg.data);
-    }
-    catch (e) {
-      // use this log for debugging, but this mostly logs messages sent from React tooling
-      // in development mode, not sure it's worth logging this in production
-      // console.log(`Error parsing JSON data: ${e}`);
-      return;
-    }
-
-    // see `WasmResult` and `WasmResponse` in the WASM code for the structure of the data
-    if (data?.localBooks?.Ok?.books) {
-      let list_of_books = data.localBooks.Ok?.books;
-      // console.log(`Books: ${JSON.stringify(list_of_books)}`);
-      setBooks(list_of_books);
-      withCloudSync = !token; // books synced - do not sync again
-    }
-    else {
-      // console.log("Welcome screen received a message that is not a list of books");
-      // console.log(data);
-    }
-  });
 
   const onScanBtnClickHandler = async (e) => {
     e.preventDefault();
