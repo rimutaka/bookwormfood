@@ -32,3 +32,4 @@ anyhow = { workspace = true }
 uuid = { workspace = true }
 hex = { workspace = true }
 sha2 = { workspace = true }
+aws-smithy-runtime-api = "1.7.2"

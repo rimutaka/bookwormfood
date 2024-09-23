@@ -66,15 +66,17 @@ async fn process_record(record: S3EventRecord) -> Result<(), Error> {
 
     let uid = Uid(ids[0].to_string());
     let isbn = ids[1].to_string();
-    let image_id = ids[2].to_string();
-    info!("UID: {}", uid.0);
-
-    info!("File parts: {}\n{}\n{}", uid.0, isbn, image_id);
+    let photo_id = ids[2].to_string();
+    info!(
+        "Event:{:?}, UID: {}, ISBN: {}, Photo ID{}",
+        record.event_name, uid.0, isbn, photo_id
+    );
 
     // save the photo ID to the user book record
 
     match &record.event_name {
-        Some(v) if v.starts_with("ObjectCreated:") => photo::add_photo(uid, isbn, image_id).await,
+        Some(v) if v.starts_with("ObjectCreated:") => photo::add_photo_to_ddb(uid, isbn, photo_id).await,
+        Some(v) if v.starts_with("ObjectRemoved:") => photo::remove_photo_from_ddb(uid, isbn, photo_id).await,
         _ => {
             info!("Unhandled S3 event: {:?}", record.event_name);
             Ok(())
