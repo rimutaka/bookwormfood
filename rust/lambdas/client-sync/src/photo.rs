@@ -1,7 +1,7 @@
 use crate::Uid;
 use anyhow::Error;
 use aws_sdk_s3::{presigning::PresigningConfig, Client};
-use bookwormfood_types::{Book, USER_PHOTOS_BUCKET_NAME, USER_PHOTOS_S3_PREFIX};
+use bookwormfood_types::{Book, USER_PHOTOS_BUCKET_NAME, USER_PHOTOS_S3_PREFIX, USER_PHOTOS_S3_SUFFIX};
 use std::time::Duration;
 use tracing::info;
 
@@ -14,8 +14,8 @@ pub(crate) async fn get_signed_url(book: &Book, uid: &Uid) -> Result<String, Err
         "-",
         &book.isbn.to_string(),
         "-",
-        &uuid::Uuid::new_v4().simple().to_string(),
-        ".jpg",
+        &chrono::Utc::now().timestamp().to_string(),
+        USER_PHOTOS_S3_SUFFIX,
     ]
     .concat();
 

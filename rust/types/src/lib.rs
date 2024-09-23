@@ -41,8 +41,11 @@ pub const USER_BOOKS_TABLE_NAME: &str = "user_books";
 pub const USER_PHOTOS_BUCKET_NAME: &str = "bookwormfood.com";
 /// The path within the bucket where the user photos are stored.
 /// Must include trailing slash.
-/// Value: `pics/`.
-pub const USER_PHOTOS_S3_PREFIX: &str = "pics/";
+/// Value: `photos/`.
+pub const USER_PHOTOS_S3_PREFIX: &str = "photos/";
+
+/// The file type of the user photos: .jpg
+pub const USER_PHOTOS_S3_SUFFIX: &str = ".jpg";
 
 /// Where the reader is with the book.
 /// Defaults to None.
@@ -116,7 +119,7 @@ pub struct Book {
     pub volume_info: Option<VolumeInfo>,
     /// A list of user-uploaded photos of the book
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub pics: Option<Vec<Photo>>,
+    pub photos: Option<Vec<Photo>>,
     /// Dummy field to prevent struct instantiation without ISBN.
     #[serde(default, skip)]
     _dummy: usize,
@@ -160,7 +163,7 @@ impl Book {
             title: None,
             authors: None,
             volume_info: None,
-            pics: None,
+            photos: None,
             _dummy: 0,
         }
     }

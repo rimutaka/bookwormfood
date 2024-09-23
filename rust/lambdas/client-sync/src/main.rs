@@ -14,7 +14,7 @@ use tracing_subscriber::filter::LevelFilter;
 
 mod book;
 mod jwt;
-mod pic;
+mod photo;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -136,7 +136,7 @@ pub(crate) async fn my_handler(
                 }
             };
 
-            match pic::get_signed_url(&book, &uid).await {
+            match photo::get_signed_url(&book, &uid).await {
                 Ok(v) => handler_response(Some(["\"".to_string(), v, "\"".to_string()].concat()), 200),
                 Err(e) => handler_response(Some(e.to_string()), 400),
             }

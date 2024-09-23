@@ -1,18 +1,10 @@
 use crate::{Email, Uid, USER_BOOKS_TABLE_NAME};
 use anyhow::Error;
 use aws_sdk_dynamodb::{types::AttributeValue, Client};
-use bookwormfood_types::{Book, Books, ReadStatus};
+use bookwormfood_types::{lambda::user_books_table_fields as fields, Book, Books, ReadStatus};
 use chrono::{DateTime, Utc};
 use std::str::FromStr;
 use tracing::info;
-
-const FIELD_UID: &str = "uid"; // used in a query
-const FIELD_EMAIL: &str = "email"; // from JWT, never returned to the caller
-const FIELD_ISBN: &str = "isbn";
-const FIELD_TITLE: &str = "title";
-const FIELD_AUTHORS: &str = "authors";
-const FIELD_UPDATED: &str = "updated";
-const FIELD_READ_STATUS: &str = "read_status";
 
 /// Save a book in the user_books table.
 /// Replaces existing records unconditionally.
@@ -20,14 +12,14 @@ pub(crate) async fn save(book: &Book, client: &Client, uid: Uid, email: Email) -
     match client
         .put_item()
         .table_name(USER_BOOKS_TABLE_NAME)
-        .item(FIELD_UID, AttributeValue::S(uid.0.clone()))
-        .item(FIELD_EMAIL, AttributeValue::S(email.0))
-        .item(FIELD_ISBN, AttributeValue::N(book.isbn.to_string()))
-        .item(FIELD_TITLE, attr_val_s(&book.title))
-        .item(FIELD_AUTHORS, attr_val_ss(&book.authors))
-        .item(FIELD_UPDATED, AttributeValue::S(book.timestamp_update.to_rfc3339()))
+        .item(fields::UID, AttributeValue::S(uid.0.clone()))
+        .item(fields::EMAIL, AttributeValue::S(email.0))
+        .item(fields::ISBN, AttributeValue::N(book.isbn.to_string()))
+        .item(fields::TITLE, attr_val_s(&book.title))
+        .item(fields::AUTHORS, attr_val_ss(&book.authors))
+        .item(fields::UPDATED, AttributeValue::S(book.timestamp_update.to_rfc3339()))
         .item(
-            FIELD_READ_STATUS,
+            fields::READ_STATUS,
             book.read_status
                 .map_or_else(|| AttributeValue::Null(true), |v| AttributeValue::S(v.to_string())),
         )
@@ -52,7 +44,7 @@ pub(crate) async fn get_by_user(client: &Client, uid: Uid) -> Result<Books, Erro
         .query()
         .table_name(USER_BOOKS_TABLE_NAME)
         .key_condition_expression("#uid = :uid")
-        .expression_attribute_names("#uid", FIELD_UID)
+        .expression_attribute_names("#uid", fields::UID)
         .expression_attribute_values(":uid", AttributeValue::S(uid.0.clone()))
         .send()
         .await
@@ -69,7 +61,7 @@ pub(crate) async fn get_by_user(client: &Client, uid: Uid) -> Result<Books, Erro
                     // instead of looking them up by name
                     for attr in item {
                         match attr.0.as_str() {
-                            FIELD_ISBN => {
+                            fields::ISBN => {
                                 book.isbn = match attr_to_string(attr.1).parse::<u64>() {
                                     Ok(v) => v,
                                     Err(_) => {
@@ -78,20 +70,22 @@ pub(crate) async fn get_by_user(client: &Client, uid: Uid) -> Result<Books, Erro
                                     }
                                 }
                             }
-                            FIELD_TITLE => book.title = attr_to_option(attr.1),
-                            FIELD_AUTHORS => {
+                            fields::TITLE => book.title = attr_to_option(attr.1),
+                            fields::AUTHORS => {
                                 book.authors = match attr.1 {
                                     AttributeValue::Ss(v) => Some(v),
                                     _ => None,
                                 }
                             }
-                            FIELD_UPDATED => {
+                            fields::UPDATED => {
                                 book.timestamp_update = match DateTime::parse_from_rfc3339(&attr_to_string(attr.1)) {
                                     Ok(v) => v.into(),
                                     Err(_) => DateTime::<Utc>::MIN_UTC,
                                 }
                             }
-                            FIELD_READ_STATUS => book.read_status = ReadStatus::from_str(&attr_to_string(attr.1)).ok(),
+                            fields::READ_STATUS => {
+                                book.read_status = ReadStatus::from_str(&attr_to_string(attr.1)).ok()
+                            }
                             _ => {}
                         }
                     }
@@ -123,8 +117,8 @@ pub(crate) async fn delete(isbn: &str, client: &Client, uid: Uid) -> Result<(), 
     match client
         .delete_item()
         .table_name(USER_BOOKS_TABLE_NAME)
-        .key(FIELD_UID, AttributeValue::S(uid.0.clone()))
-        .key(FIELD_ISBN, AttributeValue::S(isbn.to_string()))
+        .key(fields::UID, AttributeValue::S(uid.0.clone()))
+        .key(fields::ISBN, AttributeValue::S(isbn.to_string()))
         .send()
         .await
     {
