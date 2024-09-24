@@ -9,19 +9,27 @@ use tracing::info;
 /// Save a book in the user_books table.
 /// Replaces existing records unconditionally.
 pub(crate) async fn save(book: &Book, client: &Client, uid: Uid, email: Email) -> Result<(), Error> {
+    // this has to be an update to prevent overwriting photo IDs
+    const UPDATE_EXPRESSION: &str =
+        "SET email = :email, title = :title, authors = :authors, read_status = :read_status, updated = :updated";
+
     match client
-        .put_item()
+        .update_item()
         .table_name(USER_BOOKS_TABLE_NAME)
-        .item(fields::UID, AttributeValue::S(uid.0.clone()))
-        .item(fields::EMAIL, AttributeValue::S(email.0))
-        .item(fields::ISBN, AttributeValue::N(book.isbn.to_string()))
-        .item(fields::TITLE, attr_val_s(&book.title))
-        .item(fields::AUTHORS, attr_val_ss(&book.authors))
-        .item(fields::UPDATED, AttributeValue::S(book.timestamp_update.to_rfc3339()))
-        .item(
-            fields::READ_STATUS,
+        .update_expression(UPDATE_EXPRESSION)
+        .key(fields::UID, AttributeValue::S(uid.0.clone()))
+        .key(fields::ISBN, AttributeValue::N(book.isbn.to_string()))
+        .expression_attribute_values([":", fields::EMAIL].concat(), AttributeValue::S(email.0.clone()))
+        .expression_attribute_values([":", fields::TITLE].concat(), attr_val_s(&book.title))
+        .expression_attribute_values([":", fields::AUTHORS].concat(), attr_val_ss(&book.authors))
+        .expression_attribute_values(
+            [":", fields::READ_STATUS].concat(),
             book.read_status
                 .map_or_else(|| AttributeValue::Null(true), |v| AttributeValue::S(v.to_string())),
+        )
+        .expression_attribute_values(
+            [":", fields::UPDATED].concat(),
+            AttributeValue::S(Utc::now().to_rfc3339()),
         )
         .send()
         .await
@@ -62,12 +70,9 @@ pub(crate) async fn get_by_user(client: &Client, uid: Uid) -> Result<Books, Erro
                     for attr in item {
                         match attr.0.as_str() {
                             fields::ISBN => {
-                                book.isbn = match attr_to_string(attr.1).parse::<u64>() {
-                                    Ok(v) => v,
-                                    Err(_) => {
-                                        info!("Invalid ISBN for user {}", uid.0);
-                                        continue 'item;
-                                    }
+                                book.isbn = match attr_to_isbn(attr.1) {
+                                    Some(v) => v,
+                                    None => continue 'item,
                                 }
                             }
                             fields::TITLE => book.title = attr_to_option(attr.1),
@@ -78,13 +83,20 @@ pub(crate) async fn get_by_user(client: &Client, uid: Uid) -> Result<Books, Erro
                                 }
                             }
                             fields::UPDATED => {
-                                book.timestamp_update = match DateTime::parse_from_rfc3339(&attr_to_string(attr.1)) {
+                                book.timestamp_update = match DateTime::parse_from_rfc3339(&attr_s_to_string(attr.1)) {
                                     Ok(v) => v.into(),
                                     Err(_) => DateTime::<Utc>::MIN_UTC,
                                 }
                             }
                             fields::READ_STATUS => {
-                                book.read_status = ReadStatus::from_str(&attr_to_string(attr.1)).ok()
+                                book.read_status = ReadStatus::from_str(&attr_s_to_string(attr.1)).ok()
+                            }
+                            fields::PHOTO_IDS => {
+                                info!("Photo IDs: {:?}", attr.1);
+                                book.photos = match attr.1 {
+                                    AttributeValue::Ss(v) => Some(v),
+                                    _ => None,
+                                }
                             }
                             _ => {}
                         }
@@ -146,10 +158,26 @@ fn attr_val_ss(v: &Option<Vec<String>>) -> AttributeValue {
 }
 
 /// Converts the AttributeValue into a string
-fn attr_to_string(v: AttributeValue) -> String {
+/// Returns an empty string if the value is not a string
+fn attr_s_to_string(v: AttributeValue) -> String {
     match v {
         AttributeValue::S(v) => v,
         _ => "".to_string(),
+    }
+}
+
+/// Converts a numeric filed AttributeValue into a string
+/// Returns an empty string if the value is not a string
+fn attr_to_isbn(v: AttributeValue) -> Option<u64> {
+    match v {
+        AttributeValue::N(v) => match v.parse::<u64>() {
+            Ok(isbn) => Some(isbn),
+            Err(e) => {
+                info!("Invalid ISBN. Val: {}, err: {}", v, e);
+                None
+            }
+        },
+        _ => None,
     }
 }
 

@@ -79,16 +79,6 @@ impl FromStr for ReadStatus {
     }
 }
 
-/// User photos of a book
-#[derive(Deserialize, Serialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct Photo {
-    /// Photo ID, a random string, used as an S3 key.
-    pub id: String,
-    /// When the photo was uploaded.
-    pub ts: DateTime<Utc>,
-}
-
 /// An internal representation of a book record.
 /// Stored in the local storage and in the cloud.
 /// This struct does not Default implementation to force thinking what attributes go where.
@@ -117,9 +107,10 @@ pub struct Book {
     /// The book details from Google Books API
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub volume_info: Option<VolumeInfo>,
-    /// A list of user-uploaded photos of the book
+    /// A list of URLs for user-uploaded photos of the book.
+    /// The list is sorted by the timestamp of the photo in the chronological order.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub photos: Option<Vec<Photo>>,
+    pub photos: Option<Vec<String>>,
     /// Dummy field to prevent struct instantiation without ISBN.
     #[serde(default, skip)]
     _dummy: usize,
