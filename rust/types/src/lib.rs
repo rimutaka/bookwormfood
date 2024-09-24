@@ -1,6 +1,7 @@
 use crate::google::VolumeInfo;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 
@@ -46,6 +47,16 @@ pub const USER_PHOTOS_S3_PREFIX: &str = "photos/";
 
 /// The file type of the user photos: .jpg
 pub const USER_PHOTOS_S3_SUFFIX: &str = ".jpg";
+
+/// Generates a user ID from the email by hashing it with a salt value.
+/// The salt value is not secret and is used to prevent use of rainbow tables.
+/// The user id may be used in URLs.
+pub fn generate_user_id(email: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update("bookwormfood");
+    hasher.update(email);
+    hex::encode(hasher.finalize())
+}
 
 /// Where the reader is with the book.
 /// Defaults to None.

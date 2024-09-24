@@ -4,11 +4,11 @@ use aws_lambda_events::{
 };
 use aws_sdk_dynamodb::Client;
 use bookwormfood_types::{
+    generate_user_id,
     lambda::{Email, Uid, USER_BOOKS_TABLE_NAME},
     Book, AUTH_HEADER, ISBN_URL_PARAM_NAME,
 };
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
-use sha2::{Digest, Sha256};
 use tracing::info;
 use tracing_subscriber::filter::LevelFilter;
 
@@ -61,9 +61,7 @@ pub(crate) async fn my_handler(
     info!("Email: {}", email.0);
 
     // hash the email
-    let mut hasher = Sha256::new();
-    hasher.update(email.0.clone());
-    let uid = Uid(hex::encode(hasher.finalize()));
+    let uid = Uid(generate_user_id(&email.0));
     info!("UID: {}", uid.0);
 
     // decide on the action depending on the HTTP method
