@@ -6,6 +6,7 @@ use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 
 pub mod google;
+pub mod jwt;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod lambda;
 

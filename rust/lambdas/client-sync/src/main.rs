@@ -4,7 +4,7 @@ use aws_lambda_events::{
 };
 use aws_sdk_dynamodb::Client;
 use bookwormfood_types::{
-    generate_user_id,
+    generate_user_id, jwt,
     lambda::{Email, Uid, USER_BOOKS_TABLE_NAME},
     Book, AUTH_HEADER, ISBN_URL_PARAM_NAME,
 };
@@ -13,7 +13,6 @@ use tracing::info;
 use tracing_subscriber::filter::LevelFilter;
 
 mod book;
-mod jwt;
 mod photo;
 
 #[tokio::main]
@@ -52,9 +51,8 @@ pub(crate) async fn my_handler(
 
     // exit if no valid email is provided
     let email = match jwt::get_email(&authorization) {
-        Ok(v) => Email(v.to_lowercase()),
-        Err(e) => {
-            info!("Unauthorized via JWT: {:?}", e);
+        Some(v) => Email(v),
+        None => {
             return handler_response(Some("Unauthorized via JWT".to_string()), 403);
         }
     };

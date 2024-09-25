@@ -1,7 +1,16 @@
 use jsonwebtoken::{decode, decode_header, DecodingKey, Validation};
-use lambda_runtime::Error;
 use serde::Deserialize;
-use tracing::info;
+#[cfg(not(target_arch = "wasm32"))]
+use tracing::info as log; // the alias is need to reuse the same code for WASM and Lambda
+
+/// Logs output into browser console.
+/// TODO: move it to a separate module and share it with WASM
+#[cfg(target_arch = "wasm32")]
+macro_rules!  log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into())
+    }
+}
 
 // these N and E values are exracted manually from JWK found at https://bookwormfood.us.auth0.com/.well-known/jwks.json
 // match the key by the kid field in the header of the JWT token
@@ -16,22 +25,23 @@ struct Claims {
     email_verified: bool,
 }
 
-/// Returns the user email from the given JWT token, if the token is valid,
-/// otherwise returns an error.
+/// Returns the user email in lower case from the given JWT token, if the token is valid,
+/// otherwise returns None.
 /// All errors are logged inside the function.
-pub(crate) fn get_email(token: &str) -> Result<String, Error> {
+pub fn get_email(token: &str) -> Option<String> {
     // do we have a token?
     if token.is_empty() {
-        return Err(Error::from("No token provided"));
+        log!("No token provided");
+        return None;
     }
 
     // try decoding the token
     let header = match decode_header(token) {
         Ok(v) => v,
         Err(e) => {
-            info!("Token: {token}");
-            info!("Error decoding header: {:?}", e);
-            return Err(Error::from("Error decoding header"));
+            log!("Token: {token}");
+            log!("Error decoding header: {:?}", e);
+            return None;
         }
     };
 
@@ -39,9 +49,9 @@ pub(crate) fn get_email(token: &str) -> Result<String, Error> {
     let decoding_key = match DecodingKey::from_rsa_components(JWK_N, JWK_E) {
         Ok(v) => v,
         Err(e) => {
-            info!("Token: {token}");
-            info!("Error creating decoding key: {:?}. It's a bug.", e);
-            return Err(Error::from("Error (a bug) creating decoding key"));
+            log!("Token: {token}");
+            log!("Error creating decoding key: {:?}. It's a bug.", e);
+            return None;
         }
     };
 
@@ -57,23 +67,24 @@ pub(crate) fn get_email(token: &str) -> Result<String, Error> {
     let claims = match decode::<Claims>(token, &decoding_key, &validation) {
         Ok(v) => v.claims,
         Err(e) => {
-            info!("Token: {token}");
-            info!("Error decoding token: {:?}", e);
-            return Err(Error::from("Error decoding token"));
+            log!("Token: {token}");
+            log!("Error decoding token: {:?}", e);
+            return None;
         }
     };
 
-    // info!("{:#?}", decoded_token);
+    // log!("{:#?}", decoded_token);
 
     // check if we have an email
     if claims.email.is_empty() {
-        return Err(Error::from("No email found in token"));
+        log!("No email found in token");
+        return None;
     }
     if !claims.email_verified {
-        info!("Token: {token}");
-        info!("Unverified email: {}", claims.email);
-        return Err(Error::from("Unverified email"));
+        log!("Token: {token}");
+        log!("Unverified email: {}", claims.email);
+        return None;
     }
 
-    Ok(claims.email)
+    Some(claims.email.to_ascii_lowercase())
 }

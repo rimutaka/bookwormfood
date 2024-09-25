@@ -26,7 +26,6 @@ regex = { workspace = true }
 #   "http2",
 #   "charset",
 # ], default-features = false }
-jsonwebtoken = "9.3.0"
 chrono = { workspace = true }
 anyhow = { workspace = true }
 uuid = { workspace = true }
