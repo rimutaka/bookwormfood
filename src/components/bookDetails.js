@@ -83,6 +83,7 @@ export default function BookDetails() {
   const [description, setDescription] = useState();
   const [token, setToken] = useState();
   const [selectedFile, setSelectedFile] = useState(null);
+  const [photos, setPhotos] = useState([]);
 
   // Handles different types of responses sent from the WASM module
   // asynchronously. E.g. Book, Books, with the result of the operation
@@ -116,6 +117,9 @@ export default function BookDetails() {
       setStatus(status);
       let description = book.volumeInfo?.description;
       setDescription(description);
+      // photos may not be there, but keep an empty array anyway
+      let photos = book.photos;
+      if (photos) setPhotos(photos); else setPhotos([]);
       // if (thumbnail) setThumbnail(thumbnail);
       // const amount = data.googleBooks.Ok?.items[0]?.saleInfo?.listPrice?.amount;
       // const currency = data.googleBooks.Ok?.items[0]?.saleInfo?.listPrice?.currencyCode;
@@ -240,6 +244,23 @@ export default function BookDetails() {
     }
   }
 
+  const renderPhotos = () => {
+    console.log(`Photos: ${photos?.length}`);
+    if (!photos || photos.length == 0) {
+      console.log("No photos");
+      return;
+    }
+
+    const photo_list = [];
+
+    photos.forEach((photo) => {
+      photo_list.push(<div className="max-w-32 mb-6" key={photo}><a href={photo}><img src={photo} alt="Book photo" /></a></div>);
+    }
+    );
+
+    return <div className="book-cover fade-in" >{ photo_list }</div>
+  }
+
   const onClickMyBooks = (e) => {
     e.preventDefault();
     navigate(`/`)
@@ -297,6 +318,7 @@ export default function BookDetails() {
         <div className="justify-center">
           {selectedFile?.[0]?.name ? selectedFile?.[0]?.name : ""}
         </div>
+        {renderPhotos()}
         <div className="scanBtn">
           <label htmlFor="idPicUploader" className="cursor-pointer border-2 p-2 rounded-md">Upload photo</label>
           <input id="idPicUploader" name="idPicUploader" className="visuallyhidden" type="file" accept="image/jpeg" onChange={handleFileChange} />
