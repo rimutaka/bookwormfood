@@ -188,7 +188,7 @@ pub(crate) async fn sync_books(books: Books, runtime: &Window, id_token: &Option
                     match serde_json::to_string(&book) {
                         Ok(v) => match ls.set_item(&book.isbn.to_string(), &v) {
                             Ok(()) => {
-                                log!("Added to local storage: {}", book.isbn);
+                                log!("Updated in local storage: {}", book.isbn);
                                 book
                             }
                             Err(e) => {

@@ -137,7 +137,6 @@ impl Book {
             let front_part = [
                 crate::USER_PHOTOS_BASE_URL,
                 crate::USER_PHOTOS_S3_PREFIX,
-                "/",
                 user_id,
                 "-",
                 &self.isbn.to_string(),

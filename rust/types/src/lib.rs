@@ -1,11 +1,11 @@
-use serde::{Deserialize, Serialize};
 pub use book::{Book, ReadStatus};
+use serde::{Deserialize, Serialize};
 
+mod book;
 pub mod google;
 pub mod jwt;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod lambda;
-mod book;
 
 /// All error handling in this crate is based on either retrying a request after some time
 /// or exiting gracefully.
@@ -63,5 +63,25 @@ impl Books {
     /// Sort the list of books by the timestamp of the last update - the latest update comes first.
     pub fn sort(&mut self) {
         self.books.sort_by(|a, b| b.timestamp_update.cmp(&a.timestamp_update));
+    }
+
+    /// Creates a leaner clone with some optional fields set to None
+    /// to reduce the size of the JSON payload.
+    pub fn lean_copy(&self) -> Books {
+        Books {
+            books: self
+                .books
+                .iter()
+                .map(|v| {
+                    let mut book = v.clone();
+                    book.volume_info = None;
+                    book.photos = None;
+                    book.cover = None;
+                    book.timestamp_sync = None;
+
+                    book
+                })
+                .collect(),
+        }
     }
 }

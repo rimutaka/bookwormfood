@@ -115,7 +115,7 @@ pub async fn get_scanned_books(id_token: Option<IdToken>, with_cloud_sync: bool)
         Ok(v) => {
             log!("Book list retrieved: {}", v.books.len());
             // TODO: get rid of this clone
-            WasmResponse::LocalBooks(Box::new(Some(WasmResult::Ok(v.clone()))))
+            WasmResponse::LocalBooks(Box::new(Some(WasmResult::Ok(v.lean_copy()))))
         }
         Err(e) => {
             log!("Failed to get list of books");

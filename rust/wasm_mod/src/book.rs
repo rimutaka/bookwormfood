@@ -27,13 +27,14 @@ pub(crate) async fn save(book: &Book, runtime: &Window) -> Result<()> {
     match ls.set_item(&key.to_string(), &value) {
         Ok(()) => {
             log!("Book {key} saved in local storage");
-            bail!("Book {key} saved locally");
         }
         Err(e) => {
             log!("Failed to save book {key} record: {:?}", e);
             bail!("Book {key} not saved locally");
         }
     }
+
+    Ok(())
 }
 
 /// Adds Google Books data to the book record.
@@ -49,15 +50,13 @@ pub(crate) async fn enhance_from_google_books(book: Book, runtime: &Window) -> B
     match get_book_data(book.isbn, runtime).await {
         Ok(mut v) => match v.items.pop() {
             Some(v) => {
-                let mut result = Book::new(book.isbn);
-                result.timestamp_update = book.timestamp_update;
-                result.cover = v.volume_info.get_thumbnail(None);
-                result.title = Some(v.volume_info.title.clone());
-                result.authors = Some(v.volume_info.authors.clone());
-                result.volume_info = Some(v.volume_info);
-                result.read_status = book.read_status;
+                let mut book = book;
+                book.cover = v.volume_info.get_thumbnail(None);
+                book.title = Some(v.volume_info.title.clone());
+                book.authors = Some(v.volume_info.authors.clone());
+                book.volume_info = Some(v.volume_info);
 
-                result
+                book
             }
             None => {
                 log!("Nothing in Google Books for ISBN {}", book.isbn);
@@ -135,6 +134,8 @@ pub(crate) async fn get(runtime: &Window, isbn: u64) -> Result<Option<Book>> {
     let local_book = match ls.get_item(&isbn.to_string()) {
         Ok(Some(v)) => {
             log!("Found in local storage: {isbn}");
+            // log!("{}",v);
+
             match serde_json::from_str::<Book>(&v) {
                 Ok(v) => v,
                 Err(e) => {
@@ -146,7 +147,16 @@ pub(crate) async fn get(runtime: &Window, isbn: u64) -> Result<Option<Book>> {
         _ => Book::new(isbn),
     };
 
+    // log!("{:?}", local_book);
+
     // check if the book has everything the user needs
+    // log!(
+    //     "Needs enhancing: {}, {}, {}",
+    //     local_book.title.is_none(),
+    //     local_book.authors.is_none(),
+    //     local_book.volume_info.is_none()
+    // );
+
     if !local_book.needs_enhancing() {
         return Ok(Some(local_book));
     }

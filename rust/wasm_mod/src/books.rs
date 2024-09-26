@@ -96,10 +96,6 @@ pub(crate) fn get(runtime: &Window) -> Result<Books> {
             }
         }
 
-        // remove extra book details not used for the list of books
-        let mut book = book;
-        book.volume_info = None;
-
         books.push(book);
     }
 
