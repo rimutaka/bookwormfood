@@ -2,6 +2,7 @@ use crate::http_req::{execute_http_request, HttpMethod};
 use crate::utils::{get_local_storage, log};
 use anyhow::{bail, Error, Result};
 use bookwormfood_types::{Book, Books, IdToken, ISBN_URL_PARAM_NAME, SYNC_HTML_URL};
+use std::collections::HashSet;
 use web_sys::Window;
 
 /// Try to save the book to the cloud DB and update the sync status in the local storage.
@@ -115,58 +116,104 @@ pub(crate) async fn sync_books(books: Books, runtime: &Window, id_token: &Option
     log!("Cloud books: {}, local: {}", cloud_books.books.len(), books.books.len());
 
     // index the local books by ISBN for faster lookups
-    let local_books = books
-        .books
-        .iter()
-        .map(|v| (v.isbn, v.timestamp_update))
-        .collect::<std::collections::HashMap<_, _>>();
-
-    // loop thru the cloud books to find what is missing from the local storage
-    let new_cloud_books = cloud_books
+    let mut local_books = books
         .books
         .into_iter()
-        .filter_map(|v| {
-            match local_books.get(&v.isbn) {
-                Some(local_book_timestamp_update) => {
+        .map(|v| (v.isbn, v))
+        .collect::<std::collections::HashMap<_, _>>();
+
+    // find local books that need to be updated from the cloud
+    let books_to_update = cloud_books
+        .books
+        .iter()
+        .filter_map(|cloud_book| {
+            match local_books.get_mut(&cloud_book.isbn) {
+                Some(local_book) => {
                     // the book is already in the local storage
                     // check if the cloud book is newer
-                    if &v.timestamp_update > local_book_timestamp_update {
+                    if cloud_book.timestamp_update > local_book.timestamp_update {
                         // the cloud book is newer
                         // update the local book
-                        log!("Updating local book with ISBN: {}", v.isbn);
-                        Some(v)
+                        log!("Merge from cloud for ISBN: {}", cloud_book.isbn);
+                        local_book.merge_from(cloud_book);
+                        Some(local_book.isbn)
                     } else {
                         // the local book is newer
                         None
                     }
                 }
+                None => None,
+            }
+        })
+        .collect::<HashSet<_>>();
+
+    // find books that don't exist locally and need to be added from the cloud
+    let books_to_add = cloud_books
+        .books
+        .into_iter()
+        .filter_map(|cloud_book| {
+            match local_books.get(&cloud_book.isbn) {
+                Some(_) => None,
                 None => {
                     // the book is not in the local storage
                     // add it
-                    log!("Cloud book not in LS: {}", v.isbn);
-                    Some(v)
+                    log!("Cloud book not in LS: {}", cloud_book.isbn);
+                    Some(cloud_book)
                 }
             }
         })
         .collect::<Vec<_>>();
 
-    // TODO: check status updates
-
-    if new_cloud_books.is_empty() {
+    // exit now if there is nothing to add or update
+    if books_to_add.is_empty() && books_to_update.is_empty() {
         log!("No new books to add or update");
         return Ok(None);
     };
 
-    log!("Cloud books to add: {}", new_cloud_books.len());
+    log!(
+        "Cloud books to add: {}, update: {}",
+        books_to_add.len(),
+        books_to_update.len()
+    );
 
     let ls = get_local_storage(runtime)?;
 
+    // convert the hashmap back to a Vec list of books ans save any updated books along the way
+    let mut books = Books {
+        books: local_books
+            .into_values()
+            .map(|book| {
+                if books_to_update.contains(&book.isbn) {
+                    let book = book.with_new_sync_timestamp();
+                    match serde_json::to_string(&book) {
+                        Ok(v) => match ls.set_item(&book.isbn.to_string(), &v) {
+                            Ok(()) => {
+                                log!("Added to local storage: {}", book.isbn);
+                                book
+                            }
+                            Err(e) => {
+                                log!("Failed to update sync status for {}: {:?}", book.isbn, e);
+                                // this makes no sense because the record in LS may have a different value
+                                book.without_sync_timestamp()
+                            }
+                        },
+                        Err(e) => {
+                            log!("Failed to serialize book record for {}: {:?}", book.isbn, e);
+                            book.without_sync_timestamp()
+                        }
+                    }
+                } else {
+                    book
+                }
+            })
+            .collect(),
+    };
+
     // reallocate the local list of books to accommodate the new books
-    let mut books = books;
-    books.books.reserve(new_cloud_books.len());
+    books.books.reserve(books_to_add.len());
 
     // save the new books to the local storage and add them to the list of local books
-    for cloud_book in new_cloud_books {
+    for cloud_book in books_to_add {
         // try to save the book with the updated sync field in the local storage
         let cloud_book = cloud_book.with_new_sync_timestamp();
         let cloud_book = match serde_json::to_string(&cloud_book) {
