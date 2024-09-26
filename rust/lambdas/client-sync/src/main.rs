@@ -3,11 +3,7 @@ use aws_lambda_events::{
     lambda_function_urls::{LambdaFunctionUrlRequest, LambdaFunctionUrlResponse},
 };
 use aws_sdk_dynamodb::Client;
-use bookwormfood_types::{
-    generate_user_id, jwt,
-    lambda::{Email, Uid, USER_BOOKS_TABLE_NAME},
-    Book, AUTH_HEADER, ISBN_URL_PARAM_NAME,
-};
+use bookwormfood_types::{jwt, lambda::USER_BOOKS_TABLE_NAME, Book, AUTH_HEADER, ISBN_URL_PARAM_NAME};
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
 use tracing::info;
 use tracing_subscriber::filter::LevelFilter;
@@ -50,17 +46,16 @@ pub(crate) async fn my_handler(
     // info!("Headers: {:?}", event.payload.headers);
 
     // exit if no valid email is provided
-    let email = match jwt::get_email(&authorization) {
-        Some(v) => Email(v),
+    let user = match jwt::get_user_details(&Some(authorization)) {
+        Some(v) => v,
         None => {
             return handler_response(Some("Unauthorized via JWT".to_string()), 403);
         }
     };
-    info!("Email: {}", email.0);
+    info!("Email: {}", user.email);
 
     // hash the email
-    let uid = Uid(generate_user_id(&email.0));
-    info!("UID: {}", uid.0);
+    info!("UID: {}", user.id);
 
     // decide on the action depending on the HTTP method
     let method = match event.payload.request_context.http.method {
@@ -100,17 +95,17 @@ pub(crate) async fn my_handler(
                 }
             };
 
-            match book::save(&book, &client, uid, email).await {
+            match book::save(&book, &client, user).await {
                 Ok(_) => handler_response(None, 204),
                 Err(e) => handler_response(Some(e.to_string()), 400),
             }
         }
         // return the list of all books
-        Method::GET => match book::get_by_user(&client, uid.clone()).await {
+        Method::GET => match book::get_by_user(&client, &user.id).await {
             Ok(v) => match serde_json::to_string(&v) {
                 Ok(v) => handler_response(Some(v), 200),
                 Err(e) => {
-                    info!("Failed to serialize books for {}: {:?}", uid.0, e);
+                    info!("Failed to serialize books for {}: {:?}", user.id, e);
                     handler_response(Some(e.to_string()), 400)
                 }
             },
@@ -132,7 +127,7 @@ pub(crate) async fn my_handler(
                 }
             };
 
-            match photo::get_signed_url(&book, &uid).await {
+            match photo::get_signed_url(&book, &user.id).await {
                 Ok(v) => handler_response(Some(["\"".to_string(), v, "\"".to_string()].concat()), 200),
                 Err(e) => handler_response(Some(e.to_string()), 400),
             }
@@ -149,7 +144,7 @@ pub(crate) async fn my_handler(
                 }
             };
 
-            match book::delete(isbn, &client, uid).await {
+            match book::delete(isbn, &client, &user.id).await {
                 Ok(_) => handler_response(None, 204),
                 Err(e) => handler_response(Some(e.to_string()), 400),
             }

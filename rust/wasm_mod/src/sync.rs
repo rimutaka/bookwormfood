@@ -1,7 +1,7 @@
-use crate::http_req::{execute_http_request, HttpMethod, IdToken};
+use crate::http_req::{execute_http_request, HttpMethod};
 use crate::utils::{get_local_storage, log};
 use anyhow::{bail, Error, Result};
-use bookwormfood_types::{Book, Books, ISBN_URL_PARAM_NAME, SYNC_HTML_URL};
+use bookwormfood_types::{Book, Books, IdToken, ISBN_URL_PARAM_NAME, SYNC_HTML_URL};
 use web_sys::Window;
 
 /// Try to save the book to the cloud DB and update the sync status in the local storage.

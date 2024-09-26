@@ -1,10 +1,10 @@
 use crate::{Result, RetryAfter};
+use bookwormfood_types::IdToken;
 use sha2::{Digest, Sha256};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{Request, RequestInit, RequestMode, Response, Window};
 
-pub type IdToken = String;
 /// The name of the authorisation header containing the ID token with the user email.
 pub const AUTH_HEADER: &str = "x-books-authorization";
 /// The domain name that is allowed to use the ID token.

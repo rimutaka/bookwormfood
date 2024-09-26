@@ -5,9 +5,9 @@ pub mod user_books_table_fields {
     pub const AUTHORS: &str = "authors";
     /// The user email address from the JWT.
     /// Should never be returned to the caller.
-    pub const EMAIL: &str = "email"; 
+    pub const EMAIL: &str = "email";
     /// Sort key: ISBN of the book.
-    pub const ISBN: &str = "isbn"; 
+    pub const ISBN: &str = "isbn";
     /// List of user uploaded photos for the book.
     pub const PHOTO_IDS: &str = "photo_ids";
     /// Where the reader is with the book.
@@ -18,9 +18,3 @@ pub mod user_books_table_fields {
     /// When the record was last updated.
     pub const UPDATED: &str = "updated";
 }
-
-/// A unique identifier for the user.
-#[derive(Clone)]
-pub struct Uid(pub String);
-/// The user email address from the JWT.
-pub struct Email(pub String);

@@ -1,4 +1,3 @@
-use crate::Uid;
 use anyhow::Error;
 use aws_sdk_s3::{presigning::PresigningConfig, Client};
 use bookwormfood_types::{Book, USER_PHOTOS_BUCKET_NAME, USER_PHOTOS_S3_PREFIX, USER_PHOTOS_S3_SUFFIX};
@@ -6,11 +5,11 @@ use std::time::Duration;
 use tracing::info;
 
 /// Generates a presigned URL for uploading a photo of the book.
-pub(crate) async fn get_signed_url(book: &Book, uid: &Uid) -> Result<String, Error> {
+pub(crate) async fn get_signed_url(book: &Book, user_id: &str) -> Result<String, Error> {
     // join the different parts together with the path prefix
     let pid = [
         USER_PHOTOS_S3_PREFIX,
-        &uid.0,
+        user_id,
         "-",
         &book.isbn.to_string(),
         "-",
@@ -34,7 +33,10 @@ pub(crate) async fn get_signed_url(book: &Book, uid: &Uid) -> Result<String, Err
             Ok(url)
         }
         Err(e) => {
-            info!("Failed to generate presigned request {}/{}: {:?}", uid.0, book.isbn, e);
+            info!(
+                "Failed to generate presigned request {}/{}: {:?}",
+                user_id, book.isbn, e
+            );
             Err(Error::msg("Failed to generate presigned request".to_string()))
         }
     }

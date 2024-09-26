@@ -1,7 +1,6 @@
 use crate::google::VolumeInfo;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 
@@ -22,6 +21,8 @@ pub enum RetryAfter {
 /// throughout the app
 pub type Result<T> = std::result::Result<T, RetryAfter>;
 
+pub type IdToken = String;
+
 /// The name of the authorisation header containing the ID token with the user email.
 pub const AUTH_HEADER: &str = "x-books-authorization";
 
@@ -34,6 +35,10 @@ pub const TRUSTED_URLS: &str = "https://bookwormfood.com";
 
 /// URL of sync.html lambda function.
 pub const SYNC_HTML_URL: &str = "https://bookwormfood.com/sync.html";
+
+/// URL for fetching user photos for the front-end.
+/// It should point at CloudFront with S3 as the origin.
+pub const USER_PHOTOS_BASE_URL: &str = "https://bookwormfood.com/";
 
 /// Name of DDB table with the list of books per user
 pub const USER_BOOKS_TABLE_NAME: &str = "user_books";
@@ -48,16 +53,6 @@ pub const USER_PHOTOS_S3_PREFIX: &str = "photos/";
 
 /// The file type of the user photos: .jpg
 pub const USER_PHOTOS_S3_SUFFIX: &str = ".jpg";
-
-/// Generates a user ID from the email by hashing it with a salt value.
-/// The salt value is not secret and is used to prevent use of rainbow tables.
-/// The user id may be used in URLs.
-pub fn generate_user_id(email: &str) -> String {
-    let mut hasher = Sha256::new();
-    hasher.update("bookwormfood");
-    hasher.update(email);
-    hex::encode(hasher.finalize())
-}
 
 /// Where the reader is with the book.
 /// Defaults to None.
@@ -168,6 +163,50 @@ impl Book {
             volume_info: None,
             photos: None,
             _dummy: 0,
+        }
+    }
+
+    /// Adds a new photo to the list of photos and returns the updated Self.
+    /// Photos are sorted by ID, which is a timestamp.
+    pub fn with_new_photo(self, photo_id: String) -> Self {
+        let mut photos = self.photos.unwrap_or_default();
+        photos.push(photo_id);
+        photos.sort();
+
+        Book {
+            photos: Some(photos),
+            ..self
+        }
+    }
+
+    /// Adds a missing parts of the book that can be calculated from the existing data.
+    /// E.g. it transforms photo IDs into URLs.
+    pub fn hydrate(self, user_id: &str) -> Self {
+        if let Some(photos) = self.photos {
+            // build the front-end part of the URL
+            let front_part = [
+                USER_PHOTOS_BASE_URL,
+                USER_PHOTOS_S3_PREFIX,
+                "/",
+                user_id,
+                "-",
+                &self.isbn.to_string(),
+                "-",
+            ]
+            .concat();
+
+            // loop thru all photos to build the URLs
+            let photos = Some(
+                photos
+                    .into_iter()
+                    .map(|v| [front_part.to_owned(), v, USER_PHOTOS_S3_SUFFIX.to_owned()].concat())
+                    .collect(),
+            );
+
+            Book { photos, ..self }
+        } else {
+            // no photos - return the book as is
+            self
         }
     }
 

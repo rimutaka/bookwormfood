@@ -1,6 +1,4 @@
-use bookwormfood_types::Books;
-use bookwormfood_types::ReadStatus;
-pub use http_req::IdToken;
+use bookwormfood_types::{jwt, Books, IdToken, ReadStatus};
 pub use http_req::AUTH_HEADER;
 use sync::{sync_book, sync_books};
 use utils::get_runtime;
@@ -14,7 +12,7 @@ mod book;
 mod books;
 pub mod google;
 mod http_req;
-mod pic;
+mod photos;
 mod sync;
 pub mod wasm_response;
 
@@ -60,6 +58,12 @@ pub async fn get_book_data(isbn: String, id_token: Option<IdToken>) {
     let resp = match book::get(&runtime, isbn).await {
         Ok(Some(v)) => {
             // log!("{:?}", v);
+            // hydrate the book for the front-end
+            let v = if let Some(user) = jwt::get_user_details(&id_token) {
+                v.hydrate(&user.id)
+            } else {
+                v
+            };
             log!("Sending book data to UI");
             WasmResponse::LocalBook(Box::new(Some(WasmResult::Ok(v))))
         }
@@ -188,6 +192,12 @@ pub async fn update_book_status(isbn: String, status: Option<ReadStatus>, id_tok
     let resp = match book::update_status(&runtime, isbn, status).await {
         Ok(v) => {
             log!("Book status updated");
+            // hydrate the book for the front-end
+            let v = if let Some(user) = jwt::get_user_details(&id_token) {
+                v.hydrate(&user.id)
+            } else {
+                v
+            };
             WasmResponse::LocalBook(Box::new(Some(WasmResult::Ok(v))))
         }
         Err(e) => {
@@ -272,15 +282,20 @@ pub async fn upload_pic(isbn: String, files: FileList, id_token: Option<IdToken>
     };
 
     // get Books from local storage and wrap them into a response struct
-    let resp = match pic::upload(&runtime, isbn, files, id_token).await {
-        Ok(_) => {
-            log!("Pic uploaded");
-            WasmResponse::Uploaded(Box::new(Some(WasmResult::Ok(isbn.to_string()))))
+    let resp = match photos::upload(&runtime, isbn, files, &id_token).await {
+        Some(v) => {
+            log!("Photos uploaded");
+            // hydrate the book for the front-end
+            let v = if let Some(user) = jwt::get_user_details(&id_token) {
+                v.hydrate(&user.id)
+            } else {
+                v
+            };
+            WasmResponse::LocalBook(Box::new(Some(WasmResult::Ok(v))))
         }
-        Err(e) => {
-            log!("Pic upload failed for {isbn}");
-            log!("{:?}", e);
-            WasmResponse::Uploaded(Box::new(Some(WasmResult::Err(format!("{:?}", e)))))
+        None => {
+            log!("Photo upload failed for {isbn}");
+            WasmResponse::LocalBook(Box::new(Some(WasmResult::Err("Failed to upload photo".to_string()))))
         }
     };
 

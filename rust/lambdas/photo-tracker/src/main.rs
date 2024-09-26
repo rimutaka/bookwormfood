@@ -1,6 +1,6 @@
 use aws_lambda_events::s3::{S3Event, S3EventRecord};
 
-use bookwormfood_types::{lambda::Uid, USER_PHOTOS_S3_PREFIX, USER_PHOTOS_S3_SUFFIX};
+use bookwormfood_types::{USER_PHOTOS_S3_PREFIX, USER_PHOTOS_S3_SUFFIX};
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
 use tracing::info;
 use tracing_subscriber::filter::LevelFilter;
@@ -64,19 +64,19 @@ async fn process_record(record: S3EventRecord) -> Result<(), Error> {
         return Err(anyhow::Error::msg(format!("Invalid file name: expected 3 parts, got {}", ids.len())).into());
     }
 
-    let uid = Uid(ids[0].to_string());
+    let user_id = ids[0].to_string();
     let isbn = ids[1].to_string();
     let photo_id = ids[2].to_string();
     info!(
         "Event:{:?}, UID: {}, ISBN: {}, Photo ID{}",
-        record.event_name, uid.0, isbn, photo_id
+        record.event_name, user_id, isbn, photo_id
     );
 
     // save the photo ID to the user book record
 
     match &record.event_name {
-        Some(v) if v.starts_with("ObjectCreated:") => photo::add_photo_to_ddb(uid, isbn, photo_id).await,
-        Some(v) if v.starts_with("ObjectRemoved:") => photo::remove_photo_from_ddb(uid, isbn, photo_id).await,
+        Some(v) if v.starts_with("ObjectCreated:") => photo::add_photo_to_ddb(&user_id, isbn, photo_id).await,
+        Some(v) if v.starts_with("ObjectRemoved:") => photo::remove_photo_from_ddb(&user_id, isbn, photo_id).await,
         _ => {
             info!("Unhandled S3 event: {:?}", record.event_name);
             Ok(())
