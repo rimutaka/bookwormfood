@@ -37,7 +37,6 @@ export default function Welcome() {
       let list_of_books = data.localBooks.Ok?.books;
       // console.log(`Books: ${JSON.stringify(list_of_books)}`);
       setBooks(list_of_books);
-      withCloudSync = !token; // books synced - do not sync again
     }
     else {
       // console.log("Welcome screen received a message that is not a list of books");
@@ -81,6 +80,8 @@ export default function Welcome() {
       // the responses are sent back as messages to the window object 
       // console.log(`Read token: ${idTokenClaims?.__raw}, sync: ${withCloudSync}`);
       get_scanned_books(idTokenClaims?.__raw, withCloudSync);
+      // prevent future list syncs until the page is refreshed
+      if (idTokenClaims?.__raw) withCloudSync = false;
       // console.log("Requested scanned books (inside async)");
     })();
 
