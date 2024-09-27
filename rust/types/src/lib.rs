@@ -78,6 +78,7 @@ impl Books {
                     book.photos = None;
                     book.cover = None;
                     book.timestamp_sync = None;
+                    book.share = None;
 
                     book
                 })

@@ -1,4 +1,7 @@
-use aws_sdk_dynamodb::{types::AttributeValue, Client};
+use aws_sdk_dynamodb::{
+    types::{AttributeValue, ReturnValue},
+    Client,
+};
 use bookwormfood_types::lambda::{user_books_table_fields as fields, USER_BOOKS_TABLE_NAME};
 use chrono::Utc;
 use tracing::info;
@@ -51,16 +54,11 @@ async fn update_ddb(
     isbn: String,
     photo_id: String,
     update_expression: &str,
-) -> Result<
-    aws_sdk_dynamodb::operation::update_item::UpdateItemOutput,
-    aws_smithy_runtime_api::client::result::SdkError<
-        aws_sdk_dynamodb::operation::update_item::UpdateItemError,
-        aws_smithy_runtime_api::http::Response,
-    >,
-> {
+) -> Result<(), crate::Error> {
     let client = Client::new(&aws_config::load_from_env().await);
 
-    client
+    // update the list of photos and return the updated item
+    let updated_item = match client
         .update_item()
         .table_name(USER_BOOKS_TABLE_NAME)
         .update_expression(update_expression)
@@ -74,6 +72,39 @@ async fn update_ddb(
             [":", fields::UPDATED].concat(),
             AttributeValue::S(Utc::now().to_rfc3339()),
         )
+        .return_values(ReturnValue::AllNew)
         .send()
         .await
+    {
+        Ok(v) => v,
+        Err(e) => {
+            return Err(e.into());
+        }
+    };
+
+    // set the share attribute to the photo id if none was set before
+    if let Some(att) = updated_item.attributes {
+        // info!("Updated item: {:?}", att);
+        if !att.contains_key(fields::SHARE) {
+            info!("Setting share to {photo_id}");
+            let update_expression = ["SET #share = :", fields::SHARE].concat();
+            match client
+                .update_item()
+                .table_name(USER_BOOKS_TABLE_NAME)
+                .update_expression(update_expression)
+                .key(fields::UID, AttributeValue::S(user_id.to_owned()))
+                .key(fields::ISBN, AttributeValue::N(isbn.clone()))
+                .expression_attribute_names("#share", fields::SHARE) // share is a reserved word
+                .expression_attribute_values([":", fields::SHARE].concat(), AttributeValue::S(photo_id.clone()))
+                .send()
+                .await
+            {
+                Ok(_) => return Ok(()),
+                Err(e) => return Err(e.into()),
+            }
+        }
+    };
+
+    // return OK if the share value was set earlier
+    Ok(())
 }

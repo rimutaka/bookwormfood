@@ -17,4 +17,7 @@ pub mod user_books_table_fields {
     pub const UID: &str = "uid";
     /// When the record was last updated.
     pub const UPDATED: &str = "updated";
+    /// A timestamp of the very first photo uploaded into the book
+    /// This is a reserved keyword in DDB and must be escaped.
+    pub const SHARE: &str = "share";
 }

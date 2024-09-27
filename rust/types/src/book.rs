@@ -68,6 +68,10 @@ pub struct Book {
     /// The list is sorted by the timestamp of the photo in the chronological order.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub photos: Option<Vec<String>>,
+    /// A shortcode to access the book details for this user.
+    /// It is set to the timestamp of the first photo and is never updated.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub share: Option<u64>,
     /// Dummy field to prevent struct instantiation without ISBN.
     #[serde(default, skip)]
     _dummy: usize,
@@ -112,6 +116,7 @@ impl Book {
             authors: None,
             volume_info: None,
             photos: None,
+            share: None,
             _dummy: 0,
         }
     }
@@ -168,7 +173,7 @@ impl Book {
     /// Copies the list of photos from the cloud.
     /// Uses the latest timestamp_update out of the two.
     /// Keeps the local status and all other details.
-    pub fn merge_from(&mut self, other: &Self) {
+    pub fn merge_from_cloud(&mut self, other: &Self) {
         // compile a more complete version of the book
         // since book details come from the same source the precedence should be given to the local data
 
@@ -184,6 +189,10 @@ impl Book {
         if self.authors.is_none() {
             self.authors = other.authors.clone()
         };
+        // photos in the cloud are always more authoritative than the local state
         self.photos = other.photos.clone();
+        // this is set when the first photo is uploaded
+        // the value persists even if the photo was deleted
+        self.share = other.share;
     }
 }

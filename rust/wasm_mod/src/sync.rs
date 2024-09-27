@@ -135,7 +135,7 @@ pub(crate) async fn sync_books(books: Books, runtime: &Window, id_token: &Option
                         // the cloud book is newer
                         // update the local book
                         log!("Merge from cloud for ISBN: {}", cloud_book.isbn);
-                        local_book.merge_from(cloud_book);
+                        local_book.merge_from_cloud(cloud_book);
                         Some(local_book.isbn)
                     } else {
                         // the local book is newer
