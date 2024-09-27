@@ -3,7 +3,7 @@ import * as ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { Routes, Route, Link } from "react-router-dom";
 
-import * as serviceWorker from './serviceWorker';
+// import * as serviceWorker from './serviceWorker';
 import App from "./components/app";
 import Scan from "./components/scan";
 import BookDetails from "./components/bookDetails";
@@ -35,7 +35,7 @@ ReactDOM.createRoot(document.getElementById("app")).render(
   </BrowserRouter>
 );
 
-serviceWorker.register();
+// serviceWorker.register();
 
 function About() {
   return (
