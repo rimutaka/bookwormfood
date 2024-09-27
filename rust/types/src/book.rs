@@ -123,13 +123,27 @@ impl Book {
 
     /// Adds a new photo to the list of photos and returns the updated Self.
     /// Photos are sorted by ID, which is a timestamp.
+    /// The share field is set to the photo ID if it's the first uploaded photo
+    /// and no share value exists.
+    /// Share value can be overwritten by the value from the cloud.
     pub fn with_new_photo(self, photo_id: String) -> Self {
+        // share can only be set once
+        let share = match self.share {
+            Some(v) => Some(v),
+            None => match photo_id.parse::<u64>() {
+                Ok(n) => Some(n),
+                Err(_) => None,
+            },
+        };
+
+        // add the photo to the list and sort in the chronological order
         let mut photos = self.photos.unwrap_or_default();
         photos.push(photo_id);
         photos.sort();
 
         Book {
             photos: Some(photos),
+            share,
             ..self
         }
     }
