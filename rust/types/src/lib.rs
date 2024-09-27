@@ -52,6 +52,10 @@ pub const USER_PHOTOS_S3_PREFIX: &str = "photos/";
 /// The file type of the user photos: .jpg
 pub const USER_PHOTOS_S3_SUFFIX: &str = ".jpg";
 
+/// Timestamp for 1 Jan 2024.
+/// All photo timestamps have this part subtracted because it is constant.
+pub const TIMESTAMP_BASE:u64 = 1_704_067_200;
+
 /// A list of book records.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]

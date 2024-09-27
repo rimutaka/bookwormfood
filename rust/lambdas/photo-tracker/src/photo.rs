@@ -12,7 +12,7 @@ pub(crate) async fn add_photo_to_ddb(user_id: &str, isbn: String, photo_id: Stri
         user_id,
         isbn.clone(),
         photo_id.clone(),
-        "ADD photo_ids :photo_ids SET updated = :updated",
+        "ADD photo_ids :photo_ids SET updated = :updated", // TODO: replace attribute names with constants
     )
     .await
     {
@@ -33,7 +33,7 @@ pub(crate) async fn remove_photo_from_ddb(user_id: &str, isbn: String, photo_id:
         user_id,
         isbn.clone(),
         photo_id.clone(),
-        "DELETE photo_ids :photo_ids SET updated = :updated",
+        "DELETE photo_ids :photo_ids SET updated = :updated", // TODO: replace attribute names with constants
     )
     .await
     {

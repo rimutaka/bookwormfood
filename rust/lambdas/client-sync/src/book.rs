@@ -75,7 +75,8 @@ pub(crate) async fn get_by_user(client: &Client, user_id: &str) -> Result<Books,
                                     None => continue 'item,
                                 }
                             }
-                            fields::TITLE => book.title = attr_to_option(attr.1),
+                            fields::SHARE => book.share = attr_s_to_option_u64(attr.1),
+                            fields::TITLE => book.title = attr_s_to_option(attr.1),
                             fields::AUTHORS => {
                                 book.authors = match attr.1 {
                                     AttributeValue::Ss(v) => Some(v),
@@ -92,7 +93,7 @@ pub(crate) async fn get_by_user(client: &Client, user_id: &str) -> Result<Books,
                                 book.read_status = ReadStatus::from_str(&attr_s_to_string(attr.1)).ok()
                             }
                             fields::PHOTO_IDS => {
-                                info!("Photo IDs: {:?}", attr.1);
+                                // info!("Photo IDs: {:?}", attr.1);
                                 book.photos = match attr.1 {
                                     AttributeValue::Ss(v) => Some(v),
                                     _ => None,
@@ -177,14 +178,37 @@ fn attr_to_isbn(v: AttributeValue) -> Option<u64> {
                 None
             }
         },
-        _ => None,
+        _ => {
+            info!("Invalid type in attr_to_isbn. It's a bug.");
+            None
+        }
     }
 }
 
-/// Converts the AttributeValue into an option-string
-fn attr_to_option(v: AttributeValue) -> Option<String> {
+/// Converts a String AttributeValue  into an option-string
+fn attr_s_to_option(v: AttributeValue) -> Option<String> {
     match v {
         AttributeValue::S(v) => Some(v),
-        _ => None,
+        _ => {
+            info!("Invalid type in attr_s_to_option. It's a bug.");
+            None
+        }
+    }
+}
+
+/// Converts a Number AttributeValue into an option-string
+fn attr_s_to_option_u64(v: AttributeValue) -> Option<u64> {
+    match v {
+        AttributeValue::S(v) => match v.parse::<u64>() {
+            Ok(n) => Some(n),
+            Err(e) => {
+                info!("Invalid numeric val: {}, err: {}", v, e);
+                None
+            }
+        },
+        _ => {
+            info!("Invalid type in attr_s_to_option_u64. It's a bug.");
+            None
+        }
     }
 }

@@ -1,6 +1,6 @@
 use anyhow::Error;
 use aws_sdk_s3::{presigning::PresigningConfig, Client};
-use bookwormfood_types::{Book, USER_PHOTOS_BUCKET_NAME, USER_PHOTOS_S3_PREFIX, USER_PHOTOS_S3_SUFFIX};
+use bookwormfood_types::{Book, TIMESTAMP_BASE, USER_PHOTOS_BUCKET_NAME, USER_PHOTOS_S3_PREFIX, USER_PHOTOS_S3_SUFFIX};
 use std::time::Duration;
 use tracing::info;
 
@@ -13,7 +13,9 @@ pub(crate) async fn get_signed_url(book: &Book, user_id: &str) -> Result<String,
         "-",
         &book.isbn.to_string(),
         "-",
-        &chrono::Utc::now().timestamp().to_string(),
+        // taking out the constant part of the timestamp makes it for a shorter URL
+        // potentially fallible if NOW is in the past
+        &(chrono::Utc::now().timestamp() as u64 - TIMESTAMP_BASE).to_string(),
         USER_PHOTOS_S3_SUFFIX,
     ]
     .concat();
