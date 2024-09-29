@@ -75,7 +75,7 @@ pub(crate) async fn get_by_user(client: &Client, user_id: &str) -> Result<Books,
                                     None => continue 'item,
                                 }
                             }
-                            fields::SHARE => book.share = attr_s_to_option_u64(attr.1),
+                            fields::SHARE_ID => book.share_id = attr_s_to_option_u64(attr.1),
                             fields::TITLE => book.title = attr_s_to_option(attr.1),
                             fields::AUTHORS => {
                                 book.authors = match attr.1 {

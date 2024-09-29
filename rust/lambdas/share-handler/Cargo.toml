@@ -1,0 +1,25 @@
+[package]
+name = "share-handler"
+version = "0.2.0"
+authors = ["rimutaka <max@onebro.me>"]
+edition = "2021"
+description = "Returns list of shared photos for a given book"
+license = "AGPL-3.0"
+
+[dependencies]
+bookwormfood_types = { path = "../../types" }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+lambda_runtime = { workspace = true }
+aws_lambda_events = { workspace = true }
+# aws-sdk-s3 = { workspace = true }
+aws-sdk-dynamodb = { workspace = true }
+aws-sdk-s3 = { workspace = true }
+aws-config = { workspace = true }
+regex = { workspace = true }
+chrono = { workspace = true }
+anyhow = { workspace = true }
+uuid = { workspace = true }

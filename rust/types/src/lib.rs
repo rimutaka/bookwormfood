@@ -27,12 +27,18 @@ pub const AUTH_HEADER: &str = "x-books-authorization";
 /// Value: `isbn`. The URL parameter name for ISBN.
 pub const ISBN_URL_PARAM_NAME: &str = "isbn";
 
+/// Value: `isbn`. The URL parameter name for ISBN.
+pub const SHARE_ID_URL_PARAM_NAME: &str = "share_id";
+
 /// The domain name that is allowed to use the ID token.
 /// Normally it would be our own domain name where all the server functions are hosted.
 pub const TRUSTED_URLS: &str = "https://bookwormfood.com";
 
 /// URL of sync.html lambda function.
-pub const SYNC_HTML_URL: &str = "https://bookwormfood.com/sync.html";
+pub const SYNC_HTML_ENDPOINT_URL: &str = "https://bookwormfood.com/sync.html";
+
+/// URL of sync.html lambda function.
+pub const SHARED_PHOTOS_ENDPOINT_URL: &str = "https://bookwormfood.com/shared-photos.html";
 
 /// URL for fetching user photos for the front-end.
 /// It should point at CloudFront with S3 as the origin.
@@ -82,7 +88,7 @@ impl Books {
                     book.photos = None;
                     book.cover = None;
                     book.timestamp_sync = None;
-                    book.share = None;
+                    book.share_id = None;
 
                     book
                 })

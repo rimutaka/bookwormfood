@@ -260,14 +260,17 @@ function __wbg_adapter_48(arg0, arg1, arg2) {
 * See `fn report_progress()` for more details.
 * @param {string} isbn
 * @param {string | undefined} [id_token]
+* @param {string | undefined} [share_id]
 * @returns {Promise<void>}
 */
-export function get_book_data(isbn, id_token) {
+export function get_book_data(isbn, id_token, share_id) {
     const ptr0 = passStringToWasm0(isbn, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
     var ptr1 = isLikeNone(id_token) ? 0 : passStringToWasm0(id_token, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     var len1 = WASM_VECTOR_LEN;
-    const ret = wasm.get_book_data(ptr0, len0, ptr1, len1);
+    var ptr2 = isLikeNone(share_id) ? 0 : passStringToWasm0(share_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len2 = WASM_VECTOR_LEN;
+    const ret = wasm.get_book_data(ptr0, len0, ptr1, len1, ptr2, len2);
     return takeObject(ret);
 }
 
@@ -847,8 +850,8 @@ function __wbg_get_imports() {
         const ret = wasm.memory;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper1724 = function() { return logError(function (arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 103, __wbg_adapter_48);
+    imports.wbg.__wbindgen_closure_wrapper1749 = function() { return logError(function (arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 107, __wbg_adapter_48);
         return addHeapObject(ret);
     }, arguments) };
 

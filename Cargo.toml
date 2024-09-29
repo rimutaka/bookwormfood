@@ -3,6 +3,7 @@ members = [
   "rust/wasm_mod",
   "rust/lambdas/index-html-server",
   "rust/lambdas/client-sync",
+  "rust/lambdas/share-handler",
   "rust/lambdas/photo-tracker",
   "rust/types",
 ]

@@ -32,8 +32,8 @@ pub type Result<T> = std::result::Result<T, RetryAfter>;
 /// Multiple responses are sent back via `progress.js` to the UI thread.
 /// See `fn report_progress()` for more details.
 #[wasm_bindgen]
-pub async fn get_book_data(isbn: String, id_token: Option<IdToken>) {
-    log!("Getting book data for ISBN: {isbn}");
+pub async fn get_book_data(isbn: String, id_token: Option<IdToken>, share_id: Option<String>) {
+    log!("Getting book data for ISBN: {isbn}, share ID: {:?}", share_id);
 
     let isbn = match isbn.parse::<u64>() {
         Ok(v) => v,
@@ -83,6 +83,43 @@ pub async fn get_book_data(isbn: String, id_token: Option<IdToken>) {
     // log!("{:?}", resp);
 
     report_progress(resp.to_string());
+
+    // get additional photos for the book if there is a share ID
+    if let Some(share_id) = share_id {
+        log!("Inside share ID block");
+        if let WasmResponse::LocalBook(book) = resp {
+            log!("Inside WASM resp block");
+            // get the book data
+            let book = *book;
+            if let Some(Ok(mut book)) = book {
+                log!("Inside book block");
+                // get the list of user photos for this book
+                let photo_urls = photos::get_shared_photo_urls(&runtime, &share_id, isbn).await;
+
+                // add the photo URLs to the book data
+                if !photo_urls.is_empty() {
+                    match book.photos {
+                        Some(mut photos) => {
+                            photos.extend(photo_urls);
+                            // duplicates are possible if the current user is looking at her own share
+                            photos.dedup();
+                            book.photos = Some(photos);
+                            log!("Photos added to the book (extend): {:?}", book.photos);
+                        }
+                        None => {
+                            book.photos = Some(photo_urls);
+                            log!("Photos added to the book (set): {:?}", book.photos);
+
+                        }
+                    }
+
+                    // send the response back to the UI thread
+                    let resp = WasmResponse::LocalBook(Box::new(Some(WasmResult::Ok(book))));
+                    report_progress(resp.to_string());
+                }
+            }
+        }
+    }
 
     let _ = sync_book(isbn, &runtime, &id_token).await;
 }

@@ -85,17 +85,17 @@ async fn update_ddb(
     // set the share attribute to the photo id if none was set before
     if let Some(att) = updated_item.attributes {
         // info!("Updated item: {:?}", att);
-        if !att.contains_key(fields::SHARE) {
+        if !att.contains_key(fields::SHARE_ID) {
             info!("Setting share to {photo_id}");
-            let update_expression = ["SET #share = :", fields::SHARE].concat();
+            let update_expression = ["SET #share = :", fields::SHARE_ID].concat();
             match client
                 .update_item()
                 .table_name(USER_BOOKS_TABLE_NAME)
                 .update_expression(update_expression)
                 .key(fields::UID, AttributeValue::S(user_id.to_owned()))
                 .key(fields::ISBN, AttributeValue::N(isbn.clone()))
-                .expression_attribute_names("#share", fields::SHARE) // share is a reserved word
-                .expression_attribute_values([":", fields::SHARE].concat(), AttributeValue::S(photo_id.clone()))
+                .expression_attribute_names("#share", fields::SHARE_ID) // share is a reserved word
+                .expression_attribute_values([":", fields::SHARE_ID].concat(), AttributeValue::S(photo_id.clone()))
                 .send()
                 .await
             {

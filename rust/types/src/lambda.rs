@@ -1,5 +1,8 @@
 pub const USER_BOOKS_TABLE_NAME: &str = "user_books";
 
+/// An index for finding the user ID for a particular share ID.
+pub const USER_BOOKS_SHARE_INDEX_NAME: &str = "share-isbn-index";
+
 /// The list of field names in `USER_BOOKS_TABLE_NAME` table.
 pub mod user_books_table_fields {
     pub const AUTHORS: &str = "authors";
@@ -18,6 +21,6 @@ pub mod user_books_table_fields {
     /// When the record was last updated.
     pub const UPDATED: &str = "updated";
     /// A timestamp of the very first photo uploaded into the book
-    /// This is a reserved keyword in DDB and must be escaped.
-    pub const SHARE: &str = "share";
+    /// `share` is a reserved keyword in DDB and must be escaped.
+    pub const SHARE_ID: &str = "share";
 }

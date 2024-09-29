@@ -13,6 +13,7 @@ async fn main() -> Result<(), Error> {
     tracing_subscriber::fmt()
         .without_time()
         .with_max_level(LevelFilter::INFO)
+        .with_ansi(false)
         .init();
 
     let func = service_fn(my_handler);

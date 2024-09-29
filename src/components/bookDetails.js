@@ -50,13 +50,19 @@ function HtmlDescription({ text }) {
   }
 }
 
-export function build_book_url(title, authors, isbn) {
-  if (authors) {
-    return (title.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-by-" + authors.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/,/g, "") + "/" + isbn + "/").replace(/-{2,}/g, "-");
+export function build_book_url(title, authors, isbn, readerId) {
+  let url = (authors) ?
+    (title.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-by-" + authors.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/,/g, "") + "/" + isbn + "/").replace(/-{2,}/g, "-")
+    : (title.toLowerCase().replace(/[^a-z0-9]/g, "-") + "/" + isbn + "/").replace(/-{2,}/g, "-");
+
+  // reader id is only present in shared links
+  // it is ignored if the reader id is for the current user, but the code does not know that
+  // until the server responds with the list of photos
+  if (readerId) {
+    url = url.replace(/\/$/, "") + "/reader-" + readerId;
   }
-  else {
-    return (title.toLowerCase().replace(/[^a-z0-9]/g, "-") + "/" + isbn + "/").replace(/-{2,}/g, "-");
-  }
+
+  return url;
 }
 
 // The key name for the last authentication timestamp in the localStorage
@@ -73,7 +79,11 @@ export default function BookDetails() {
   // e.g. https://localhost:8080/the-subtle-art-of-not-giving-a-f-k-by-mark-manson/9780062457714/
   // or https://localhost:8080/9780062457714/the-subtle-art-of-not-giving-a-f-k-by-mark-manson
   let isbn = location.pathname.match(/\/\d{13}(\/|$)/)?.[0]?.replace(/\//g, "") || "";
-  // console.log(`ISBN: ${isbn}`);
+
+  // The URL may contain a reader ID to show photos from another user
+  // https://localhost:8080/emma-by-jane-austen/9780143107713/reader-23333558
+  let readerId = location.pathname.match(/\/reader-\d+(\/|$)/)?.[0]?.replace(/\//g, "")?.replace("reader-", "");
+  console.log(`ISBN: ${isbn}, Reader ID: ${readerId}, URL: ${location.pathname}`);
 
   const [title, setTitle] = useState();
   const [authors, setAuthors] = useState();
@@ -84,6 +94,7 @@ export default function BookDetails() {
   const [token, setToken] = useState();
   const [selectedFile, setSelectedFile] = useState(null);
   const [photos, setPhotos] = useState([]);
+  const [shareId, setShareId] = useState([]);
 
   // Handles different types of responses sent from the WASM module
   // asynchronously. E.g. Book, Books, with the result of the operation
@@ -120,13 +131,18 @@ export default function BookDetails() {
       // photos may not be there, but keep an empty array anyway
       let photos = book.photos;
       if (photos) setPhotos(photos); else setPhotos([]);
+      // an additional param to see photos for the book from another user
+      let shareId = book.shareId;
+      // console.log(`Share ID: ${shareId}`);
+      if (shareId) setShareId(shareId); else setShareId();
       // if (thumbnail) setThumbnail(thumbnail);
       // const amount = data.googleBooks.Ok?.items[0]?.saleInfo?.listPrice?.amount;
       // const currency = data.googleBooks.Ok?.items[0]?.saleInfo?.listPrice?.currencyCode;
       // if (amount) setPrice(`${currency} ${amount}`);
 
       // navigate to the new URL with the book title, e.g. https://localhost:8080/the-subtle-art-of-not-giving-a-f-k-by-mark-manson/9780062457714/
-      let url = build_book_url(title, authors, isbn);
+      // or https://localhost:8080/emma-by-jane-austen/9780143107713/reader-23333558
+      let url = build_book_url(title, authors, isbn, readerId);
       navigate(`/${url}`, { replace: true });
     }
     else if (data?.deleted?.Ok) {
@@ -170,7 +186,8 @@ export default function BookDetails() {
         // the responses are sent back as messages to the window object
         // have to use the local for the token because `token` var is not updated in time
         // console.log(`Read token: ${idTokenClaims?.__raw}`);
-        get_book_data(isbn, idTokenClaims?.__raw);
+        // console.log(`Reader ID: ${readerId}`);
+        get_book_data(isbn, idTokenClaims?.__raw, readerId);
       })();
     } else {
       isbn = "no ISBN code found in the URL";
@@ -258,7 +275,7 @@ export default function BookDetails() {
     }
     );
 
-    return <div className="book-cover fade-in" >{ photo_list }</div>
+    return <div className="book-cover fade-in" >{photo_list}</div>
   }
 
   const onClickMyBooks = (e) => {
@@ -273,7 +290,10 @@ export default function BookDetails() {
 
   const onClickCopyToClipboard = async (e) => {
     e.preventDefault();
-    await navigator.clipboard.writeText(window.location.href);
+    // include shareId if it exists in the book data to allow others see the user photos
+    // replacing "//" with "/" in case the URL ends with a slash - TODO: find a better way to do this
+    const url = (shareId) ? (window.location.href.replace(/\/$/, "") + "/reader-" + shareId) : window.location.href;
+    await navigator.clipboard.writeText(url);
     const btnId = document.getElementById("copyToClip");
     btnId.innerText = "COPIED TO CLIPBOARD";
     btnId.classList.add("done");
@@ -315,9 +335,6 @@ export default function BookDetails() {
           <button id="copyToClip" onClick={onClickCopyToClipboard}>SHARE</button>
         </div>
         {renderCoverImage()}
-        <div className="justify-center">
-          {selectedFile?.[0]?.name ? selectedFile?.[0]?.name : ""}
-        </div>
         {renderPhotos()}
         <div className="scanBtn">
           <label htmlFor="idPicUploader" className="cursor-pointer border-2 p-2 rounded-md">Upload photo</label>
