@@ -3,7 +3,7 @@ use aws_lambda_events::{
     lambda_function_urls::{LambdaFunctionUrlRequest, LambdaFunctionUrlResponse},
 };
 use aws_sdk_dynamodb::Client;
-use bookwormfood_types::{jwt, lambda::USER_BOOKS_TABLE_NAME, Book, AUTH_HEADER, ISBN_URL_PARAM_NAME};
+use bookworm_types::{jwt, lambda::USER_BOOKS_TABLE_NAME, Book, AUTH_HEADER, ISBN_URL_PARAM_NAME};
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
 use tracing::info;
 use tracing_subscriber::filter::LevelFilter;

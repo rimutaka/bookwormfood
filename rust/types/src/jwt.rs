@@ -14,7 +14,7 @@ macro_rules!  log {
     }
 }
 
-// these N and E values are exracted manually from JWK found at https://bookwormfood.us.auth0.com/.well-known/jwks.json
+// these N and E values are extracted manually from JWK found at https://bookwormfood.us.auth0.com/.well-known/jwks.json
 // match the key by the kid field in the header of the JWT token
 const JWK_N: &str ="05Vq1snoxherLDEchQYK071vXZW3k-O5hPRcrXkQjoF1R9DFGqbFNIVwFXCrSKGveIuxWIYP3X1GqdsWlsznF8yoYXrKVM4UYutbe_FLr7S1tdLBHSK9JTvpgO-c-3qV-xgAQ6T4j-6Ob_SID7XPG2mSHQwHoH9WFTxU3Bu5my-C-dknB3JNRRn-YhLGI03EBpUiwdO9l7zybx3nQUFXCpKM3kkFcP1XFgnSVASgNsEq4TxyAMISqYN_eZtHbT-b0UtBxdlZ6BeFkykEl0g9osYu1JPALDPbIWDZUNnTyc0MYOABU7f4I-av0-60B41RjpwzkmxKQao12VQDzOqLlQ";
 const JWK_E: &str = "AQAB";

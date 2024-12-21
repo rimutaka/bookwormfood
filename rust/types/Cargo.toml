@@ -1,9 +1,9 @@
 [package]
-name = "bookwormfood_types"
+name = "bookworm_types"
 version = "0.1.0"
 edition = "2021"
 authors = ["rimutaka <max@onebro.me>"]
-description = "Shared types and models for bookwormfood.com"
+description = "Shared types and models for bookworm.im"
 license = "GPL 3.0"
 
 [dependencies]

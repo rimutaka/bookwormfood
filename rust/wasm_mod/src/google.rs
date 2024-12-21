@@ -11,7 +11,7 @@
 use crate::http_req::{execute_http_request, HttpMethod};
 use crate::utils::log;
 use crate::{Result, RetryAfter};
-use bookwormfood_types::google::Volumes;
+use bookworm_types::google::Volumes;
 use web_sys::Window;
 
 /// Fetches book data from Google Books API

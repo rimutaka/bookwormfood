@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 export const Auth0ProviderWithNavigate = ({ children }) => {
   const navigate = useNavigate();
 
-  const auth0Domain = "auth.bookwormfood.com"; // "bookwormfood.us.auth0.com";
+  const auth0Domain = "auth.bookworm.im"; // "bookwormfood.us.auth0.com";
   const clientId = "nqzjY0VWUu8GoDVbqyfy2yOdgkydrEaf";
   const redirectUri = "https://" + window.location.hostname + (window.location.port == 80 ? "" : ":" + window.location.port) + "/login";
   // console.log(`Redirect URI: ${redirectUri}`);

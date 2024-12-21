@@ -1,7 +1,7 @@
 use crate::USER_BOOKS_TABLE_NAME;
 use anyhow::Error;
 use aws_sdk_dynamodb::{types::AttributeValue, Client};
-use bookwormfood_types::{jwt::User, lambda::user_books_table_fields as fields, Book, Books, ReadStatus};
+use bookworm_types::{jwt::User, lambda::user_books_table_fields as fields, Book, Books, ReadStatus};
 use chrono::{DateTime, Utc};
 use std::str::FromStr;
 use tracing::info;

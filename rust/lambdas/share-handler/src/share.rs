@@ -1,5 +1,5 @@
 use aws_sdk_dynamodb::{types::AttributeValue, Client};
-use bookwormfood_types::{
+use bookworm_types::{
     lambda::{user_books_table_fields as fields, USER_BOOKS_SHARE_INDEX_NAME, USER_BOOKS_TABLE_NAME},
     Book,
 };

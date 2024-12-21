@@ -163,7 +163,7 @@ impl Book {
     }
 
     /// Returns a list of photo URLs for the user and the ISBN based on the photo IDs.
-    /// e.g. https://bookwormfood.com/photos/8cbf509d254774a13ede02ce246d39434950c93aa328407e7fef657d2bb6f737-9780143107712-23520065.jpg
+    /// e.g. https://bookworm.im/photos/8cbf509d254774a13ede02ce246d39434950c93aa328407e7fef657d2bb6f737-9780143107712-23520065.jpg
     pub fn hydrate_photos(user_id: &str, isbn: u64, photos: Vec<String>) -> Vec<String> {
         // build the front-end part of the URL
         let front_part = [

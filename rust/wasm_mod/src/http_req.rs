@@ -1,5 +1,5 @@
 use crate::{Result, RetryAfter};
-use bookwormfood_types::IdToken;
+use bookworm_types::IdToken;
 use sha2::{Digest, Sha256};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
@@ -9,7 +9,7 @@ use web_sys::{Request, RequestInit, RequestMode, Response, Window};
 pub const AUTH_HEADER: &str = "x-books-authorization";
 /// The domain name that is allowed to use the ID token.
 /// Normally it would be our own domain name where all the server functions are hosted.
-pub const TRUSTED_URLS: &str = "https://bookwormfood.com";
+pub const TRUSTED_URLS: &str = "https://bookworm.im";
 
 /// The HTTP methods that are supported by the app.
 pub(crate) enum HttpMethod<P> {
@@ -40,7 +40,7 @@ where
 {
     // log!("execute_get_request entered");
 
-    // check if the target URL is for the bookwormfood domain and reset the token if it is not
+    // check if the target URL is for the bookworm domain and reset the token if it is not
     // ideally, this function should not even get the token if the URL is not trusted
     // it's an additional safety measure
     let id_token = if url.starts_with(TRUSTED_URLS) {
@@ -118,7 +118,7 @@ where
     // add headers
     let _ = request.headers().set("Accept", "application/json");
 
-    // set the auth header if the token is provided and the target is bookwormfood domain
+    // set the auth header if the token is provided and the target is bookworm domain
     if let Some(id_token) = id_token {
         let _ = request.headers().set(AUTH_HEADER, id_token);
     }

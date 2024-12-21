@@ -1,7 +1,7 @@
 use crate::google::get_book_data;
 use crate::utils::{get_local_storage, log};
 use anyhow::{bail, Result};
-use bookwormfood_types::{Book, ReadStatus};
+use bookworm_types::{Book, ReadStatus};
 use chrono::Utc;
 use web_sys::Window;
 

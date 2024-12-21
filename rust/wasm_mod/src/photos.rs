@@ -2,7 +2,7 @@ use crate::book;
 use crate::http_req::{execute_http_request, HttpMethod};
 use crate::utils::{log, upload_file};
 use anyhow::Result;
-use bookwormfood_types::{Book, IdToken, SHARED_PHOTOS_ENDPOINT_URL, SYNC_HTML_ENDPOINT_URL};
+use bookworm_types::{Book, IdToken, SHARED_PHOTOS_ENDPOINT_URL, SYNC_HTML_ENDPOINT_URL};
 use web_sys::{FileList, Window};
 
 /// Uploads a jpg file to S3 and updates the book record with a note about the upload.

@@ -1,4 +1,4 @@
-use bookwormfood_types::{Book, Books};
+use bookworm_types::{Book, Books};
 use serde::Serialize;
 use std::fmt;
 use wasm_bindgen::prelude::*;

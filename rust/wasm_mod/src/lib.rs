@@ -1,4 +1,4 @@
-use bookwormfood_types::{jwt, Books, IdToken, ReadStatus};
+use bookworm_types::{jwt, Books, IdToken, ReadStatus};
 pub use http_req::AUTH_HEADER;
 use sync::{sync_book, sync_books};
 use utils::get_runtime;

@@ -1,6 +1,6 @@
 use anyhow::Error;
 use aws_sdk_s3::{presigning::PresigningConfig, Client};
-use bookwormfood_types::{Book, TIMESTAMP_BASE, USER_PHOTOS_BUCKET_NAME, USER_PHOTOS_S3_PREFIX, USER_PHOTOS_S3_SUFFIX};
+use bookworm_types::{Book, TIMESTAMP_BASE, USER_PHOTOS_BUCKET_NAME, USER_PHOTOS_S3_PREFIX, USER_PHOTOS_S3_SUFFIX};
 use std::time::Duration;
 use tracing::info;
 

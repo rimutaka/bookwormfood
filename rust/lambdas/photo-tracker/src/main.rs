@@ -1,6 +1,6 @@
 use aws_lambda_events::s3::{S3Event, S3EventRecord};
 
-use bookwormfood_types::{USER_PHOTOS_S3_PREFIX, USER_PHOTOS_S3_SUFFIX};
+use bookworm_types::{USER_PHOTOS_S3_PREFIX, USER_PHOTOS_S3_SUFFIX};
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
 use tracing::info;
 use tracing_subscriber::filter::LevelFilter;

@@ -2,7 +2,7 @@ use aws_sdk_dynamodb::{
     types::{AttributeValue, ReturnValue},
     Client,
 };
-use bookwormfood_types::lambda::{user_books_table_fields as fields, USER_BOOKS_TABLE_NAME};
+use bookworm_types::lambda::{user_books_table_fields as fields, USER_BOOKS_TABLE_NAME};
 use chrono::Utc;
 use tracing::info;
 

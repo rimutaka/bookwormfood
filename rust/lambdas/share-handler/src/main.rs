@@ -2,7 +2,7 @@ use aws_lambda_events::{
     http::{method::Method, HeaderMap, HeaderValue},
     lambda_function_urls::{LambdaFunctionUrlRequest, LambdaFunctionUrlResponse},
 };
-use bookwormfood_types::{ISBN_URL_PARAM_NAME, SHARE_ID_URL_PARAM_NAME};
+use bookworm_types::{ISBN_URL_PARAM_NAME, SHARE_ID_URL_PARAM_NAME};
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
 use tracing::info;
 use tracing_subscriber::filter::LevelFilter;

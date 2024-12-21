@@ -32,17 +32,17 @@ pub const SHARE_ID_URL_PARAM_NAME: &str = "share_id";
 
 /// The domain name that is allowed to use the ID token.
 /// Normally it would be our own domain name where all the server functions are hosted.
-pub const TRUSTED_URLS: &str = "https://bookwormfood.com";
+pub const TRUSTED_URLS: &str = "https://bookworm.im";
 
 /// URL of sync.html lambda function.
-pub const SYNC_HTML_ENDPOINT_URL: &str = "https://bookwormfood.com/sync.html";
+pub const SYNC_HTML_ENDPOINT_URL: &str = "https://bookworm.im/sync.html";
 
 /// URL of sync.html lambda function.
-pub const SHARED_PHOTOS_ENDPOINT_URL: &str = "https://bookwormfood.com/shared-photos.html";
+pub const SHARED_PHOTOS_ENDPOINT_URL: &str = "https://bookworm.im/shared-photos.html";
 
 /// URL for fetching user photos for the front-end.
 /// It should point at CloudFront with S3 as the origin.
-pub const USER_PHOTOS_BASE_URL: &str = "https://bookwormfood.com/";
+pub const USER_PHOTOS_BASE_URL: &str = "https://bookworm.im/";
 
 /// Name of DDB table with the list of books per user
 pub const USER_BOOKS_TABLE_NAME: &str = "user_books";

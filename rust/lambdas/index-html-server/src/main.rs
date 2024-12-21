@@ -9,7 +9,7 @@ use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
 use index::get_index_from_s3;
 use tracing::{error, info};
 use tracing_subscriber::filter::LevelFilter;
-use bookwormfood_types::google;
+use bookworm_types::google;
 
 mod index;
 
@@ -149,14 +149,14 @@ fn replace_with_regex(source: &str, title: &str, description: &str, path: &str) 
     let replaced = std::borrow::Cow::Borrowed(source);
 
     // replace the og:url if the value is not empty
-    //   <meta property="og:url" content="http://bookwormfood.com">
+    //   <meta property="og:url" content="http://bookworm.im">
     let replaced = if path.is_empty() || path == "/" {
         replaced
     } else {
         match regex::Regex::new(r#"("og:url"[^>]+content=")([^"]+)"#) {
             Ok(v) => v.replace(
                 &replaced,
-                ["${1}", &["https://bookwormfood.com", path].concat()].concat(),
+                ["${1}", &["https://bookworm.im", path].concat()].concat(),
             ),
             Err(e) => {
                 error!("Invalid og:url regex. It's a bug. {:?}", e);

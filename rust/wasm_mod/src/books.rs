@@ -1,6 +1,6 @@
 use crate::utils::log;
 use anyhow::{bail, Result};
-use bookwormfood_types::{Book, Books};
+use bookworm_types::{Book, Books};
 use web_sys::Window;
 
 /// Returns a sorted array of all book records stored locally.
