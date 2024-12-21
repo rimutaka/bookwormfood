@@ -1,0 +1,18 @@
+{
+  "files": {
+    "main.css": "./static/css/main.31ab4916.css",
+    "main.js": "./static/js/main.1a83c30b.js",
+    "static/media/isbn_mod_bg.wasm": "./static/media/isbn_mod_bg.a58f3912bc898a354dc6.wasm",
+    "static/media/buy.svg": "./static/media/buy.a0ebbd4b83f7c8afd5d9.svg",
+    "static/media/icomoon.woff": "./static/media/icomoon.25908258b2a9c6e6da52.woff",
+    "index.html": "./index.html",
+    "static/media/about.svg": "./static/media/about.472d9c94914ce88e8d8f.svg",
+    "static/media/borrow.svg": "./static/media/borrow.f8356d8f6c1fc40fa23b.svg",
+    "main.31ab4916.css.map": "./static/css/main.31ab4916.css.map",
+    "main.1a83c30b.js.map": "./static/js/main.1a83c30b.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.31ab4916.css",
+    "static/js/main.1a83c30b.js"
+  ]
+}
