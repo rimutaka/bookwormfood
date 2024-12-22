@@ -5,7 +5,7 @@ region=us-east-1
 lambda=photo-tracker
 crate=photo-tracker
 
-cargo build --release --target $target --package $crate
+RUSTFLAGS='-C target-feature=+crt-static'  cargo build --release --target $target --package $crate
 cp ./target/$target/release/$crate ./bootstrap && zip proxy.zip bootstrap && rm bootstrap
 aws lambda update-function-code --region $region --function-name $lambda --zip-file fileb://proxy.zip
 rm proxy.zip
