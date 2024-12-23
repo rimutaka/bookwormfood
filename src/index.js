@@ -43,9 +43,9 @@ function About() {
     <div>
       <p class="mt-8">Bookworm is a free app for book lovers to help us remember and share the books we read.</p>
       <h1 class="mt-8 text-center">Privacy Policy</h1>
-      <p class="mt-4"><i>bookworm.im</i> receives your name, email and profile photo from Google at login.
-        It stores your email in an internal database and does not disclose it to anyone.
-        Your email is used to uniquely identify you across multiple providers and devices, and for email notifications.</p>
+      <p class="mt-4"><i>bookworm.im</i> receives your name, email address and profile photo from Google at login.
+        It stores your email address in an internal database and does not disclose it to anyone.
+        Your email address is used to uniquely identify you across multiple providers and devices, and for email notifications.</p>
       <p>No data from this app is shared with any third party.</p>
       <p>Your name and profile photo are not used or stored.</p>
       <p>You will be notified by email if this privacy policy changes in the future.</p>
