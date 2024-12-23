@@ -60,7 +60,7 @@ export default function Navbar() {
   return (
     <nav className="mx-auto py-4 border-t mt-12 text-xs">
       <ul className="flex flex-wrap font-small">
-        <li className="flex-none">Bookworm App</li>
+        <li className="flex-none"><a href="/about">Privacy policy</a></li>
         <li className="flex-grow text-center"><span className="align-baseline">{appVersion}</span></li>
         <li className="flex-none">
           {isAuthenticated ? logoutButton() : loginButton()}
