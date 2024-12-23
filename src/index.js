@@ -28,6 +28,7 @@ ReactDOM.createRoot(document.getElementById("app")).render(
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="login" element={<AuthLogin />} />
           <Route path="logout" element={<AuthLogout />} />
+          <Route path="about" element={<About />} />
           <Route path="*" element={<BookDetails />} />
         </Route>
       </Routes>
@@ -40,7 +41,15 @@ ReactDOM.createRoot(document.getElementById("app")).render(
 function About() {
   return (
     <div>
-      <h2>About</h2>
+      <p class="mt-8">Bookworm is a free app for book lovers to help use remember and share the books we read.</p>
+      <h1 class="mt-8 text-center">Privacy Policy</h1>
+      <p class="mt-4">No data from this app is shared with any third party.</p>
+      <ul>
+        <li>Authentication: <a href="https://auth0.com">Auth0</a></li>
+        <li>Infrastructure: AWS</li>
+        <li>Source code: <a href="https://github.com/rimutaka/bookwormfood">https://github.com/rimutaka/bookwormfood</a></li>
+        <li>Contact and support: <a href="mailto:max@onebro.me">max@onebro.me</a></li>
+      </ul>
     </div>
   );
 }
