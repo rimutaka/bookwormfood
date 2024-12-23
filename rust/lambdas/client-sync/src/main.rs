@@ -3,30 +3,21 @@ use aws_lambda_events::{
     lambda_function_urls::{LambdaFunctionUrlRequest, LambdaFunctionUrlResponse},
 };
 use aws_sdk_dynamodb::Client;
-use bookworm_types::{jwt, lambda::USER_BOOKS_TABLE_NAME, Book, AUTH_HEADER, ISBN_URL_PARAM_NAME};
+use bookworm_types::{
+    jwt,
+    lambda::{init_tracing_subscriber, USER_BOOKS_TABLE_NAME},
+    Book, AUTH_HEADER, ISBN_URL_PARAM_NAME,
+};
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
 use tracing::info;
-use tracing_subscriber::filter::LevelFilter;
 
 mod book;
 mod photo;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // required to enable CloudWatch error logging by the runtime
-    #[cfg(debug_assertions)]
-    tracing_subscriber::fmt()
-        .without_time()
-        .with_max_level(LevelFilter::INFO)
-        .with_ansi(true)
-        .init();
-
-    #[cfg(not(debug_assertions))]
-    tracing_subscriber::fmt()
-        .with_max_level(LevelFilter::INFO)
-        .with_ansi(false)
-        .compact()
-        .init();
+    // this init is required to enable CloudWatch error logging by the runtime
+    init_tracing_subscriber();
 
     let func = service_fn(my_handler);
     let runtime = Runtime::new(func);

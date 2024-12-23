@@ -6,21 +6,17 @@ use aws_lambda_events::{
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
 // use serde::{Deserialize, Serialize};
 // use serde_json::from_str;
+use bookworm_types::google;
+use bookworm_types::lambda::init_tracing_subscriber;
 use index::get_index_from_s3;
 use tracing::{error, info};
-use tracing_subscriber::filter::LevelFilter;
-use bookworm_types::google;
 
 mod index;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_ansi(true)
-        .without_time()
-        .with_max_level(LevelFilter::INFO)
-        .init();
+    // this init is required to enable CloudWatch error logging by the runtime
+    init_tracing_subscriber();
 
     let func = service_fn(my_handler);
     let runtime = Runtime::new(func);
@@ -154,10 +150,7 @@ fn replace_with_regex(source: &str, title: &str, description: &str, path: &str) 
         replaced
     } else {
         match regex::Regex::new(r#"("og:url"[^>]+content=")([^"]+)"#) {
-            Ok(v) => v.replace(
-                &replaced,
-                ["${1}", &["https://bookworm.im", path].concat()].concat(),
-            ),
+            Ok(v) => v.replace(&replaced, ["${1}", &["https://bookworm.im", path].concat()].concat()),
             Err(e) => {
                 error!("Invalid og:url regex. It's a bug. {:?}", e);
                 return Err(Error::from("Invalid og:url replacement regex"));

@@ -2,21 +2,17 @@ use aws_lambda_events::{
     http::{method::Method, HeaderMap, HeaderValue},
     lambda_function_urls::{LambdaFunctionUrlRequest, LambdaFunctionUrlResponse},
 };
+use bookworm_types::lambda::init_tracing_subscriber;
 use bookworm_types::{ISBN_URL_PARAM_NAME, SHARE_ID_URL_PARAM_NAME};
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
 use tracing::info;
-use tracing_subscriber::filter::LevelFilter;
 
 mod share;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .without_time()
-        .with_max_level(LevelFilter::INFO)
-        .with_ansi(false)
-        .init();
+    // this init is required to enable CloudWatch error logging by the runtime
+    init_tracing_subscriber();
 
     let func = service_fn(my_handler);
     let runtime = Runtime::new(func);

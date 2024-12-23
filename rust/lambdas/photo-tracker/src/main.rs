@@ -1,20 +1,16 @@
 use aws_lambda_events::s3::{S3Event, S3EventRecord};
 
+use bookworm_types::lambda::init_tracing_subscriber;
 use bookworm_types::{USER_PHOTOS_S3_PREFIX, USER_PHOTOS_S3_SUFFIX};
 use lambda_runtime::{service_fn, Error, LambdaEvent, Runtime};
 use tracing::info;
-use tracing_subscriber::filter::LevelFilter;
 
 mod photo;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .without_time()
-        .with_max_level(LevelFilter::INFO)
-        .with_ansi(false)
-        .init();
+    // this init is required to enable CloudWatch error logging by the runtime
+    init_tracing_subscriber();
 
     let func = service_fn(my_handler);
     let runtime = Runtime::new(func);
