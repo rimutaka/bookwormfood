@@ -9,6 +9,7 @@ use tracing::info;
 /// Save a book in the user_books table.
 /// Replaces existing records unconditionally.
 pub(crate) async fn save(book: &Book, client: &Client, user: User) -> Result<(), Error> {
+    info!("Saving book {}/{}", user.id, book.isbn);
     // this has to be an update to prevent overwriting photo IDs
     const UPDATE_EXPRESSION: &str =
         "SET email = :email, title = :title, authors = :authors, read_status = :read_status, updated = :updated";
@@ -48,6 +49,7 @@ pub(crate) async fn save(book: &Book, client: &Client, user: User) -> Result<(),
 /// Returns all book records for the given user.
 /// Returns an empty list if no records found.
 pub(crate) async fn get_by_user(client: &Client, user_id: &str) -> Result<Books, Error> {
+    info!("Getting books for {}", user_id);
     let books = match client
         .query()
         .table_name(USER_BOOKS_TABLE_NAME)
@@ -127,11 +129,12 @@ pub(crate) async fn get_by_user(client: &Client, user_id: &str) -> Result<Books,
 
 /// Deletes a book from user_books table.
 pub(crate) async fn delete(isbn: &str, client: &Client, user_id: &str) -> Result<(), Error> {
+    info!("Deleting book {}/{}", user_id, isbn);
     match client
         .delete_item()
         .table_name(USER_BOOKS_TABLE_NAME)
         .key(fields::UID, AttributeValue::S(user_id.to_owned()))
-        .key(fields::ISBN, AttributeValue::S(isbn.to_string()))
+        .key(fields::ISBN, AttributeValue::N(isbn.to_string()))
         .send()
         .await
     {
@@ -190,7 +193,7 @@ fn attr_s_to_option(v: AttributeValue) -> Option<String> {
     match v {
         AttributeValue::S(v) => Some(v),
         _ => {
-            info!("Invalid type in attr_s_to_option. It's a bug.");
+            info!("attr_s_to_option: expected a string, found {:?}", v);
             None
         }
     }

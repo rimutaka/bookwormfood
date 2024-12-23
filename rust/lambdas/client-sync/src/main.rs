@@ -14,10 +14,18 @@ mod photo;
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
+    #[cfg(debug_assertions)]
     tracing_subscriber::fmt()
         .without_time()
         .with_max_level(LevelFilter::INFO)
+        .with_ansi(true)
+        .init();
+
+    #[cfg(not(debug_assertions))]
+    tracing_subscriber::fmt()
+        .with_max_level(LevelFilter::INFO)
         .with_ansi(false)
+        .compact()
         .init();
 
     let func = service_fn(my_handler);
