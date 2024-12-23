@@ -8,7 +8,7 @@ pub(crate) async fn get_index_from_s3() -> Result<String, Error> {
     let config = aws_config::load_from_env().await;
     let client = Client::new(&config);
 
-    let bucket = std::env::var("BUCKET_NAME").unwrap_or_else(|_e| "bookwormfood.com".to_string());
+    let bucket = std::env::var("BUCKET_NAME").unwrap_or_else(|_e| "bookworm-photos".to_string());
     let response = match client
         .get_object()
         .bucket(bucket)

@@ -48,8 +48,8 @@ pub const USER_PHOTOS_BASE_URL: &str = "https://bookworm.im/";
 pub const USER_BOOKS_TABLE_NAME: &str = "user_books";
 
 /// Name of S3 bucket for storing user photos
-/// Value: `bookwormfood.com`.
-pub const USER_PHOTOS_BUCKET_NAME: &str = "bookwormfood.com";
+/// Value: `bookworm-photos`.
+pub const USER_PHOTOS_BUCKET_NAME: &str = "bookworm-photos";
 /// The path within the bucket where the user photos are stored.
 /// Must include trailing slash.
 /// Value: `photos/`.
