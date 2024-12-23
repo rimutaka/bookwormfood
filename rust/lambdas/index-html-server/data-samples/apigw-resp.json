@@ -1,9 +1,0 @@
-{
-  "cookies": [],
-  "isBase64Encoded": false,
-  "statusCode": 200,
-  "headers": {
-    "content-type": "text/text"
-  },
-  "body": "Hello from Lambda!"
-}
