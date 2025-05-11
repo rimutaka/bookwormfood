@@ -1,84 +1,76 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * A demo function for getting WASM working for the first time
- */
-export function init(): void;
+* The main entry point for the UI thread to request book data.
+* Multiple responses are sent back via `progress.js` to the UI thread.
+* See `fn report_progress()` for more details.
+* @param {string} isbn
+* @param {string | undefined} [id_token]
+* @param {string | undefined} [share_id]
+* @returns {Promise<void>}
+*/
+export function get_book_data(isbn: string, id_token?: string, share_id?: string): Promise<void>;
 /**
- * A demo function for getting WASM working for the first time
- */
-export function hello_world(): Promise<void>;
+* Returns the list of previously scanned books from the local storage.
+* See `fn report_progress()` for more details.
+* @param {string | undefined} id_token
+* @param {boolean} with_cloud_sync
+* @returns {Promise<void>}
+*/
+export function get_scanned_books(id_token: string | undefined, with_cloud_sync: boolean): Promise<void>;
 /**
- * Converts a markdown string to HTML. Available in WASM only.
- */
-export function md_to_html(md: string): Promise<ValidatedMarkdown>;
+* Updates the status of a book in the local storage.
+* Returns `WasmResponse::LocalBook::Ok` in a message if successful.
+* @param {string} isbn
+* @param {ReadStatus | undefined} [status]
+* @param {string | undefined} [id_token]
+* @returns {Promise<void>}
+*/
+export function update_book_status(isbn: string, status?: ReadStatus, id_token?: string): Promise<void>;
 /**
- * Combines all the links in the logical order:
- * - question links
- * - correct answer links
- * - incorrect answer links
- *
- * All links are sorted alphabetically within their logical group
- */
-export function sort_links(question_links: (string)[], correct_answer_links: (string)[], incorrect_answer_links: (string)[]): (string)[];
+* Deletes a book from the local storage.
+* Returns error or success via an async message.
+* @param {string} isbn
+* @param {string | undefined} [id_token]
+* @returns {Promise<void>}
+*/
+export function delete_book(isbn: string, id_token?: string): Promise<void>;
 /**
- * Contains the result of the streaming parser that returns HTML
- * and what was filtered out in a single pass.
- */
-export class ValidatedMarkdown {
-  private constructor();
-  free(): void;
-  /**
-   * The HTML representation of the markdown
-   * with disallowed elements removed.
-   */
-  html: string;
-  /**
-   * The list of disallowed markdown elements that were ignored during the HTML conversion.
-   */
-  ignored: (string)[];
-  /**
-   * The list of link URLs found in the markdown.
-   * The are what the parser considers a link, which may be absolute or relative.
-   * The URLs are not validated and appear in the order they were encountered.
-   */
-  links: (string)[];
-  /**
-   * The list of image URLs found in the markdown.
-   * The URLs are not validated and appear in the order they were encountered.
-   */
-  images: (string)[];
+* Uploads a file to S3.
+* Returns error or success via an async message.
+* @param {string} isbn
+* @param {FileList} files
+* @param {string | undefined} [id_token]
+* @returns {Promise<void>}
+*/
+export function upload_pic(isbn: string, files: FileList, id_token?: string): Promise<void>;
+/**
+* Where the reader is with the book.
+* Defaults to None.
+*/
+export enum ReadStatus {
+  ToRead = 0,
+  Read = 1,
+  Liked = 2,
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly init: () => void;
-  readonly hello_world: () => any;
-  readonly md_to_html: (a: number, b: number) => any;
-  readonly sort_links: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
-  readonly __wbg_validatedmarkdown_free: (a: number, b: number) => void;
-  readonly __wbg_get_validatedmarkdown_html: (a: number) => [number, number];
-  readonly __wbg_set_validatedmarkdown_html: (a: number, b: number, c: number) => void;
-  readonly __wbg_get_validatedmarkdown_ignored: (a: number) => [number, number];
-  readonly __wbg_set_validatedmarkdown_ignored: (a: number, b: number, c: number) => void;
-  readonly __wbg_get_validatedmarkdown_links: (a: number) => [number, number];
-  readonly __wbg_set_validatedmarkdown_links: (a: number, b: number, c: number) => void;
-  readonly __wbg_get_validatedmarkdown_images: (a: number) => [number, number];
-  readonly __wbg_set_validatedmarkdown_images: (a: number, b: number, c: number) => void;
+  readonly get_book_data: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly get_scanned_books: (a: number, b: number, c: number) => number;
+  readonly update_book_status: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly delete_book: (a: number, b: number, c: number, d: number) => number;
+  readonly upload_pic: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly ring_core_0_17_8_bn_mul_mont: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly __wbindgen_exn_store: (a: number) => void;
-  readonly __externref_table_alloc: () => number;
-  readonly __wbindgen_export_2: WebAssembly.Table;
-  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbindgen_export_6: WebAssembly.Table;
-  readonly __externref_drop_slice: (a: number, b: number) => void;
-  readonly closure14_externref_shim: (a: number, b: number, c: any) => void;
-  readonly closure88_externref_shim: (a: number, b: number, c: any, d: any) => void;
-  readonly __wbindgen_start: () => void;
+  readonly __wbindgen_export_2: WebAssembly.Table;
+  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h69de8b0be872d005: (a: number, b: number, c: number) => void;
+  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
+  readonly __wbindgen_exn_store: (a: number) => void;
+  readonly wasm_bindgen__convert__closures__invoke2_mut__h1929e75d046aca82: (a: number, b: number, c: number, d: number) => void;
 }
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;
