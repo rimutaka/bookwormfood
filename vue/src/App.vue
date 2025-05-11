@@ -18,7 +18,7 @@ import { storeToRefs } from 'pinia'
 import { useMainStore } from '@/store';
 import { fetchUser } from "@/data-loaders/fetch-user"
 
-import TopHeader from './components/TopHeader.vue';
+import TopHeader from './components/.vue';
 import FooterStatic from './components/FooterStatic.vue';
 
 const { isAuthenticated, isLoading, idTokenClaims, getAccessTokenSilently } = useAuth0();

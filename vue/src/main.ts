@@ -23,8 +23,8 @@ app.use(PrimeVue, {
 
 app.use(
   createAuth0({
-    domain: "login.bitesized.info",
-    clientId: "p2xjvyoxb8HoKSt1QNDx7CQ8Ka2lXgUJ",
+    domain: "auth.bookworm.im",
+    clientId: "nqzjY0VWUu8GoDVbqyfy2yOdgkydrEaf",
     authorizationParams: {
       redirect_uri: `${window.location.origin}/${PageIDs.LOGIN}`,
     },

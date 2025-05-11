@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("icon-moon.css");
+@import url('icon-moon.css');
 
 html,
 body,
@@ -54,7 +54,7 @@ a {
 .loginBtn button {
   @apply p-1 cursor-pointer rounded-md
   bg-slate-400 text-white 
-   font-medium text-sm text-center ;
+   font-medium text-sm text-center;
 }
 
 button.active {
@@ -68,11 +68,8 @@ button.done {
 /* The div that contains the welcome screen */
 .welcome {
   background-color: #ffffff;
-  background-image: linear-gradient(
-      to bottom,
-      rgba(249, 249, 249, 0.99),
-      rgba(249, 249, 249, 0.92)
-    ),
+  background-image:
+    linear-gradient(to bottom, rgba(249, 249, 249, 0.99), rgba(249, 249, 249, 0.92)),
     url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 
   @apply max-w-96 my-3 content-center justify-center flex p-5 bg-right-bottom rounded-lg;
@@ -107,11 +104,8 @@ button.done {
 /* The div that contains book details after the scan */
 .result {
   background-color: #ffffff;
-  background-image: linear-gradient(
-      to bottom,
-      rgba(249, 249, 249, 0.99),
-      rgba(249, 249, 249, 0.92)
-    ),
+  background-image:
+    linear-gradient(to bottom, rgba(249, 249, 249, 0.99), rgba(249, 249, 249, 0.92)),
     url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 
   @apply m-3 p-5 bg-right-bottom rounded-lg break-words;
@@ -145,7 +139,7 @@ button.done {
 }
 
 .descr-collapsed .descr-expand::before {
-  content: "...";
+  content: '...';
   @apply pr-1 text-black;
 }
 
@@ -208,15 +202,15 @@ i.active.icon-heart {
 /* ===== Icons ===== */
 
 .about {
-  background-image: url("icons/about.svg");
+  background-image: url('icons/about.svg');
 }
 
 .buy {
-  background-image: url("icons/buy.svg");
+  background-image: url('icons/buy.svg');
 }
 
 .borrow {
-  background-image: url("icons/borrow.svg");
+  background-image: url('icons/borrow.svg');
 }
 
 /* ===== Visually hidden ===== */
@@ -245,4 +239,17 @@ i.active.icon-heart {
   position: static;
   width: auto;
   white-space: inherit;
+}
+
+/* From component conversions - double check if it's needed */
+.descr-collapsed .descr-extra-text {
+  display: none;
+}
+
+.descr-expand {
+  cursor: pointer;
+  color: blue;
+  text-decoration: underline;
+  margin-left: 4px;
+  margin-right: 4px;
 }
