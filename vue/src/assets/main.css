@@ -1,0 +1,421 @@
+@import 'primeicons/primeicons.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Title';
+  src: url(@/assets/fonts/roboto-condensed-regular.woff) format('woff');
+}
+
+body {
+  @apply flex items-center justify-center w-full dark:bg-neutral-900 bg-white
+text-neutral-900 dark:text-neutral-50 dark:text-opacity-90;
+}
+
+#app {
+  @apply max-w-screen-lg mx-auto my-auto p-2 text-center items-center flex flex-col h-screen justify-between;
+}
+
+img {
+  @apply inline-flex;
+}
+
+h1 {
+  @apply text-3xl font-bold;
+}
+
+h2 {
+  @apply text-xl font-bold;
+}
+
+h3 {
+  @apply text-xl font-bold;
+}
+
+h4 {
+  @apply text-lg font-bold;
+}
+
+a,
+.link {
+  @apply text-blue-500 dark:text-blue-300 underline cursor-pointer;
+}
+
+.no-decoration {
+  @apply no-underline text-inherit;
+}
+
+a.p-button {
+  /* For links masquarading as buttons */
+  @apply no-underline;
+}
+
+/* COMMON COLOURS */
+.red-highlight {
+  @apply text-red-500;
+}
+
+.red-highlight-border {
+  @apply border-red-500;
+}
+
+/* Dark styles for topic checkboxes */
+input.p-checkbox-input,
+input.p-radiobutton-input {
+  @apply dark:opacity-15;
+}
+
+input:checked.p-checkbox-input,
+input:checked.p-radiobutton-input {
+  @apply dark:opacity-0;
+}
+
+/* Signup CTA */
+.signup-pitch {
+  @apply mt-4 text-start  md:pl-8;
+}
+
+.signup-pitch li {
+  @apply my-3;
+}
+
+.signup-pitch li h3 {
+  @apply text-base md:text-xl;
+}
+
+.signup-pitch li i {
+  @apply me-2 font-normal text-slate-500 dark:text-slate-200;
+}
+
+/* Subscription update block */
+.update-sub ul {
+  @apply text-sm text-slate-500 dark:text-slate-200 flex flex-shrink mb-2;
+}
+
+.update-sub li {
+  @apply me-2;
+}
+
+.update-sub li:not(:first-child):not(:last-child)::after {
+  @apply ms-1;
+  content: ',';
+}
+
+.update-sub li:first-child {
+  @apply font-bold;
+}
+
+.update-sub p {
+  @apply text-sm text-center;
+}
+
+/* FOOTER */
+footer a {
+  @apply text-inherit no-underline;
+}
+
+/* Call to action box shown to users without subs */
+.cta-box {
+  @apply px-4 py-8 w-fit mx-auto border rounded-md border-gray-300 shadow-lg dark:shadow-neutral-600;
+}
+
+/* QUESTION FORM */
+.question-readiness li {
+  @apply mb-4;
+}
+
+.question-ready {
+  @apply text-neutral-500 dark:text-neutral-400;
+}
+
+.question-ready i {
+  @apply pi pi-check me-4;
+}
+
+.question-not-ready i {
+  @apply pi pi-stop me-4 text-neutral-500 bg-neutral-200 dark:bg-neutral-800 rounded-sm;
+}
+
+.input-help-line {
+  @apply text-slate-500 dark:text-slate-300 text-xs text-end;
+}
+
+/* QUESTION CARD, PREVIEW and MD RENDERING */
+/* q-card wraps the question, answers and other parts of the page */
+/* qna wraps the question and answers only */
+.q-card {
+  @apply text-left w-full;
+}
+
+.q-card p,
+.q-card li {
+  /* Chrome doesn't break up long URLs creating an overflow on small screens */
+  overflow-wrap: anywhere;
+  max-width: 95vw;
+  @apply md:max-w-none;
+}
+
+.q-card h3 {
+  @apply text-lg font-bold mt-4 mb-1;
+}
+
+.q-text {
+  @apply mb-6;
+}
+
+.q-card input[type='radio'],
+.q-card input[type='checkbox'] {
+  @apply h-6 w-6 checked:bg-blue-400 disabled:bg-slate-100 disabled:dark:bg-slate-400 checked:disabled:bg-blue-400 p-2 my-auto mx-2;
+}
+
+.q-card input[type='checkbox'] {
+  @apply rounded-md;
+}
+
+.q-card .q-answer {
+  @apply w-full p-2 max-w-screen-lg;
+}
+
+.q-card .q-explainer {
+  @apply p-2 max-w-screen-lg;
+}
+
+.q-card .hide-explanation .q-explainer {
+  @apply hidden;
+}
+
+.q-card .explain-link {
+  @apply hidden cursor-pointer;
+}
+
+.q-card .hide-explanation .explain-link,
+.q-card .refresher .explain-link {
+  @apply inline-flex;
+}
+
+.q-card .incorrect-tag {
+  @apply hidden;
+}
+
+.q-card .hide-explanation .incorrect-tag {
+  @apply inline-flex;
+}
+
+.q-card .incorrect-label {
+  @apply inline;
+}
+
+.q-card .hide-explanation .incorrect-label {
+  @apply hidden;
+}
+
+/* QUESTION CARD EMBEDDED HTML */
+
+.qna p:not(:last-child),
+.qna li {
+  @apply mb-2;
+}
+
+.qna p:not(:first-child) {
+  @apply mt-2;
+}
+
+.q-card ul {
+  @apply list-disc list-inside mb-4 mt-2;
+}
+
+.qna code {
+  @apply py-0.5 px-1 rounded-sm font-mono text-sm;
+}
+
+.qna code {
+  @apply bg-slate-100 dark:bg-neutral-600;
+}
+
+.qna pre {
+  @apply my-4 md:max-w-none grid;
+}
+
+.qna pre code {
+  max-width: 90vw;
+  @apply font-mono text-sm rounded-md p-2 md:w-fit block overflow-x-auto;
+}
+
+.qna h1 {
+  @apply text-2xl font-bold mt-6 mb-4;
+}
+
+.qna h2 {
+  @apply text-xl font-bold mt-6 mb-2;
+}
+
+.qna h3 {
+  @apply text-lg font-bold mt-4 mb-1;
+}
+
+.qna h4 {
+  @apply text-base font-bold mt-4;
+}
+
+/* Question contributor block */
+
+.contributor-block {
+  @apply mx-auto text-center w-fit;
+}
+
+.contributor-icon {
+  @apply bg-contain bg-no-repeat bg-center;
+  background-image: url(@/assets/images/contributor.svg);
+  filter: drop-shadow(3px 3px 2px #555);
+}
+
+.subdued .subdued-text {
+  @apply opacity-70 dark:opacity-80;
+}
+
+.subdued .subdued-image {
+  @apply opacity-30 dark:opacity-40;
+}
+
+/* Contribute cards */
+
+.contribute-card {
+  @apply max-w-md mx-auto mb-8 pb-4 rounded-md border-slate-100 dark:border-slate-300 shadow dark:shadow-neutral-600;
+}
+
+.contribute-card .abstract {
+  @apply w-full text-center rounded-t-md;
+}
+
+.contribute-card .abstract i {
+  @apply text-6xl my-4 opacity-30;
+}
+
+#abstract-sponsor {
+  @apply opacity-70;
+}
+
+.contribute-card h3 {
+  @apply text-center text-2xl font-bold mt-4 mb-2 text-slate-700 dark:text-neutral-200;
+}
+
+.contribute-card p {
+  @apply text-justify p-4;
+}
+
+.contribute-card .cta {
+  @apply text-center mt-4;
+}
+
+.contribute-card .cta a {
+  @apply me-8;
+}
+
+.contribute-card .cta a:last-child {
+  @apply me-0;
+}
+
+.contribute-card .cta a i {
+  @apply dark:bg-neutral-300 dark:p-1 dark:rounded-sm;
+}
+
+/* QUESTION LIST */
+
+.q-list {
+  @apply text-start w-full;
+}
+
+.q-list p {
+  @apply mb-4 text-start;
+}
+
+.q-list p a {
+  @apply no-underline text-inherit;
+}
+
+.q-list p i {
+  @apply text-xs w-6 pi pi-sparkles text-amber-600 dark:text-amber-200;
+}
+
+.q-list .correct i:first-child {
+  @apply pi pi-check text-green-300 dark:text-green-700;
+}
+
+.q-list .incorrect i:first-child {
+  @apply pi pi-times text-red-300 dark:text-red-700;
+}
+
+.q-list .viewed i:first-child {
+  @apply pi pi-eye text-slate-500 dark:text-slate-300;
+}
+
+.q-list i.author {
+  @apply pi pi-pen-to-square text-slate-300;
+}
+
+.q-list .correct p {
+  @apply text-slate-500 dark:text-slate-300;
+}
+
+.q-list .tag {
+  @apply ms-4 py-0.5 px-1 rounded-sm text-xs bg-slate-100 dark:bg-neutral-600 font-normal;
+}
+
+.q-list .draft {
+  @apply text-red-700;
+}
+
+/* Question source review form */
+.q-review {
+  @apply text-start;
+}
+
+.q-review h4 {
+  @apply mt-6 mb-2;
+}
+
+.q-review pre {
+  @apply text-sm p-2 mb-2 bg-slate-100 dark:bg-neutral-600 rounded-md overflow-x-scroll;
+}
+
+/* About page */
+.about {
+  @apply p-2 max-w-xl mx-auto;
+}
+.about h3 {
+  @apply mt-12 mb-4 text-slate-700 dark:text-neutral-200;
+}
+
+.about h3:first-child {
+  @apply mt-4;
+}
+
+.about p {
+  @apply text-justify mb-2;
+}
+
+/* Checkout */
+
+#secure-payments {
+  background-image: url(@/assets/images/secure-payments.png);
+  background-size: 60%;
+  background-position: bottom right;
+  background-repeat: no-repeat;
+}
+
+#stripe-logo {
+  padding-inline-end: 4rem;
+  background-image: url(@/assets/images/stripe-logo.png);
+  background-size: 3.5rem;
+  background-position: bottom right;
+  background-repeat: no-repeat;
+}
+
+@media print {
+  .no-print,
+  #__vue-devtools-container__,
+  footer {
+    @apply hidden;
+  }
+}

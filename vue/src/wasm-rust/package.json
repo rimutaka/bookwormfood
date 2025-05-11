@@ -1,0 +1,24 @@
+{
+  "name": "wasm_mod",
+  "type": "module",
+  "collaborators": [
+    "rimutaka <max@onebro.me>"
+  ],
+  "description": "Rust helpers",
+  "version": "0.1.0",
+  "license": "AGPL 3.0",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "files": [
+    "isbn_mod_bg.wasm",
+    "isbn_mod.js",
+    "isbn_mod.d.ts"
+  ],
+  "main": "isbn_mod.js",
+  "types": "isbn_mod.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
