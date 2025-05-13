@@ -5,7 +5,7 @@
         <div v-if="book?.title || isbn">
           <div>
             <h3 v-if="book?.title" class="fade-in font-bold">{{ book.title }}</h3>
-            <p v-if="book?.authors" class="fade-in">by {{ book.authors }}</p>
+            <p v-if="book?.authors" class="fade-in">by {{ book.authors[0] }}</p>
 
             <!-- Description with conditional expanding -->
             <p v-if="book?.volumeInfo?.description && !book?.volumeInfo?.description.includes('undefined')" class="fade-in py-2 text-xs max-w-prose">
