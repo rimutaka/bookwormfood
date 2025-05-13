@@ -16,13 +16,12 @@ import { RouterView } from 'vue-router'
 import { useAuth0 } from '@auth0/auth0-vue';
 import { storeToRefs } from 'pinia'
 import { useMainStore } from '@/store';
-// import { fetchUser } from "@/router/data-loaders/fetch-user"
 
 import NavBar from './components/NavBar.vue';
 
 const { isAuthenticated, isLoading, idTokenClaims, getAccessTokenSilently } = useAuth0();
 const store = useMainStore();
-const { email, token, } = storeToRefs(store);
+const { email, token } = storeToRefs(store);
 
 console.log(`App load/auth: ${isLoading.value}/${isAuthenticated.value}`);
 

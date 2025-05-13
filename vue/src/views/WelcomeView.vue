@@ -31,6 +31,7 @@ import { ref, watchEffect, watch, onMounted, onBeforeUnmount } from 'vue';
 import { storeToRefs } from 'pinia'
 import { useMainStore } from '@/store';
 import router from '@/router';
+import { PageIDs } from '@/router'
 import initWasmModule, { get_scanned_books, ReadStatus } from '../wasm-rust/isbn_mod.js';
 import { buildBookUrl } from '@/interfaces.js';
 import type { Book } from '@/interfaces.js';
@@ -71,8 +72,7 @@ function getStatusIcon(readStatus: ReadStatus) {
 function onScanBtnClickHandler() {
   // Replace with your actual navigation logic
   // For example, using vue-router:
-  // router.push({ name: 'scan' })
-  alert('Navigate to scan page')
+  router.push({ name: PageIDs.SCAN });
 }
 
 function onBookLinkClickHandler(book: Book) {

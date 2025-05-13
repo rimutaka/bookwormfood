@@ -46,14 +46,12 @@ const router = createRouter({
       component: ScanView,
       meta: { title: 'Scan book barcode' }
     },
-    // {
-    //   path: '/' + PageIDs.ADD,
-    //   name: PageIDs.ADD,
-    //   component: QuestionFormView,
-    //   beforeEnter: authGuard,
-    //   meta: { title: 'Edit question' }
-    // },
- 
+    {
+      path: '/:pathMatch(.*)*',
+      name: PageIDs.BOOK,
+      component: BookDetailsView,
+      meta: { title: 'Book Details' }
+    }
   ]
 })
 

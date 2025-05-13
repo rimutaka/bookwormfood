@@ -147,34 +147,6 @@ watchEffect(async () => {
   if (isbn.value) {
     console.log(`ISBN: ${isbn.value}, Reader ID: ${readerId.value}, URL: ${route.path}`)
 
-    // Try to get the token if authenticated
-    // let idTokenClaims = null
-    // if (isAuthenticated) {
-    //   idTokenClaims = await auth.getIdTokenClaims()
-    //   if (idTokenClaims?.__raw) {
-    //     token.value = idTokenClaims.__raw
-    //   } else {
-    //     console.log(`Missing token: ${JSON.stringify(idTokenClaims)}`)
-    //   }
-    // } else {
-    //   console.log("User is not authenticated")
-    // }
-
-
-    if (isAuthenticated) {
-      const idTokenClaims = await getAccessTokenSilently();
-      if (idTokenClaims) {
-        token.value = idTokenClaims;
-        // console.log(`JWT: ${idTokenClaims?.__raw}`);
-        // console.log(`Expiry: ${idTokenClaims?.exp}`);
-      } else {
-        console.log(`Missing token: ${JSON.stringify(idTokenClaims)}`);
-      }
-    } else {
-      console.log("User is not authenticated");
-    }
-
-
     // Get book details
     await initWasmModule()
     get_book_data(isbn.value, token.value, readerId.value)

@@ -14,12 +14,27 @@ export const useMainStore = defineStore('main', () => {
   /// Raw token from the ID provider, e.g. Google or Github
   const token = ref<string | undefined>()
 
+  /** Extracted from URL path */
+  const isbn = computed(() => {
+    const x = route.path.match(/\/\d{13}(\/|$)/)?.[0]?.replace(/\//g, "") || "";
+    console.log("isbn", x)
+    return x
+  })
+
+  /** Extracted from URL path */
+  const readerId = computed(() => {
+    return route.path.match(/\/reader-\d+(\/|$)/)?.[0]?.replace(/\//g, "")?.replace("reader-", "")
+  })
+
+
   const reset = () => {
     email.value = undefined;
     token.value = undefined;
   }
 
   return {
+    isbn,
+    readerId,
     email,
     token,
     reset,
