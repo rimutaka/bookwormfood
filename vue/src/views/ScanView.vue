@@ -1,10 +1,10 @@
 <template>
   <div>
     <div>
-      <canvas id="canvas" className="scanCanvas" width={CANVAS_SIZE.WIDTH} height={CANVAS_SIZE.HEIGHT} />
+      <canvas id="canvas" class="scanCanvas" :width="CANVAS_SIZE.WIDTH" :height="CANVAS_SIZE.HEIGHT" />
     </div>
     <div className="scanBtn">
-      <button onClick={onBtnClickHandler} className={btnClass}>{btnText}</button>
+      <button @click.prevent="onBtnClickHandler" :class="btnClass">{{ btnText }}</button>
     </div>
   </div>
 </template>
@@ -60,11 +60,9 @@ const btnClass = ref('')
 const scanning = ref(false)
 const video = ref(document.createElement('video'))
 
-const router = useRouter()
-
-let qrworker = null
-let canvasElement = null
-let canvas = null
+let qrworker: Worker | null = null
+let canvasElement: HTMLCanvasElement | null = null
+let canvas: CanvasRenderingContext2D | null = null
 let oldTime = 0
 
 video.value.onplaying = () => {
@@ -75,7 +73,7 @@ video.value.onplaying = () => {
 function initWorker() {
   qrworker = new Worker("wasmWorker.js")
   qrworker.onmessage = async ev => {
-    if (ev.data != null) {
+    if (qrworker && ev.data != null) {
       qrworker.terminate()
       const result = ev.data
       await stopScan()
@@ -87,8 +85,14 @@ function initWorker() {
 
 async function startScan() {
   initWorker()
-  canvasElement = document.getElementById("canvas")
-  canvas = canvasElement.getContext("2d", { willReadFrequently: true })
+  canvasElement = <HTMLCanvasElement | null>document.getElementById("canvas");
+
+  if (!canvasElement) {
+    console.error("Canvas element not found")
+    return
+  }
+
+  canvas = <CanvasRenderingContext2D | null>canvasElement.getContext("2d", { willReadFrequently: true })
 
   btnText.value = BTN_TXT.STOP
   btnClass.value = "active"
@@ -113,7 +117,7 @@ function stopScan() {
   btnClass.value = ""
   video.value.pause()
   if (video.value.srcObject) {
-    video.value.srcObject.getVideoTracks().forEach(track => {
+    (video.value.srcObject as MediaStream).getVideoTracks().forEach(track => {
       track.stop()
     })
     video.value.srcObject = null
@@ -121,7 +125,13 @@ function stopScan() {
   router.replace({ path: "/" })
 }
 
-function tick(time) {
+function tick(time: number) {
+
+  if (!canvas || !video.value) {
+    console.error("Canvas or video element not initialized")
+    return
+  }
+
   if (video.value.readyState === video.value.HAVE_ENOUGH_DATA) {
     canvas.drawImage(video.value, sx, sy, sw, sh, dx, dy, dw, dh)
     drawCrosshair()
@@ -132,12 +142,26 @@ function tick(time) {
 }
 
 function drawCrosshair() {
+  if (!canvas) {
+    console.error("Canvas not initialized")
+    return
+  }
+
   canvas.fillStyle = "rgba(255,255,255,0.4)"
   const shape = new Path2D(crossHairSvg)
   canvas.fill(shape)
 }
 
-function recogniseQRcode(time) {
+function recogniseQRcode(time: number) {
+  if (!canvas) {
+    console.error("Canvas not initialized")
+    return
+  }
+  if (!qrworker) {
+    console.error("QR worker not initialized")
+    return
+  }
+
   if (time - oldTime > props.scanRate) {
     oldTime = time
     let imageData = canvas.getImageData(x0, y0, crossHairWidth, crossHairHeight)
@@ -146,8 +170,7 @@ function recogniseQRcode(time) {
   }
 }
 
-async function onBtnClickHandler(e) {
-  e.preventDefault()
+async function onBtnClickHandler() {
   if (scanning.value) await stopScan()
   else await startScan()
 }

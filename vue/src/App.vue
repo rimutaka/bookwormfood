@@ -6,7 +6,7 @@
     <RouterView />
   </main>
   <footer class="w-full">
-    <FooterStatic />
+    <NavBar />
   </footer>
 </template>
 
@@ -16,14 +16,13 @@ import { RouterView } from 'vue-router'
 import { useAuth0 } from '@auth0/auth0-vue';
 import { storeToRefs } from 'pinia'
 import { useMainStore } from '@/store';
-import { fetchUser } from "@/data-loaders/fetch-user"
+// import { fetchUser } from "@/router/data-loaders/fetch-user"
 
-import TopHeader from './components/.vue';
-import FooterStatic from './components/FooterStatic.vue';
+import NavBar from './components/NavBar.vue';
 
 const { isAuthenticated, isLoading, idTokenClaims, getAccessTokenSilently } = useAuth0();
 const store = useMainStore();
-const { email, token, user } = storeToRefs(store);
+const { email, token, } = storeToRefs(store);
 
 console.log(`App load/auth: ${isLoading.value}/${isAuthenticated.value}`);
 
@@ -47,12 +46,6 @@ async function addTokenClaimsToStore() {
   email.value = idTokenClaims.value?.email;
   token.value = idTokenClaims.value?.__raw;
 
-  // attempt to get user details from the server
-  // it's possible that an empty user object is in store from previous calls,
-  // so check if it has email property set
-  if (!user.value?.email && idTokenClaims.value?.email && idTokenClaims.value?.__raw) {
-    user.value = await fetchUser(idTokenClaims.value.email, idTokenClaims.value.__raw);
-  }
 }
 
 // attempt to get a new token silently

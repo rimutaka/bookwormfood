@@ -1,8 +1,8 @@
+@import url('icon-moon.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('icon-moon.css');
 
 html,
 body,
@@ -11,7 +11,7 @@ body,
 }
 
 h1 {
-  @apply font-display font-bold text-3xl mb-2;
+  @apply font-bold text-3xl mb-2;
 }
 
 a {

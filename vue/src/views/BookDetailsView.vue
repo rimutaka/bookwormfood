@@ -2,33 +2,33 @@
   <div>
     <div class="resultModal">
       <div class="result">
-        <div v-if="title || isbn">
+        <div v-if="book?.title || isbn">
           <div>
-            <h3 v-if="title" class="fade-in font-bold">{{ title }}</h3>
-            <p v-if="authors" class="fade-in">by {{ authors }}</p>
+            <h3 v-if="book?.title" class="fade-in font-bold">{{ book.title }}</h3>
+            <p v-if="book?.authors" class="fade-in">by {{ book.authors }}</p>
 
             <!-- Description with conditional expanding -->
-            <p v-if="description && !description.includes('undefined')" class="fade-in py-2 text-xs max-w-prose">
-              <template v-if="description.length > 500">
-                {{ description.substring(0, 200) }}
+            <p v-if="book?.volumeInfo?.description && !book?.volumeInfo?.description.includes('undefined')" class="fade-in py-2 text-xs max-w-prose">
+              <template v-if="book?.volumeInfo?.description.length > 500">
+                {{ book?.volumeInfo?.description.substring(0, 200) }}
                 <span :class="descriptionExpanded ? 'descr-full' : 'descr-collapsed'">
                   <span v-if="!descriptionExpanded" class="descr-expand" @click="descriptionExpanded = true">more</span>
-                  <span :class="descriptionExpanded ? '' : 'descr-extra-text'">{{ description.substring(200) }}</span>
+                  <span :class="descriptionExpanded ? '' : 'descr-extra-text'">{{ book?.volumeInfo?.description.substring(200) }}</span>
                 </span>
               </template>
               <template v-else>
-                {{ description }}
+                {{ book?.volumeInfo?.description }}
               </template>
             </p>
 
             <p class="py-2 text-xs">ISBN: {{ isbn }}</p>
           </div>
           <div class="book-actions">
-            <i title="Read later" id="status-later" :class="['icon-alarm', { active: status == ReadStatus[0] }]" @click="onClickStatusToRead"></i>
-            <i title="Done reading it" id="status-read" :class="['icon-checkmark', { active: status == ReadStatus[1] }]" @click="onClickStatusRead"></i>
-            <i title="Liked it!" id="status-liked" :class="['icon-heart', { active: status == ReadStatus[2] }]" @click="onClickStatusLiked"></i>
+            <i title="Read later" id="status-later" :class="['icon-alarm', { active: book?.readStatus == ReadStatus.ToRead }]" @click.prevent="onClickStatusToRead"></i>
+            <i title="Done reading it" id="status-read" :class="['icon-checkmark', { active: book?.readStatus == ReadStatus.Read }]" @click.prevent="onClickStatusRead"></i>
+            <i title="Liked it!" id="status-liked" :class="['icon-heart', { active: book?.readStatus == ReadStatus.Liked }]" @click.prevent="onClickStatusLiked"></i>
             <span class="grow"></span>
-            <i title="Bin it" id="status-bin" class="icon-bin text-slate-500" @click="onClickStatusBin"></i>
+            <i title="Bin it" id="status-bin" class="icon-bin text-slate-500" @click.prevent="onClickStatusBin"></i>
           </div>
           <div class="result-table">
             <div>
@@ -51,15 +51,15 @@
         </div>
       </div>
       <div class="scanBtn">
-        <button @click="onClickMyBooks">MY BOOKS</button>
-        <button @click="onClickBackHandler">SCAN AGAIN</button>
-        <button id="copyToClip" @click="onClickCopyToClipboard">SHARE</button>
+        <button @click.prevent="onClickMyBooks">MY BOOKS</button>
+        <button @click.prevent="onClickBackHandler">SCAN AGAIN</button>
+        <button id="copyToClip" @click.prevent="onClickCopyToClipboard">SHARE</button>
       </div>
-      <div v-if="cover" class="book-cover fade-in">
-        <img :src="cover" alt="Book cover" />
+      <div v-if="book?.cover" class="book-cover fade-in">
+        <img :src="book.cover" alt="Book cover" />
       </div>
-      <div v-if="photos && photos.length > 0" class="book-cover fade-in">
-        <div v-for="photo in photos" :key="photo" class="max-w-32 mb-6">
+      <div v-if="book?.photos && book?.photos.length > 0" class="book-cover fade-in">
+        <div v-for="photo in book.photos" :key="photo" class="max-w-32 mb-6">
           <a :href="photo"><img :src="photo" alt="Book photo" /></a>
         </div>
       </div>
@@ -73,33 +73,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watchEffect, watch, ref, onBeforeMount, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
+import router from '@/router';
+
 
 // Importing required functions and constants from external files
 // Assuming these are available in your project
-import { initWasmModule, get_book_data, update_book_status, delete_book, upload_pic, ReadStatus } from '@/wasm-rust/isbn_mod'
+import initWasmModule, { get_book_data, update_book_status, delete_book, upload_pic, ReadStatus } from '@/wasm-rust/isbn_mod'
+import type { Book } from '@/interfaces.js';
+import { buildBookUrl } from '@/interfaces.js';
+import { useAuth0 } from '@auth0/auth0-vue';
+
 
 // Constants
 const LAST_AUTH_TIMESTAMP = "auth"
 
-// Helper function for building book URLs
-function build_book_url(title, authors, isbn, readerId) {
-  let url = (authors) ?
-    (title.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-by-" + authors.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/,/g, "") + "/" + isbn + "/").replace(/-{2,}/g, "-")
-    : (title.toLowerCase().replace(/[^a-z0-9]/g, "-") + "/" + isbn + "/").replace(/-{2,}/g, "-");
-
-  // reader id is only present in shared links
-  if (readerId) {
-    url = url.replace(/\/$/, "") + "/reader-" + readerId;
-  }
-
-  return url;
-}
-
-const router = useRouter()
 const route = useRoute()
-const auth = useAuth()
+const { isAuthenticated, loginWithRedirect, logout, getAccessTokenSilently } = useAuth0();
 
 // Extract ISBN and readerId from URL path
 const isbn = computed(() => {
@@ -111,19 +102,13 @@ const readerId = computed(() => {
 })
 
 // State
-const title = ref(null)
-const authors = ref(null)
-const cover = ref(null)
-const status = ref(null)
-const description = ref(null)
-const token = ref(null)
-const selectedFile = ref(null)
-const photos = ref([])
-const shareId = ref(null)
+const book = ref<Book>()
+const token = ref<string>()
+const selectedFile = ref<FileList>()
 const descriptionExpanded = ref(false)
 
 // Handle messages from WASM module
-const handleWasmMessage = (msg) => {
+const handleWasmMessage = (msg: MessageEvent) => {
   let data
   try {
     data = JSON.parse(msg.data)
@@ -134,17 +119,19 @@ const handleWasmMessage = (msg) => {
 
   // Process WASM response
   if (data?.localBook?.Ok) {
-    const book = data.localBook.Ok
-    title.value = book.title || "No data in Google for this ISBN code"
-    authors.value = book.authors?.join(", ")
-    cover.value = book.cover
-    status.value = book.readStatus
-    description.value = book.volumeInfo?.description
-    photos.value = book.photos || []
-    shareId.value = book.shareId
+    book.value = data.localBook.Ok
+    if (!book.value) {
+      console.log("No book found")
+      return
+    }
+    if (!book.value.title) {
+      book.value.title = "No data in Google for this ISBN code"
+    }
+
+    book.value.photos = book.value.photos || []
 
     // Update URL with book title
-    const url = build_book_url(title.value, authors.value, isbn.value, readerId.value)
+    const url = buildBookUrl(book.value, readerId.value)
     router.replace(`/${url}`)
   } else if (data?.deleted?.Ok) {
     console.log("Book deletion confirmed")
@@ -152,100 +139,113 @@ const handleWasmMessage = (msg) => {
   } else if (data?.uploaded?.Ok) {
     console.log("File uploaded:", data.uploaded.Ok)
   } else {
-    title.value = "Cannot get data from Google for this book"
+    book.value = { title: "Cannot get data from Google for this book", authors: [], cover: "", volumeInfo: { description: "" }, isbn: 0, readStatus: ReadStatus.ToRead, photos: [], shareId: undefined }
   }
 }
-
 // Initialize WASM and fetch book data
 watchEffect(async () => {
   if (isbn.value) {
     console.log(`ISBN: ${isbn.value}, Reader ID: ${readerId.value}, URL: ${route.path}`)
-    
+
     // Try to get the token if authenticated
-    let idTokenClaims = null
-    if (auth.isAuthenticated) {
-      idTokenClaims = await auth.getIdTokenClaims()
-      if (idTokenClaims?.__raw) {
-        token.value = idTokenClaims.__raw
+    // let idTokenClaims = null
+    // if (isAuthenticated) {
+    //   idTokenClaims = await auth.getIdTokenClaims()
+    //   if (idTokenClaims?.__raw) {
+    //     token.value = idTokenClaims.__raw
+    //   } else {
+    //     console.log(`Missing token: ${JSON.stringify(idTokenClaims)}`)
+    //   }
+    // } else {
+    //   console.log("User is not authenticated")
+    // }
+
+
+    if (isAuthenticated) {
+      const idTokenClaims = await getAccessTokenSilently();
+      if (idTokenClaims) {
+        token.value = idTokenClaims;
+        // console.log(`JWT: ${idTokenClaims?.__raw}`);
+        // console.log(`Expiry: ${idTokenClaims?.exp}`);
       } else {
-        console.log(`Missing token: ${JSON.stringify(idTokenClaims)}`)
+        console.log(`Missing token: ${JSON.stringify(idTokenClaims)}`);
       }
     } else {
-      console.log("User is not authenticated")
+      console.log("User is not authenticated");
     }
+
 
     // Get book details
     await initWasmModule()
-    get_book_data(isbn.value, idTokenClaims?.__raw, readerId.value)
+    get_book_data(isbn.value, token.value, readerId.value)
   }
 })
 
 // Setup event listeners
-onMounted(() => {
+onBeforeMount(() => {
   window.addEventListener("message", handleWasmMessage)
 })
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   window.removeEventListener("message", handleWasmMessage)
 })
 
 // Event handlers
-function onClickStatusToRead() {
-  update_book_status(isbn.value, status.value == ReadStatus[0] ? null : ReadStatus.ToRead, token.value)
+const onClickStatusToRead = () => {
+  update_book_status(isbn.value, book.value?.readStatus == ReadStatus.ToRead ? undefined : ReadStatus.ToRead, token.value)
 }
 
-function onClickStatusRead() {
-  update_book_status(isbn.value, status.value == ReadStatus[1] ? null : ReadStatus.Read, token.value)
+const onClickStatusRead = () => {
+  update_book_status(isbn.value, book.value?.readStatus == ReadStatus.Read ? undefined : ReadStatus.Read, token.value)
 }
 
-function onClickStatusLiked() {
-  update_book_status(isbn.value, status.value == ReadStatus[2] ? null : ReadStatus.Liked, token.value)
+const onClickStatusLiked = () => {
+  update_book_status(isbn.value, book.value?.readStatus == ReadStatus.Liked ? undefined : ReadStatus.Liked, token.value)
 }
 
-function onClickStatusBin(e) {
-  e.preventDefault()
+const onClickStatusBin = () => {
   delete_book(isbn.value, token.value)
 }
 
-function onClickMyBooks(e) {
-  e.preventDefault()
+const onClickMyBooks = () => {
   router.push("/")
 }
 
-function onClickBackHandler(e) {
-  e.preventDefault()
+const onClickBackHandler = () => {
   router.push("/scan")
 }
 
-async function onClickCopyToClipboard(e) {
-  e.preventDefault()
-  const url = shareId.value ? 
-    (window.location.href.replace(/\/$/, "") + "/reader-" + shareId.value) : 
+const onClickCopyToClipboard = async () => {
+  const url = book.value?.shareId ?
+    (window.location.href.replace(/\/$/, "") + "/reader-" + book.value.shareId) :
     window.location.href
-    
+
   await navigator.clipboard.writeText(url)
   const btnId = document.getElementById("copyToClip")
+  if (!btnId) {
+    console.error("Button element not found")
+    return
+  }
   btnId.innerText = "COPIED TO CLIPBOARD"
   btnId.classList.add("done")
-  
+
   setTimeout(() => {
     btnId.innerText = "SHARE"
     btnId.classList.remove("done")
   }, 3000)
 }
 
-function handleFileChange(event) {
-  const files = event.target.files
-  selectedFile.value = files
-  
-  if (!files || !files.length) {
-    console.log("No file selected.")
+function handleFileChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  if (!input.files || !input.files.length) {
+    console.log("No files selected.")
     return
   }
-  
+  selectedFile.value = input.files
+
   try {
-    console.log(`Uploading file: ${files[0]?.name}`)
-    upload_pic(isbn.value, files, token.value)
+    console.log(`Uploading file: ${input.files[0]?.name}`)
+    upload_pic(isbn.value, input.files, token.value)
     console.log("File queued for uploading")
   } catch (error) {
     console.error("Error queuing file for uploading:", error)
@@ -253,7 +253,7 @@ function handleFileChange(event) {
 }
 
 // Update document title when title changes
-watch([title, authors], ([newTitle, newAuthors]) => {
+watch([book.value?.title, book.value?.authors], ([newTitle, newAuthors]) => {
   if (newTitle) {
     document.title = `${newTitle}${newAuthors ? ' by ' + newAuthors : ''}`
   } else {
