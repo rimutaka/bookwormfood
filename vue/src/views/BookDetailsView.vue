@@ -24,9 +24,9 @@
             <p class="py-2 text-xs">ISBN: {{ isbn }}</p>
           </div>
           <div class="book-actions">
-            <i title="Read later" id="status-later" :class="['icon-alarm', { active: book?.readStatus == ReadStatus.ToRead }]" @click.prevent="onClickStatusToRead"></i>
-            <i title="Done reading it" id="status-read" :class="['icon-checkmark', { active: book?.readStatus == ReadStatus.Read }]" @click.prevent="onClickStatusRead"></i>
-            <i title="Liked it!" id="status-liked" :class="['icon-heart', { active: book?.readStatus == ReadStatus.Liked }]" @click.prevent="onClickStatusLiked"></i>
+            <i title="Read later" id="status-later" :class="['icon-alarm', { active: book?.readStatus == ReadStatus[ReadStatus.ToRead] }]" @click.prevent="onClickStatusToRead"></i>
+            <i title="Done reading it" id="status-read" :class="['icon-checkmark', { active: book?.readStatus == ReadStatus[ReadStatus.Read] }]" @click.prevent="onClickStatusRead"></i>
+            <i title="Liked it!" id="status-liked" :class="['icon-heart', { active: book?.readStatus == ReadStatus[ReadStatus.Liked] }]" @click.prevent="onClickStatusLiked"></i>
             <span class="grow"></span>
             <i title="Bin it" id="status-bin" class="icon-bin text-slate-500" @click.prevent="onClickStatusBin"></i>
           </div>
@@ -83,6 +83,7 @@ import router from '@/router';
 import initWasmModule, { get_book_data, update_book_status, delete_book, upload_pic, ReadStatus } from '@/wasm-rust/isbn_mod'
 import type { Book } from '@/interfaces.js';
 import { buildBookUrl } from '@/interfaces.js';
+import type { ReadStatusStrings } from '@/interfaces.js';
 import { useAuth0 } from '@auth0/auth0-vue';
 
 
@@ -139,7 +140,7 @@ const handleWasmMessage = (msg: MessageEvent) => {
   } else if (data?.uploaded?.Ok) {
     console.log("File uploaded:", data.uploaded.Ok)
   } else {
-    book.value = { title: "Cannot get data from Google for this book", authors: [], cover: "", volumeInfo: { description: "" }, isbn: 0, readStatus: ReadStatus.ToRead, photos: [], shareId: undefined }
+    book.value = { title: "Cannot get data from Google for this book", authors: [], cover: "", volumeInfo: { description: "" }, isbn: 0, readStatus: "ToRead", photos: [], shareId: undefined }
   }
 }
 // Initialize WASM and fetch book data
@@ -164,15 +165,15 @@ onBeforeUnmount(() => {
 
 // Event handlers
 const onClickStatusToRead = () => {
-  update_book_status(isbn.value, book.value?.readStatus == ReadStatus.ToRead ? undefined : ReadStatus.ToRead, token.value)
+  update_book_status(isbn.value, book.value?.readStatus == ReadStatus[ReadStatus.ToRead] ? undefined : ReadStatus.ToRead, token.value)
 }
 
 const onClickStatusRead = () => {
-  update_book_status(isbn.value, book.value?.readStatus == ReadStatus.Read ? undefined : ReadStatus.Read, token.value)
+  update_book_status(isbn.value, book.value?.readStatus == ReadStatus[ReadStatus.Read] ? undefined : ReadStatus.Read, token.value)
 }
 
 const onClickStatusLiked = () => {
-  update_book_status(isbn.value, book.value?.readStatus == ReadStatus.Liked ? undefined : ReadStatus.Liked, token.value)
+  update_book_status(isbn.value, book.value?.readStatus == ReadStatus[ReadStatus.Liked] ? undefined : ReadStatus.Liked, token.value)
 }
 
 const onClickStatusBin = () => {

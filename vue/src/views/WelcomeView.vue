@@ -34,11 +34,12 @@ import router from '@/router';
 import { PageIDs } from '@/router'
 import initWasmModule, { get_scanned_books, ReadStatus } from '../wasm-rust/isbn_mod.js';
 import { buildBookUrl } from '@/interfaces.js';
-import type { Book } from '@/interfaces.js';
+import type { Book, ReadStatusStrings } from '@/interfaces.js';
 import { useAuth0 } from '@auth0/auth0-vue';
 
 const store = useMainStore();
 const { isAuthenticated, loginWithRedirect, logout, getAccessTokenSilently } = useAuth0();
+const { token } = storeToRefs(store);
 
 
 // Placeholder for WASM and Auth0 logic
@@ -46,8 +47,6 @@ const { isAuthenticated, loginWithRedirect, logout, getAccessTokenSilently } = u
 // import initWasmModule, { get_scanned_books, ReadStatus } from '../wasm-rust/isbn_mod.js';
 
 const books = ref<Array<Book>>([])
-// Placeholder for token and authentication logic
-const token = ref<string|undefined>()
 
 // Books should be fetched from the cloud only once.
 // The local storage is expected to be in sync while the app is active.
@@ -55,19 +54,21 @@ const token = ref<string|undefined>()
 // true: fetch books from the cloud, false: already fetched
 let withCloudSync = true
 
-function getStatusIcon(readStatus: ReadStatus) {
+function getStatusIcon(readStatus: ReadStatusStrings | undefined) {
+  if (!readStatus) {
+    return 'blank'
+  }
   switch (readStatus) {
-    case ReadStatus.ToRead:
+    case ReadStatus[ReadStatus.ToRead]:
       return 'icon-alarm'
-    case ReadStatus.Read:
+    case ReadStatus[ReadStatus.Read]:
       return 'icon-checkmark'
-    case ReadStatus.Liked:
+    case ReadStatus[ReadStatus.Liked]:
       return 'icon-heart'
     default:
       return 'blank'
   }
 }
-
 
 function onScanBtnClickHandler() {
   // Replace with your actual navigation logic
@@ -76,10 +77,7 @@ function onScanBtnClickHandler() {
 }
 
 function onBookLinkClickHandler(book: Book) {
-  // Replace with your actual navigation logic
-  // For example, using vue-router:
-  // router.push({ path: buildBookUrl(book.title, book.authors?.[0], book.isbn) })
-  alert(`Navigate to: ${buildBookUrl(book)}`)
+  router.push({ path: buildBookUrl(book) })
 }
 
 const handleWasmMessage = (msg: MessageEvent) => {
@@ -118,30 +116,8 @@ onMounted(() => {
   // TODO: change ids to constants
   document.title = "📖📚📚";
 
-const b = books.value;
-
-  // Placeholder for async logic to fetch books and token
-  // Replace with your actual logic
-  // await initWasmModule()
-  // get_scanned_books(token.value, withCloudSync)
-  // if (token.value) withCloudSync = false
-
   // get the list of books from the localStorage
   (async () => {
-
-    // try to get the token
-    if (isAuthenticated) {
-      const idTokenClaims = await getAccessTokenSilently();
-      if (idTokenClaims) {
-        token.value=idTokenClaims;
-        // console.log(`JWT: ${idTokenClaims?.__raw}`);
-        // console.log(`Expiry: ${idTokenClaims?.exp}`);
-      } else {
-        console.log(`Missing token: ${JSON.stringify(idTokenClaims)}`);
-      }
-    } else {
-      console.log("User is not authenticated");
-    }
 
     await initWasmModule(); // run the wasm initializer before calling wasm methods
     // console.log("Requesting scanned books");

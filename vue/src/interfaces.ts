@@ -5,12 +5,15 @@ export interface VolumeInfo {
   description: string | undefined,
 }
 
-/// A mirror of the Rust's type
+/** A string-based type of ReadStatus enum */
+export type ReadStatusStrings = keyof typeof ReadStatus;
+
+/** A mirror of the Rust's type */
 export interface Book {
   isbn: number,
   title: string | undefined,
   authors: string[] | undefined,
-  readStatus: ReadStatus,
+  readStatus: ReadStatusStrings | undefined,
   cover: string | undefined,
   volumeInfo: VolumeInfo | undefined,
   shareId: number | undefined,
