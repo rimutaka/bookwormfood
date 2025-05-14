@@ -2,12 +2,12 @@
   <header class="">
     <TopHeader />
   </header>
-  <main class="my-auto w-full">
-    <RouterView />
+  <main class="main">
+    <div>
+      <RouterView />
+      <NavBar />
+    </div>
   </main>
-  <footer class="w-full">
-    <NavBar />
-  </footer>
 </template>
 
 <script setup lang="ts">
