@@ -6,6 +6,7 @@ import WelcomeView from '../views/WelcomeView.vue'
 import ScanView from '@/views/ScanView.vue'
 import BookDetailsView from '@/views/BookDetailsView.vue'
 import LoginView from '@/views/LoginView.vue';
+import AboutView from '@/views/AboutView.vue';
 
 // Extend RouteMeta to enforce title property stored in meta for every page
 import 'vue-router'
@@ -22,6 +23,7 @@ export const PageIDs = {
   BOOK: 'book',
   SCAN: 'scan',
   LOGIN: 'login',
+  ABOUT: 'about',
 }
 
 const router = createRouter({
@@ -39,6 +41,11 @@ const router = createRouter({
       path: '/',
       name: PageIDs.HOME,
       component: WelcomeView,
+    },
+    {
+      path: '/' + PageIDs.ABOUT,
+      name: PageIDs.ABOUT,
+      component: AboutView,
     },
     {
       path: '/' + PageIDs.SCAN,

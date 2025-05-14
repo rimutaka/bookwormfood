@@ -115,7 +115,7 @@ onMounted(() => {
   // a scan that sets them to the book details
   // make sure the values are synchronized with index.html
   // TODO: change ids to constants
-  document.title = "📖📚📚";
+  document.title = "📚📚📚";
 
   // get the list of books from the localStorage
   (async () => {
