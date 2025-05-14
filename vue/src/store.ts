@@ -16,9 +16,7 @@ export const useMainStore = defineStore('main', () => {
 
   /** Extracted from URL path */
   const isbn = computed(() => {
-    const x = route.path.match(/\/\d{13}(\/|$)/)?.[0]?.replace(/\//g, "") || "";
-    console.log("isbn", x)
-    return x
+    return route.path.match(/\/\d{13}(\/|$)/)?.[0]?.replace(/\//g, "") || "";
   })
 
   /** Extracted from URL path */

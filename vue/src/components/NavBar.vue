@@ -2,7 +2,11 @@
   <nav class="mx-auto py-4 border-t mt-12 text-xs">
     <ul class="flex flex-wrap font-small">
       <li class="flex-none"><a href="/about">Privacy policy</a></li>
-      <li class="flex-grow text-center"><span class="align-baseline">{{ appVersion }}</span></li>
+      <li class="flex-grow text-center">
+        <a class=" align-baseline no-underline text-inherit visited:text-inherit hover:text-current" href="https://github.com/rimutaka/bookwormfood" title="Source code">
+          {{ appVersion }}
+        </a>
+      </li>
       <li class="flex-none">
         <div v-if="isAuthenticated">
           <button class="loginBtn" @click="handleLogout" type="button">Sign out</button>
@@ -61,8 +65,7 @@ async function handleLogout() {
 
 // Calculate app version
 const appVersion = computed(() => {
-  // Assuming process.env is available or replaced with equivalent in Vue
-  let version = import.meta.env.VITE_APP_BUILD_TS || ''
+  let version = import.meta.env.VITE_BOOKWORM_BUILD_TS || ''
   
   if (!version) return 'v.dev'
   

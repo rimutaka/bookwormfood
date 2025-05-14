@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "start": "export VITE_BOOKWORM_BUILD_TS=$(date --rfc-3339=seconds) && vite",
+    "build": "export VITE_BOOKWORM_BUILD_TS=$(date --rfc-3339=seconds) && run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
