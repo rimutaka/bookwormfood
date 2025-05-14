@@ -15,7 +15,6 @@ client-side-unvalidated-url-redirection Allowing unvalidated redirection based o
 
 <script setup lang="ts">
 import { ref, watchEffect, watch, onMounted, onBeforeUnmount } from 'vue';
-import { storeToRefs } from 'pinia'
 import { useMainStore } from '@/store';
 import router from '@/router';
 

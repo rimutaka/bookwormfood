@@ -1,6 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { authGuard } from '@auth0/auth0-vue';
-import { findTopicById, URL_PARAM_TOPIC } from '@/constants';
 
 import WelcomeView from '../views/WelcomeView.vue'
 import ScanView from '@/views/ScanView.vue'
@@ -46,6 +44,11 @@ const router = createRouter({
       path: '/' + PageIDs.ABOUT,
       name: PageIDs.ABOUT,
       component: AboutView,
+    },
+    {
+      path: '/' + PageIDs.LOGIN,
+      name: PageIDs.LOGIN,
+      component: LoginView,
     },
     {
       path: '/' + PageIDs.SCAN,

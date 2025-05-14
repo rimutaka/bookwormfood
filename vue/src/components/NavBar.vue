@@ -24,8 +24,7 @@
 
 
 <script setup lang="ts">
-import { ref, watch, watchEffect, computed } from "vue";
-import { storeToRefs } from 'pinia'
+import { computed } from "vue";
 import { useMainStore } from '@/store';
 import { useAuth0 } from '@auth0/auth0-vue';
 import router from "@/router";

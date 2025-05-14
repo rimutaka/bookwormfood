@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { storeToRefs } from 'pinia'
 import { useMainStore } from '@/store';
 import router from '@/router';
@@ -36,16 +36,9 @@ import { PageIDs } from '@/router'
 import initWasmModule, { get_scanned_books, ReadStatus } from '../wasm-rust/isbn_mod.js';
 import { buildBookUrl } from '@/interfaces.js';
 import type { Book, ReadStatusStrings } from '@/interfaces.js';
-import { useAuth0 } from '@auth0/auth0-vue';
 
 const store = useMainStore();
-const { isAuthenticated, loginWithRedirect, logout, getAccessTokenSilently } = useAuth0();
 const { token } = storeToRefs(store);
-
-
-// Placeholder for WASM and Auth0 logic
-// Replace with your actual imports and logic
-// import initWasmModule, { get_scanned_books, ReadStatus } from '../wasm-rust/isbn_mod.js';
 
 const books = ref<Array<Book>>([])
 
@@ -72,8 +65,6 @@ function getStatusIcon(readStatus: ReadStatusStrings | undefined) {
 }
 
 function onScanBtnClickHandler() {
-  // Replace with your actual navigation logic
-  // For example, using vue-router:
   router.push({ name: PageIDs.SCAN });
 }
 
@@ -119,7 +110,6 @@ onMounted(() => {
 
   // get the list of books from the localStorage
   (async () => {
-
     await initWasmModule(); // run the wasm initializer before calling wasm methods
     // console.log("Requesting scanned books");
     // request book data from WASM module
@@ -128,29 +118,11 @@ onMounted(() => {
     get_scanned_books(token.value, withCloudSync);
     // prevent future list syncs until the page is refreshed
     if (token.value) withCloudSync = false;
-    // console.log("Requested scanned books (inside async)");
   })();
-
-  // console.log("Requested scanned books (outside async)");
-
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('message', handleWasmMessage)
 })
-
-
-
-// const { token, question } = storeToRefs(store);
-
-// /// redirect to subscription page if the user is authenticated
-// watchEffect(() => {
-//   // this redirect has to be here to redirect from homepage only
-//   // any other page should not redirect to sub automatically
-//   if (token.value) {
-//     console.log("Token obtained - redirecting to subscription page");
-//     router.replace({ name: PageIDs.SUBSCRIPTION }); // cleaner history with replace
-//   }
-// });
 
 </script>
