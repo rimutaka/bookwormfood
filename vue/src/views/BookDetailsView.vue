@@ -210,12 +210,14 @@ function handleFileChange(event: Event) {
 }
 
 // Update document title when title changes
-watch([book.value?.title, book.value?.authors], ([newTitle, newAuthors]) => {
+watch([book], ([newBook]) => {
+  const newTitle = newBook?.title;
+  const newAuthors = newBook?.authors?.[0];
   if (newTitle) {
     document.title = `${newTitle}${newAuthors ? ' by ' + newAuthors : ''}`
   } else {
     document.title = "Book not found"
   }
-})
+}, { deep: true })
 
 </script>
