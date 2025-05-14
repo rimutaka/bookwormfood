@@ -1,7 +1,4 @@
 <template>
-  <header class="">
-    <TopHeader />
-  </header>
   <main class="main">
     <div>
       <RouterView />

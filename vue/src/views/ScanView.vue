@@ -19,10 +19,9 @@ import { storeToRefs } from 'pinia'
 import { useMainStore } from '@/store';
 import router from '@/router';
 
-const props = defineProps({
-  decode: { type: Boolean, default: true },
-  scanRate: { type: Number, default: 250 }
-})
+// Number of milliseconds to wait before decoding the next QR code
+// Frames in between this timeframe are ignored
+const QR_DECODE_INTERVAL = 250;
 
 const BTN_TXT = {
   START: "SCAN ISBN",
@@ -51,8 +50,6 @@ let sy = 0;
 const crossHairSvg = "M77.125 148.02567c0-3.5774 2.73862-6.27567 6.37076-6.27567H119V117H84.0192C66.50812 117 52 130.77595 52 148.02567V183h25.125v-34.97433zM237.37338 117H202v24.75h35.18494c3.63161 0 6.69006 2.69775 6.69006 6.27567V183H269v-34.97433C269 130.77595 254.88446 117 237.37338 117zM243.875 285.4587c0 3.5774-2.73863 6.27567-6.37076 6.27567H202V317h35.50424C255.01532 317 269 302.70842 269 285.4587V251h-25.125v34.4587zM83.49576 291.73438c-3.63213 0-6.37076-2.69776-6.37076-6.27568V251H52v34.4587C52 302.70842 66.50812 317 84.0192 317H119v-25.26563H83.49576z";
 const crossHairWidth = 217, crossHairHeight = 200, x0 = 53, y0 = 117;
 
-
-
 const store = useMainStore();
 
 const btnText = ref(BTN_TXT.START)
@@ -71,13 +68,17 @@ video.value.onplaying = () => {
 }
 
 function initWorker() {
+  // console.log("init worker")
   qrworker = new Worker("wasmWorker.js")
   qrworker.onmessage = async ev => {
+    // console.log("worker message", ev.data)
     if (qrworker && ev.data != null) {
       qrworker.terminate()
+      // console.log("worker terminated")
       const result = ev.data
       await stopScan()
       let res = result.data
+      // console.log("navigating from scan")
       router.replace({ path: `/${res}` })
     }
   }
@@ -98,10 +99,12 @@ async function startScan() {
   btnClass.value = "active"
 
   try {
+    // console.log("starting video")
     video.value.srcObject = await navigator.mediaDevices.getUserMedia(CAPTURE_OPTIONS)
     video.value.setAttribute("playsinline", "true")
     await video.value.play()
     scanning.value = true
+    // console.log("video started")
 
     requestAnimationFrame(tick)
   } catch (err) {
@@ -112,33 +115,40 @@ async function startScan() {
 }
 
 function stopScan() {
+  // console.log("stopping scan")
   scanning.value = false
   btnText.value = BTN_TXT.START
   btnClass.value = ""
   video.value.pause()
+  // console.log("video paused")
   if (video.value.srcObject) {
+    // console.log("stopping tracks");
     (video.value.srcObject as MediaStream).getVideoTracks().forEach(track => {
+      // console.log("stopping track", track)
       track.stop()
     })
     video.value.srcObject = null
+    // console.log("video srcObject set to null")
   }
+  // console.log("scan stopped")
   router.replace({ path: "/" })
 }
 
 function tick(time: number) {
 
+  // console.log("tick", time)
   if (!canvas || !video.value) {
     console.error("Canvas or video element not initialized")
     return
   }
 
   if (video.value.readyState === video.value.HAVE_ENOUGH_DATA) {
+    // console.log("video ready")
     canvas.drawImage(video.value, sx, sy, sw, sh, dx, dy, dw, dh)
     drawCrosshair()
-    if (scanning.value) requestAnimationFrame(tick)
-    if (props.decode) recogniseQRcode(time)
+    recogniseQRcode(time)
   }
-  requestAnimationFrame(tick)
+  if (scanning.value) requestAnimationFrame(tick)
 }
 
 function drawCrosshair() {
@@ -162,7 +172,7 @@ function recogniseQRcode(time: number) {
     return
   }
 
-  if (time - oldTime > props.scanRate) {
+  if (time - oldTime > QR_DECODE_INTERVAL) {
     oldTime = time
     let imageData = canvas.getImageData(x0, y0, crossHairWidth, crossHairHeight)
     qrworker.postMessage({ width: imageData.width, height: imageData.height })
@@ -171,17 +181,24 @@ function recogniseQRcode(time: number) {
 }
 
 async function onBtnClickHandler() {
-  if (scanning.value) await stopScan()
-  else await startScan()
+  await stopScan()
 }
-
-// WASM init code as-is (if any) can be placed here
 
 watchEffect(() => {
   document.title = "Book barcode scanner"
 })
 
 onMounted(() => {
-  startScan().catch(console.error)
+  startScan().catch(console.error);
 })
+
+onBeforeUnmount(() => {
+  // console.log("unmounting scan view")
+  stopScan()
+  if (qrworker) {
+    qrworker.terminate()
+    qrworker = null
+  }
+})
+
 </script>
