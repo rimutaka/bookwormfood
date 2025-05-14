@@ -111,6 +111,7 @@ async function startScan() {
     console.log("failed to start scan")
     stopScan()
     console.error(err)
+    router.replace({ path: "/" })
   }
 }
 
@@ -131,7 +132,6 @@ function stopScan() {
     // console.log("video srcObject set to null")
   }
   // console.log("scan stopped")
-  router.replace({ path: "/" })
 }
 
 function tick(time: number) {
@@ -182,6 +182,7 @@ function recogniseQRcode(time: number) {
 
 async function onBtnClickHandler() {
   await stopScan()
+  router.replace({ path: "/" })
 }
 
 watchEffect(() => {
