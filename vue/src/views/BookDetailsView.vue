@@ -76,35 +76,19 @@
 import { computed, watchEffect, watch, ref, onBeforeMount, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import router from '@/router';
-
-
-// Importing required functions and constants from external files
-// Assuming these are available in your project
+import { storeToRefs } from 'pinia'
+import { useMainStore } from '@/store';
 import initWasmModule, { get_book_data, update_book_status, delete_book, upload_pic, ReadStatus } from '@/wasm-rust/isbn_mod'
 import type { Book } from '@/interfaces.js';
 import { buildBookUrl } from '@/interfaces.js';
-import type { ReadStatusStrings } from '@/interfaces.js';
-import { useAuth0 } from '@auth0/auth0-vue';
 
-
-// Constants
-const LAST_AUTH_TIMESTAMP = "auth"
 
 const route = useRoute()
-const { isAuthenticated, loginWithRedirect, logout, getAccessTokenSilently } = useAuth0();
-
-// Extract ISBN and readerId from URL path
-const isbn = computed(() => {
-  return route.path.match(/\/\d{13}(\/|$)/)?.[0]?.replace(/\//g, "") || ""
-})
-
-const readerId = computed(() => {
-  return route.path.match(/\/reader-\d+(\/|$)/)?.[0]?.replace(/\//g, "")?.replace("reader-", "")
-})
+const store = useMainStore();
+const { token, isbn, readerId } = storeToRefs(store);
 
 // State
 const book = ref<Book>()
-const token = ref<string>()
 const selectedFile = ref<FileList>()
 const descriptionExpanded = ref(false)
 
