@@ -17,8 +17,9 @@
     <ul class="scan-list">
       <li v-for="book in books" :key="book.isbn">
         <i :class="getStatusIcon(book.readStatus)"></i>
+        <span v-if="!book.title" class=" text-sm">No title. ISBN: </span>
         <a :href="buildBookUrl(book)" @click.prevent="onBookLinkClickHandler(book)">
-          {{ book.title }}
+          {{ book.title || book.isbn }}
         </a>
         <span v-if="book.authors"> by {{ book.authors[0] }}</span>
       </li>
