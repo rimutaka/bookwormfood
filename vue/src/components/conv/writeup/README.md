@@ -26,6 +26,9 @@ I DO NOT recommend any of these tools:
 
 ## GitHub Copilot
 
+GitHub Copilot is the default AI Chat choice for VSCode.
+You may also consider using [Cursor](https://www.cursor.com/en) or [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview).
+
 If you are new to using [Co-Pilot Chat window in VSCode](https://code.visualstudio.com/docs/copilot/chat/copilot-chat), there is one customization I highly recommend - disable _Send on Enter_ setting to enter _multiline prompts_.
 
 - Open _Keyboard Shortcuts_ (`Ctrl-K` + `Ctrl-S`)
@@ -38,12 +41,15 @@ More info:
 - https://github.com/orgs/community/discussions/86624
 - https://code.visualstudio.com/docs/configure/keybindings#_keyboard-shortcuts-editor
 
-## Converting the Project
+## Converting the Entire Project 🙄
 
 Attempts to convert the entire project in one go failed.
 All the models clearly prefer the user to break it down into smaller steps, e.g. create scaffolding, improve it, add linters, NPM packages and then convert the components one by one.
 
-## Converting a React Component
+I could have asked the LLM for the action plan, correct it and then ask to execute.
+Doing the conversion in small steps seemed like a better approach.
+
+## Converting a Single React Component 🎉
 
 My `NavBar` component had only 71 lines of code and used a single dependency, `useAuth0` from `@auth0/auth0-react` for authentication.
 
@@ -60,7 +66,7 @@ Copy comments as-is.
 Use TypeScript, VueJS composition API.
 ```
 
-I asked ChatGPT to improve it. The new prompt is more readable, but made no difference to the end result - all models produced the same output for both.
+I asked ChatGPT to improve it. The new prompt was more readable, but made no difference to the end result - all models produced the same output for both.
 ```
 Convert the provided React component into a Vue 3 Single File Component that fits into an existing Vue application structure.
 
@@ -76,6 +82,7 @@ The worst result of them all:
 - didn't follow the composition API structure
 - left placeholders
 - unusual formatting
+
 Vue file: https://github.com/rimutaka/bookwormfood/blob/react-to-vue-conv/vue/src/components/conv/Claude37Sonnet.vue
 
 ### Claude 3.5 Sonnet
@@ -84,13 +91,12 @@ A much better result with a few minor issues:
 - `window.location.port == 80` should be `"80"` in TypeScript
 - `process.env.VUE_APP_BUILD_TS` should be `import.meta.env.VITE_APP_BUILD_TS`
 - inconsistent use of `''` and `""`
-- excessive TypeScript types
 
 Vue file: https://github.com/rimutaka/bookwormfood/blob/react-to-vue-conv/vue/src/components/conv/Claude35Sonnet.vue
 
 ### Gemini 2.5 Pro
 
-Very similar to Claude 3.5 Sonnet.
+A very similar result to Claude 3.5 Sonnet.
 
 The `<template>` part was nearly identical with only syntactical and formatting differences for the rest of the code.
 
@@ -119,5 +125,8 @@ From this React:
 To this Vue:
 [https://github.com/rimutaka/bookwormfood/tree/28e52c2...](https://github.com/rimutaka/bookwormfood/tree/28e52c26849fb5274bb8f0de9aa55b585da20128/vue/src)
 
-Could one of these "brilliant golden retrievers on acid" completely replace me for thisS task?  
-**Not yet.** (via [Changelog](https://changelog.com/news/144))
+### Question 
+
+Could one of these _brilliant golden retrievers on acid_ completely replace me for this task?
+
+**Not yet.**
